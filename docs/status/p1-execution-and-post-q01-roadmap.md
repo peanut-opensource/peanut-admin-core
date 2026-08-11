@@ -82,6 +82,14 @@ CAP03 passed all six PR checks and merged as `c27e03006135adce56627b438a2ac82a4f
 CAP04 now waits only for the accepted collaboration dependency-decision merge;
 its Runtime remains blocked until the independent exact contract is accepted.
 
+CAP05 subsequently fixed and qualified the exact Alpha.5 source/projections at
+`14010993e47f5e3082ab8f0b53456f282b71f086` (tree
+`3fa7e79730ec9ed8f0349dc1c0d24fa72cfda54f`). The
+[CAP06 private downstream adoption contract](./p1-cap06-private-downstream-adoption-contract.md)
+is now the only executable consumer step: it pins both projection digests,
+keeps the application domain owner, and requires one focused cross-capability
+acceptance before any downstream lock or external state can move.
+
 Qualification, private downstream adoption and public publication are separate
 decisions. A later candidate does not move the v1.0.0 compatibility baseline or
 any downstream lock without its own fixed-commit evidence and approval.

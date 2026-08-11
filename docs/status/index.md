@@ -182,6 +182,14 @@ envelopes, snapshots, backpressure, immutable ArtifactRevision publication and
 the UI-neutral npm client. Its exact prerequisite is Core PR #11 merge
 `7105800845e364da9a2fa731b7a1d8cdf6b5163b`.
 
+The [P1-CAP06 Private Downstream Adoption contract](./p1-cap06-private-downstream-adoption-contract.md)
+now fixes the boundary after CAP05 qualification: the Peanut Admin application
+may consume only the exact Alpha.5 source/projection digests through controlled
+private artifacts, and must prove one Article-owned cross-capability flow with
+real Tenant/permission/typed-target checks. It does not change Core Runtime,
+publish either package, or authorize production. The downstream lock remains
+Alpha.2/Alpha.3 until the contract's focused adoption evidence is complete.
+
 The current backend administration candidate is fixed by the
 [P1-B03 Minimal Settings Module Contract](./p1-b03-minimal-settings-contract.md).
 It defines reusable first-party settings packages, trusted Module-owned typed

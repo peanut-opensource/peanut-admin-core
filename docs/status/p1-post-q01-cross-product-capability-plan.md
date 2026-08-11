@@ -257,6 +257,17 @@ until the stage's independent contract names the exact whitelist.
 - **Stop line:** private exact-commit validation only. It does not mutate a
   registry, tag, Release, dist-tag, stable support promise or production claim.
 
+The executable CAP06 contract is
+[`P1-CAP06 Private Downstream Adoption`](./p1-cap06-private-downstream-adoption-contract.md).
+It binds CAP05 source commit `14010993e47f5e3082ab8f0b53456f282b71f086`,
+source tree `3fa7e79730ec9ed8f0349dc1c0d24fa72cfda54f`, Composer projection
+digest `ca30576ae9f671197c0050fea8a42e7d7e61b5c0f43abebd69aec99cd43e5c0e`
+and npm projection digest
+`5d01076276a4599682b65fcfde812f5fe201c3e597f2fab38b8ef23cbabe8c80`.
+The downstream implementation owns only its locks, one Article adapter and
+one focused test. A missing route, migration, Core change or generic duplicate
+Runtime requires a separate contract correction.
+
 ## Mature Dependency Decision Gate
 
 No dependency is installed, locked or imported merely because this plan names

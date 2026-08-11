@@ -149,6 +149,13 @@
       "replacement": null
     },
     {
+      "path": "docs/status/p1-cap06-private-downstream-adoption-contract.md",
+      "title": "P1-CAP06 Private Downstream Adoption Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
       "path": "docs/status/p1-pkg01-public-package-boundary-contract.md",
       "title": "P1-PKG01 Public Package Boundary Contract",
       "status": "canonical",
