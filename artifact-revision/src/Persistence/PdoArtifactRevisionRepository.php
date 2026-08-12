@@ -67,13 +67,14 @@ INSERT INTO pa_artifact (
   created_at, updated_at
 ) VALUES (
   :tenant_id, :artifact_type, :artifact_key, 1, 1, NULL,
-  :member_id, :member_id, :created_at, :updated_at
+  :created_by_member_id, :updated_by_member_id, :created_at, :updated_at
 )
 SQL, [
                 'tenant_id' => $tenantId,
                 'artifact_type' => $artifactType,
                 'artifact_key' => $artifactKey,
-                'member_id' => $memberId,
+                'created_by_member_id' => $memberId,
+                'updated_by_member_id' => $memberId,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);

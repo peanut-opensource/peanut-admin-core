@@ -71,7 +71,6 @@ CREATE TABLE IF NOT EXISTS `pa_artifact_revision` (
   CONSTRAINT `fk_artifact_revision_finalized_member` FOREIGN KEY (`tenant_id`, `finalized_by_member_id`) REFERENCES `pa_tenant_member` (`tenant_id`, `id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_artifact_revision_key` CHECK (`revision_key` REGEXP '^revision_[0-9a-f]{32}$'),
   CONSTRAINT `chk_artifact_revision_number` CHECK (`revision_number` >= 1),
-  CONSTRAINT `chk_artifact_revision_parent` CHECK (`parent_revision_id` IS NULL OR `parent_revision_id` <> `id`),
   CONSTRAINT `chk_artifact_revision_state` CHECK (`state` IN ('pending', 'finalized')),
   CONSTRAINT `chk_artifact_revision_revision` CHECK (`revision` >= 1),
   CONSTRAINT `chk_artifact_revision_schema_key` CHECK (`payload_schema_key` IS NULL OR `payload_schema_key` REGEXP '^[a-z][a-z0-9]*([.-][a-z0-9]+)*$'),

@@ -6,6 +6,7 @@ namespace PeanutAdmin\ArtifactRevision\Tests\Integration\Persistence;
 
 use PDO;
 use PeanutAdmin\ArtifactRevision\Database\Schema;
+use PeanutAdmin\ArtifactRevision\Model\ArtifactRevision;
 use PeanutAdmin\ArtifactRevision\Persistence\PdoArtifactRevisionRepository;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -113,7 +114,10 @@ final class PdoArtifactRevisionRepositoryTest extends TestCase
             $this->now(),
         );
         self::assertTrue($first->isFinalized());
-        self::assertSame(hash('sha256', $first->canonicalEnvelopeJson ?? ''), $first->canonicalEnvelopeSha256);
+        self::assertSame(
+            hash('sha256', ArtifactRevision::encodeEnvelope($first->expectedEnvelope())),
+            $first->canonicalEnvelopeSha256,
+        );
 
         $artifact = $repository->lockOrCreateArtifact(
             $tenantId,
@@ -159,6 +163,56 @@ final class PdoArtifactRevisionRepositoryTest extends TestCase
             $second->id,
             $repository->artifact($tenantId, 'document.record', 'record-1')?->latestFinalizedRevisionId,
         );
+
+        $artifactBeforeRejectedSelfParent = $repository->artifact(
+            $tenantId,
+            'document.record',
+            'record-1',
+        );
+        self::assertNotNull($artifactBeforeRejectedSelfParent);
+        $revisionCountBeforeRejectedSelfParent = (int) $this->pdo
+            ->query('SELECT COUNT(*) FROM pa_artifact_revision')
+            ->fetchColumn();
+        $selfParentCandidate = (int) $this->pdo->query(<<<'SQL'
+SELECT AUTO_INCREMENT
+FROM information_schema.tables
+WHERE table_schema = DATABASE() AND table_name = 'pa_artifact_revision'
+SQL)->fetchColumn();
+
+        $this->assertRuntimeFailure(fn() => $repository->createPendingRevision(
+            $tenantId,
+            $artifact->id,
+            'revision_' . str_repeat('f', 32),
+            $selfParentCandidate,
+            $artifactBeforeRejectedSelfParent->revision,
+            11,
+            $this->now(),
+        ));
+
+        $artifactAfterRejectedSelfParent = $repository->artifact(
+            $tenantId,
+            'document.record',
+            'record-1',
+        );
+        self::assertNotNull($artifactAfterRejectedSelfParent);
+        self::assertSame(
+            $revisionCountBeforeRejectedSelfParent,
+            (int) $this->pdo->query('SELECT COUNT(*) FROM pa_artifact_revision')->fetchColumn(),
+        );
+        self::assertSame(
+            $artifactBeforeRejectedSelfParent->revision,
+            $artifactAfterRejectedSelfParent->revision,
+        );
+        self::assertSame(
+            $artifactBeforeRejectedSelfParent->nextRevisionNumber,
+            $artifactAfterRejectedSelfParent->nextRevisionNumber,
+        );
+        self::assertNull($repository->revision(
+            $tenantId,
+            'document.record',
+            'record-1',
+            'revision_' . str_repeat('f', 32),
+        ));
     }
 
     public function testOptimisticAndImmutableGuardsRejectStaleWrites(): void
