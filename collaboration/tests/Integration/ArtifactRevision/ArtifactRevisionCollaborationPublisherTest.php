@@ -122,6 +122,7 @@ final class ArtifactRevisionCollaborationPublisherTest extends TestCase
         self::assertSame($base->revisionKey, $revision->parentRevisionKey);
         self::assertSame($submission->payloadRef, $revision->payloadRef);
         self::assertSame($result['revision_sha256'], $revision->canonicalEnvelopeSha256);
+        self::assertSame(2, (int) $this->pdo->query('SELECT COUNT(*) FROM pa_artifact_revision')->fetchColumn());
     }
 
     public function testCallerTransactionRollbackRemovesRevisionAuditAndIdempotencyTogether(): void

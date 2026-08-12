@@ -75,12 +75,28 @@ final readonly class ArtifactRevisionCollaborationPublisher implements Collabora
     ): array {
         $digest = hash('sha256', $idempotencyKey);
         try {
+            $artifact = $this->repository->artifact(
+                $context->tenantContext->tenantId,
+                $artifactType,
+                $artifactKey,
+                true,
+            ) ?? throw CollaborationException::notFound();
+            $parent = $this->repository->revision(
+                $context->tenantContext->tenantId,
+                $artifactType,
+                $artifactKey,
+                $parentRevisionKey,
+                true,
+            ) ?? throw CollaborationException::notFound();
+            if (!$parent->isFinalized() || $artifact->latestFinalizedRevisionId !== $parent->id) {
+                throw CollaborationException::conflict();
+            }
             $created = $this->service->createRevision(
                 $context,
                 $artifactType,
                 $artifactKey,
                 $parentRevisionKey,
-                null,
+                $artifact->revision,
                 'collaboration-create-' . $digest,
             );
             $finalized = $this->service->finalizeRevision(
