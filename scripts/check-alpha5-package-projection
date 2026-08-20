@@ -48,7 +48,7 @@ $expected = [
     "PeanutAdmin\\Workflow\\" => "workflow/src/",
 ];
 if (($manifest["name"] ?? null) !== "peanut-admin/core"
-    || ($manifest["version"] ?? null) !== "0.1.0-alpha.5"
+    || ($manifest["version"] ?? null) !== "0.1.0-alpha.6"
     || ($manifest["license"] ?? null) !== "Apache-2.0"
     || ($manifest["autoload"]["psr-4"] ?? null) !== $expected
     || isset($manifest["replace"])
@@ -93,7 +93,7 @@ $manifest = [
     ]],
     "require" => [
         "php" => "^8.3",
-        "peanut-admin/core" => "0.1.0-alpha.5",
+        "peanut-admin/core" => "0.1.0-alpha.6",
     ],
     "minimum-stability" => "stable",
     "prefer-stable" => true,
