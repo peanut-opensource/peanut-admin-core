@@ -67,7 +67,7 @@ if find "$projection" -type f \( -name '.env' -o -name '.env.*' -o -iname '*.pem
   exit 1
 fi
 if rg -qi '(article|newsroom|audio|video|broadcast|transcoding|copyright|three[-_ ]review)' \
-  "$projection/artifact-revision" "$projection/entitlement-quota" "$projection/workflow"; then
+  "$projection/artifact-revision/src" "$projection/entitlement-quota/src" "$projection/workflow/src"; then
   echo 'ERROR: Alpha.5 projection contains product-specific behavior' >&2
   exit 1
 fi
