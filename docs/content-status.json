@@ -714,6 +714,13 @@
       "status": "canonical",
       "owner": "Peanut Admin maintainers",
       "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg12-application-infrastructure-extraction-contract.md",
+      "title": "P1-PKG12 Application Infrastructure Extraction Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
     }
   ]
 }
