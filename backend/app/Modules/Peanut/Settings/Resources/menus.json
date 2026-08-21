@@ -1,0 +1,16 @@
+[
+  {
+    "key": "peanut.settings.page",
+    "scope": "tenant",
+    "parent_key": null,
+    "type": "page",
+    "name": "Settings",
+    "route_name": "peanut.settings.list",
+    "route_path": "/app/settings",
+    "component_key": "peanut.settings.page",
+    "required_permission": "peanut.settings.read",
+    "icon": "Settings",
+    "sort_order": 850,
+    "client_keys": ["admin-web"]
+  }
+]

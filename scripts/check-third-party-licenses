@@ -1,0 +1,151 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$root = dirname(__DIR__);
+chdir($root);
+$write = ($argv[1] ?? null) === '--write';
+if (isset($argv[1]) && !$write) {
+    fwrite(STDERR, "ERROR: usage: scripts/check-third-party-licenses [--write]\n");
+    exit(1);
+}
+
+/** @return array<string, mixed> */
+function commandJson(array $command): array
+{
+    $pipes = [];
+    $process = proc_open($command, [
+        0 => ['file', '/dev/null', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ], $pipes);
+    if (!is_resource($process)) {
+        throw new RuntimeException('Cannot start license inventory command.');
+    }
+    $stdout = stream_get_contents($pipes[1]);
+    $stderr = stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    $exitCode = proc_close($process);
+    if ($exitCode !== 0) {
+        throw new RuntimeException(trim($stderr) ?: 'License inventory command failed.');
+    }
+
+    return json_decode($stdout, true, 512, JSON_THROW_ON_ERROR);
+}
+
+try {
+    $composerLockPath = $root . '/composer.lock';
+    if (!is_file($composerLockPath)) {
+        throw new RuntimeException('composer.lock is missing.');
+    }
+    $composer = json_decode(
+        (string) file_get_contents($composerLockPath),
+        true,
+        512,
+        JSON_THROW_ON_ERROR,
+    );
+    $pnpm = commandJson(['pnpm', 'licenses', 'list', '--json']);
+} catch (Throwable $exception) {
+    fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . "\n");
+    exit(1);
+}
+
+$acceptedLicenses = [
+    '(MIT OR CC0-1.0)',
+    '0BSD',
+    'Apache-2.0',
+    'BSD-2-Clause',
+    'BSD-3-Clause',
+    'BlueOak-1.0.0',
+    'CC0-1.0',
+    'ISC',
+    'MIT',
+    'MPL-2.0',
+    'Python-2.0',
+];
+$rows = [];
+$composerPackages = array_merge(
+    is_array($composer['packages'] ?? null) ? $composer['packages'] : [],
+    is_array($composer['packages-dev'] ?? null) ? $composer['packages-dev'] : [],
+);
+foreach ($composerPackages as $package) {
+    $name = $package['name'] ?? null;
+    $version = $package['version'] ?? null;
+    if (!is_string($name) || $name === '' || !is_string($version) || $version === '') {
+        fwrite(STDERR, "ERROR: Composer lock contains a malformed package\n");
+        exit(1);
+    }
+    $licenses = $package['license'] ?? [];
+    if (!is_array($licenses) || $licenses === []) {
+        fwrite(STDERR, "ERROR: Composer dependency {$name} has no declared license\n");
+        exit(1);
+    }
+    foreach ($licenses as $license) {
+        if (!in_array($license, $acceptedLicenses, true)) {
+            fwrite(STDERR, "ERROR: Composer dependency {$name} has unreviewed license {$license}\n");
+            exit(1);
+        }
+    }
+    $rows[] = ['Composer', $name, $version, implode(' OR ', $licenses)];
+}
+foreach ($pnpm as $license => $packages) {
+    if (!in_array($license, $acceptedLicenses, true)) {
+        fwrite(STDERR, "ERROR: pnpm dependency inventory has unreviewed license {$license}\n");
+        exit(1);
+    }
+    if (!is_array($packages)) {
+        fwrite(STDERR, "ERROR: pnpm license inventory is malformed for {$license}\n");
+        exit(1);
+    }
+    foreach ($packages as $package) {
+        $name = $package['name'] ?? null;
+        $versions = $package['versions'] ?? null;
+        if (!is_string($name) || !is_array($versions) || $versions === []) {
+            fwrite(STDERR, "ERROR: pnpm license inventory contains a malformed package\n");
+            exit(1);
+        }
+        foreach ($versions as $version) {
+            $rows[] = ['pnpm', $name, (string) $version, (string) $license];
+        }
+    }
+}
+usort($rows, static fn(array $left, array $right): int => [$left[0], $left[1], $left[2]] <=> [$right[0], $right[1], $right[2]]);
+$uniqueRows = [];
+foreach ($rows as $row) {
+    $uniqueRows[implode("\0", $row)] = $row;
+}
+$rows = array_values($uniqueRows);
+
+$lines = [
+    '<!-- GENERATED FILE: run ./scripts/check-third-party-licenses --write -->',
+    '',
+    '# Third-Party License Inventory',
+    '',
+    'This inventory is generated from `composer.lock` and `pnpm-lock.yaml`. It is release evidence, not legal advice.',
+    '',
+    sprintf('Packages recorded: **%d**.', count($rows)),
+    '',
+    '| Ecosystem | Package | Version | SPDX license |',
+    '| --- | --- | --- | --- |',
+];
+foreach ($rows as [$ecosystem, $name, $version, $license]) {
+    $lines[] = sprintf('| %s | `%s` | `%s` | `%s` |', $ecosystem, $name, $version, $license);
+}
+$contents = implode("\n", $lines) . "\n";
+$path = $root . '/docs/reference/third-party-licenses.generated.md';
+if ($write) {
+    if (file_put_contents($path, $contents) === false) {
+        fwrite(STDERR, "ERROR: cannot write generated third-party license inventory\n");
+        exit(1);
+    }
+    fwrite(STDOUT, "Third-party license inventory updated.\n");
+    exit(0);
+}
+if (!is_file($path) || file_get_contents($path) !== $contents) {
+    fwrite(STDERR, "ERROR: third-party license inventory is missing or stale; run ./scripts/check-third-party-licenses --write\n");
+    exit(1);
+}
+
+fwrite(STDOUT, "Third-party license inventory: OK\n");

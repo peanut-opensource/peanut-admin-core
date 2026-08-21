@@ -1,0 +1,239 @@
+{
+  "schema_version": 2,
+  "matrix": "G-07",
+  "runners": [
+    {
+      "id": "security-phpunit",
+      "command": "./scripts/test-security",
+      "evidence_roots": [
+        "packages/php/kernel/tests/Integration/Auth",
+        "packages/php/kernel/tests/Integration/Authorization",
+        "packages/php/kernel/tests/Integration/Idempotency",
+        "packages/php/kernel/tests/Integration/Module",
+        "packages/php/kernel/tests/Integration/Schema",
+        "packages/php/kernel/tests/Unit/Api",
+        "packages/php/kernel/tests/Unit/Authorization",
+        "packages/php/kernel/tests/Unit/Context",
+        "packages/php/kernel/tests/Unit/Idempotency",
+        "packages/php/kernel/tests/Unit/Module",
+        "packages/php/data-permission/tests/Integration",
+        "packages/php/data-permission/tests/Security",
+        "packages/php/data-permission/tests/Unit",
+        "backend/tests/Architecture",
+        "backend/tests/Contract",
+        "backend/tests/Security",
+        "tests/security"
+      ],
+      "verification_files": ["scripts/test-security"],
+      "markers": ["--log-junit", "skipped", "packages/php/kernel/tests/Integration/Auth", "packages/php/data-permission/tests/Security", "backend/tests/Security", "tests/security"]
+    },
+    {
+      "id": "browser-playwright",
+      "command": "./scripts/test-browser",
+      "evidence_roots": ["frontend/tests/e2e"],
+      "verification_files": ["scripts/test-browser", "playwright.config.ts"],
+      "markers": ["pnpm exec playwright test", "frontend/tests/e2e", "full-stack.e2e.ts"]
+    },
+    {
+      "id": "web-unit",
+      "command": "./scripts/test-unit",
+      "evidence_roots": ["frontend/tests/routing.spec.ts"],
+      "verification_files": ["scripts/test-unit", "package.json"],
+      "markers": ["pnpm test:unit", "vitest run frontend/tests packages/web"]
+    }
+  ],
+  "groups": [
+    {
+      "ids": ["TEN-001", "TEN-002", "TEN-003", "TEN-004", "TEN-005"],
+      "evidence": [
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testListDetailSearchAndAggregateApplyAuthorizationInsideSql",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testCreateUpdateAndDeleteIgnoreClientTenantAndDenyOtherScopes"
+      ]
+    },
+    {
+      "ids": ["TEN-006", "TEN-007", "TEN-008"],
+      "evidence": [
+        "backend/tests/Architecture/ModuleBoundaryCheckerTest.php::testOtherModuleInternalsAndTablesFailTheBuild",
+        "packages/php/kernel/tests/Unit/Context/SystemAndAsyncContextTest.php::testSystemActorRequiresManifestOperationAndExplicitTenant"
+      ]
+    },
+    {
+      "ids": ["TEN-009", "TEN-010", "TEN-011", "TEN-012"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Schema/KernelSchemaConstraintTest.php::testIdentityAndTenantRelationshipsAreDatabaseEnforced",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testBatchAndImportAreAtomicAndDoNotTreatMultipleProjectsAsOneTarget"
+      ]
+    },
+    {
+      "ids": ["TEN-013", "TEN-014", "TEN-015", "TEN-016"],
+      "evidence": [
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testListDetailSearchAndAggregateApplyAuthorizationInsideSql",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testExportAndJobContractsRevalidateAtExecutionTime"
+      ]
+    },
+    {
+      "ids": ["TEN-017", "TEN-018", "TEN-019", "TEN-020"],
+      "evidence": [
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testTenantStatusMultiTenantAccountSentinelsAndContextTypeCannotBypass",
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testTenantAndAccountStatusInvalidateOnlyTheirSessions"
+      ]
+    },
+    {
+      "ids": ["AUTH-001", "AUTH-002", "AUTH-003"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testLoginRequiresSelectionAndDoesNotLeakUnknownAccountState",
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testFiveFailuresLockCredentialTemporarily",
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testIpWindowIsRateLimitedAcrossDifferentIdentifiers",
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testIdentifierWindowIsRateLimitedAcrossDifferentIpAddresses",
+        "frontend/tests/e2e/full-stack.e2e.ts::real tenant login reaches multi-target read and single-target write"
+      ]
+    },
+    {
+      "ids": ["AUTH-004", "AUTH-005", "AUTH-006"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testRefreshRotatesOnceAndReuseRevokesTheTokenFamily",
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testConcurrentRefreshHasOneWinnerAndOneReuseDetection"
+      ]
+    },
+    {
+      "ids": ["AUTH-007", "AUTH-008", "AUTH-009", "AUTH-010", "AUTH-011", "AUTH-012", "AUTH-013"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testStateChangesInvalidateImmediatelyButAuthorizationRevisionDoesNotLogout",
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testCredentialChangeInvalidatesExistingSessionThroughAccountRevision",
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testLogoutLogoutAllSwitchAndAudienceSeparation"
+      ]
+    },
+    {
+      "ids": ["AUTH-014"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Auth/PlatformAuthServiceIntegrationTest.php::testAudienceCannotCrossTenantAndPlatformGuards",
+        "frontend/tests/e2e/full-stack.e2e.ts::real platform login reaches the protected tenant collection"
+      ]
+    },
+    {
+      "ids": ["AUTH-015", "AUTH-016"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testSelectionCreatesHashedTokensAndFixedRefreshCookie",
+        "frontend/tests/e2e/tenant-workspace.e2e.ts::localStorage"
+      ]
+    },
+    {
+      "ids": ["AUTH-017", "AUTH-018", "AUTH-019"],
+      "evidence": [
+        "packages/php/kernel/tests/Unit/Context/SystemAndAsyncContextTest.php::testSystemActorRequiresManifestOperationAndExplicitTenant",
+        "packages/php/kernel/tests/Unit/Context/SystemAndAsyncContextTest.php::testSignedEnvelopeIsRevalidatedAndCannotTrustTamperedTenantOrTargets"
+      ]
+    },
+    {
+      "ids": ["AUTH-020"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php::testAccessAndRefreshExpireAtTheExactServerBoundary"
+      ]
+    },
+    {
+      "ids": ["AUTH-021", "AUTH-022", "AUTH-023"],
+      "evidence": [
+        "packages/php/kernel/tests/Unit/Context/SystemAndAsyncContextTest.php::testOperationContextsDoNotMutateSessionTargetState",
+        "packages/php/kernel/tests/Unit/Context/SystemAndAsyncContextTest.php::testSignedEnvelopeIsRevalidatedAndCannotTrustTamperedTenantOrTargets"
+      ]
+    },
+    {
+      "ids": ["PERM-001", "PERM-002", "PERM-003"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Authorization/FunctionalAuthorizationTest.php::testTenantRbacRequiresAnActiveRoleAndAvailableModule",
+        "packages/php/data-permission/tests/Integration/Engine/DataPermissionEngineTest.php::testNoPolicyUnknownOperationAndMissingFunctionalPermissionFailClosed"
+      ]
+    },
+    {
+      "ids": ["PERM-004", "PERM-005", "PERM-006", "PERM-007", "PERM-008", "PERM-009", "PERM-010", "PERM-011", "PERM-012", "PERM-013"],
+      "evidence": [
+        "packages/php/data-permission/tests/Integration/Engine/DataPermissionEngineTest.php::testAllSixCoreScopesCompileIntoTheDatabaseQuery",
+        "packages/php/data-permission/tests/Integration/Engine/DataPermissionEngineTest.php::testConditionsUseAndWhileGroupsAndRolesUseOr",
+        "packages/php/data-permission/tests/Integration/Engine/DataPermissionEngineTest.php::testPolicyRevisionMakesCachedCompiledScopeUnreachable"
+      ]
+    },
+    {
+      "ids": ["PERM-014", "PERM-015", "PERM-016", "PERM-017", "PERM-018", "PERM-019", "PERM-020", "PERM-021", "PERM-022", "PERM-023"],
+      "evidence": [
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testListDetailSearchAndAggregateApplyAuthorizationInsideSql",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testExportAndJobContractsRevalidateAtExecutionTime",
+        "packages/php/data-permission/tests/Integration/Engine/DataPermissionEngineTest.php::testTenFiveHundredAndFiveThousandTargetsRemainSqlBounded"
+      ]
+    },
+    {
+      "ids": ["PERM-024", "PERM-025", "PERM-026", "PERM-027", "PERM-028", "PERM-029", "PERM-030", "PERM-031", "PERM-032", "PERM-033", "PERM-034", "PERM-035"],
+      "evidence": [
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testTypedTargetsCardinalityBulkAndPolicyPublishFailClosed",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testTargetCandidatesArePagedAndPolicyConfigurationNeedsDelegationPermission",
+        "packages/php/data-permission/tests/Integration/Engine/DataPermissionEngineTest.php::testExplicitTargetsValidateCardinalityTypeTenantAndPolicy",
+        "frontend/tests/e2e/full-stack.e2e.ts::real tenant login reaches multi-target read and single-target write"
+      ]
+    },
+    {
+      "ids": ["PERM-036", "PERM-037", "PERM-038", "PERM-039"],
+      "evidence": [
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testSharedMasterVisibilityUsageAndMissingProviderAreFailClosed",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testTargetCandidatesArePagedAndPolicyConfigurationNeedsDelegationPermission",
+        "frontend/tests/e2e/full-stack.e2e.ts::real tenant login reaches multi-target read and single-target write"
+      ]
+    },
+    {
+      "ids": ["SYS-001", "SYS-002", "SYS-003", "SYS-004", "SYS-005", "SYS-006"],
+      "evidence": [
+        "packages/php/kernel/tests/Unit/Module/ModuleGuardTest.php::testGuardFailsClosedBeforeBusinessAuthorization",
+        "backend/tests/Architecture/ModuleBoundaryCheckerTest.php::testOtherModuleInternalsAndTablesFailTheBuild",
+        "packages/php/kernel/tests/Unit/Module/ModuleRuntimeCoverageTest.php::testEveryG04AndP0SystemScenarioHasAnOwnedGate"
+      ]
+    },
+    {
+      "ids": ["SYS-007", "SYS-008", "SYS-009"],
+      "evidence": [
+        "packages/php/kernel/tests/Unit/Context/SystemAndAsyncContextTest.php::testCacheAndLockKeysSeparateAudienceTenantAndRevision"
+      ]
+    },
+    {
+      "ids": ["SYS-010", "SYS-011"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Idempotency/IdempotencyRepositoryTest.php::testTenantAndPlatformRecordsArePhysicallySeparatedAndReplaySafe"
+      ]
+    },
+    {
+      "ids": ["SYS-012", "SYS-013", "SYS-014", "SYS-015", "SYS-016", "SYS-017", "SYS-018", "SYS-019"],
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Schema/KernelSchemaConstraintTest.php::testAuditAndSessionPlanesPreserveTheirBoundaries",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testMultiTargetAuditRecordsActorBoundaryCountAndDigestWithoutRawIds",
+        "backend/tests/Contract/ProblemDetailsMiddlewareTest.php::testRequestIdAndProblemContentTypeSurviveTheMiddlewareChain"
+      ]
+    },
+    {
+      "ids": ["SYS-020", "SYS-021", "SYS-022"],
+      "evidence": [
+        "packages/php/kernel/tests/Unit/Module/ModuleRuntimeCoverageTest.php::testEveryG04AndP0SystemScenarioHasAnOwnedGate",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php::testSharedMasterVisibilityUsageAndMissingProviderAreFailClosed"
+      ]
+    },
+    {
+      "ids": ["WEB-001", "WEB-002", "WEB-006", "WEB-007", "WEB-012"],
+      "evidence": [
+        "tests/security/HttpBoundaryQualificationTest.php::testBrowserAndHttpBoundaryDefaultsAreRestrictive"
+      ]
+    },
+    {
+      "ids": ["WEB-003", "WEB-004", "WEB-005", "WEB-010"],
+      "evidence": [
+        "frontend/tests/e2e/tenant-workspace.e2e.ts::manual unauthorized route does not load protected collection",
+        "frontend/tests/e2e/platform-and-resilience.e2e.ts::tenant switch prevents a late old-tenant response from appearing",
+        "frontend/tests/routing.spec.ts::uses route_name instead of a backend-provided path or component",
+        "frontend/tests/e2e/full-stack.e2e.ts::real tenant login reaches multi-target read and single-target write"
+      ]
+    },
+    {
+      "ids": ["WEB-008", "WEB-009", "WEB-011"],
+      "evidence": [
+        "frontend/tests/e2e/platform-and-resilience.e2e.ts::429 and 503 remain explicit states with request correlation",
+        "backend/tests/Contract/OpenApiArtifactTest.php::testGeneratedRouteAndTypeArtifactsAreCompleteAndUnique",
+        "packages/php/kernel/tests/Unit/Api/ApiContractTest.php::testTypedTargetInputsKeepTypesAndCardinalityExplicit"
+      ]
+    }
+  ]
+}

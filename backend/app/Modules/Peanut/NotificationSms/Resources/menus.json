@@ -1,0 +1,3 @@
+[
+  {"key":"peanut.notification-sms.page","scope":"tenant","parent_key":null,"type":"page","name":"Notifications","route_name":"peanut.notification-sms.inbox","route_path":"/app/notifications","component_key":"peanut.notification-sms.page","required_permission":"peanut.notification-sms.read","icon":"Bell","sort_order":840,"client_keys":["admin-web"]}
+]

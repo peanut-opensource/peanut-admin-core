@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-10T19:50:00+08:00",
+  "task": "ADMIN-WEB-ALPHA4-UNIAPP-PEER-CANDIDATE",
+  "prerequisite_commit": "2f07186a70b3351605cb87c0f5c3f0d7013aa6be",
+  "candidate_commit": "the commit containing this evidence",
+  "slice_status": "admin-web-alpha4-uniapp-peer-candidate",
+  "third_party_dependency_change": false,
+  "public_runtime_packages": [
+    "peanut-admin/core@0.1.0-alpha.2",
+    "@peanut-admin/admin@0.1.0-alpha.4"
+  ],
+  "toolchain": {
+    "php": "8.3.24",
+    "composer": "2.10.2",
+    "node": "24.13.0",
+    "pnpm": "11.13.0"
+  },
+  "locks": {
+    "composer.lock": {
+      "sha256": "65efd044c5277b09c3cb73048d14494e126dc33d3fdd3ddc8ff88444ba6d65f0",
+      "delta": "peanut-admin/core first-party version and path reference only"
+    },
+    "pnpm-lock.yaml": {
+      "sha256": "1503913654c27a53b7eb59360e93c54504bf7a9d4ccbf884af7f37e3895716f1",
+      "delta": "@peanut-admin/admin workspace specifier and nanoid security override"
+    },
+    "starter/backend/composer.lock": {
+      "sha256": "9667edf7b9a6a0b5d151f5697919cee34fc198cf17697860089fe423af63a923",
+      "delta": "peanut-admin/core first-party version and path reference only"
+    },
+    "starter/pnpm-lock.yaml": {
+      "sha256": "28aa78a8ca78119705cbe8aebcfc07ef610154ccee6e29bf37fe543ece10d42c",
+      "delta": "@peanut-admin/admin workspace specifier updated for alpha.6"
+    }
+  },
+  "verification": {
+    "manifest_lock_consistency": "passed: ./scripts/check-workspace",
+    "fixed_candidate_qualification": "pending separate fixed-commit plan",
+    "publication": "not authorized"
+  },
+  "notes": [
+    "No third-party version or resolution changed in this candidate; the Admin Web Vue peer range is relaxed from ^3.5.39 to ^3.4.21, Element Plus and Pinia become optional host peers, and the unused Vue Router dependency leaves the public package while remaining in the reference Host and starter.",
+    "Historical P1-PKG01 and P1-PKG02 lock evidence remains unchanged.",
+    "This evidence does not publish a package, create a tag or Release, or approve downstream consumption."
+  ]
+}

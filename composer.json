@@ -1,44 +1,62 @@
 {
-  "name": "peanut-admin/core",
-  "description": "Peanut Admin reusable administration runtime packages",
-  "type": "library",
+  "name": "peanut-admin/peanut-admin",
+  "description": "Peanut Admin modular multi-tenant administration foundation",
+  "type": "project",
   "license": "Apache-2.0",
-  "version": "0.1.0-alpha.2",
+  "repositories": [
+    {
+      "type": "path",
+      "url": "packages/php",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
   "require": {
-    "ext-fileinfo": "*",
-    "ext-json": "*",
-    "ext-openssl": "*",
-    "ext-pdo": "*",
-    "ext-sodium": "*",
+    "php": "^8.3",
     "opis/json-schema": "^2.6.0",
-    "php": "^8.3"
+    "peanut-admin/core": "0.1.0-alpha.2",
+    "topthink/framework": "^8.1.4",
+    "topthink/think-migration": "^3.1.1",
+    "topthink/think-orm": "^4.0.51"
   },
   "require-dev": {
+    "deptrac/deptrac": "^4.6.2",
+    "friendsofphp/php-cs-fixer": "^3.95.15",
+    "phpstan/phpstan": "^2.2.5",
     "phpunit/phpunit": "^12.5.31"
   },
   "autoload": {
     "psr-4": {
-      "PeanutAdmin\\DataPermission\\": "data-permission/src/",
-      "PeanutAdmin\\FileMedia\\": "file-media/src/",
-      "PeanutAdmin\\ImportExport\\": "import-export/src/",
-      "PeanutAdmin\\IntegrationSecurity\\": "integration-security/src/",
-      "PeanutAdmin\\Kernel\\": "kernel/src/",
-      "PeanutAdmin\\NotificationSms\\": "notification-sms/src/",
-      "PeanutAdmin\\OpsConsole\\": "ops-console/src/",
-      "PeanutAdmin\\ReferenceCodes\\": "reference-codes/src/",
-      "PeanutAdmin\\Settings\\": "settings/src/",
-      "PeanutAdmin\\TaskJob\\": "task-job/src/"
+      "PeanutAdmin\\App\\": "backend/app/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "PeanutAdmin\\DataPermission\\Tests\\": "data-permission/tests/",
-      "PeanutAdmin\\FileMedia\\Tests\\": "file-media/tests/",
-      "PeanutAdmin\\Kernel\\Tests\\": "kernel/tests/",
-      "PeanutAdmin\\ReferenceCodes\\Tests\\": "reference-codes/tests/",
-      "PeanutAdmin\\Settings\\Tests\\": "settings/tests/",
-      "PeanutAdmin\\Testing\\": "testing/src/",
-      "PeanutAdmin\\Testing\\Tests\\": "testing/tests/"
+      "PeanutAdmin\\App\\Tests\\": "backend/tests/",
+      "PeanutAdmin\\ArtifactRevision\\": "packages/php/artifact-revision/src/",
+      "PeanutAdmin\\ArtifactRevision\\Tests\\": "packages/php/artifact-revision/tests/",
+      "PeanutAdmin\\DataPermission\\Tests\\": "packages/php/data-permission/tests/",
+      "PeanutAdmin\\EntitlementQuota\\": "packages/php/entitlement-quota/src/",
+      "PeanutAdmin\\EntitlementQuota\\Tests\\": "packages/php/entitlement-quota/tests/",
+      "PeanutAdmin\\FileMedia\\Tests\\": "packages/php/file-media/tests/",
+      "PeanutAdmin\\Kernel\\Tests\\": "packages/php/kernel/tests/",
+      "PeanutAdmin\\ReferenceCodes\\Tests\\": "packages/php/reference-codes/tests/",
+      "PeanutAdmin\\Settings\\Tests\\": "packages/php/settings/tests/",
+      "PeanutAdmin\\Testing\\": "packages/php/testing/src/",
+      "PeanutAdmin\\Testing\\Tests\\": "packages/php/testing/tests/",
+      "PeanutAdmin\\Workflow\\": "packages/php/workflow/src/",
+      "PeanutAdmin\\Workflow\\Tests\\": "packages/php/workflow/tests/"
     }
-  }
+  },
+  "config": {
+    "allow-plugins": {},
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "8.3.24"
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }

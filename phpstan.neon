@@ -1,0 +1,15 @@
+parameters:
+    level: 8
+    paths:
+        - backend/app
+        - backend/tests
+        - packages/php/kernel/src
+        - packages/php/kernel/tests
+        - packages/php/data-permission/src
+        - packages/php/data-permission/tests
+        - packages/php/testing/src
+        - packages/php/testing/tests
+        - tests/security
+        - tests/performance
+        - tests/supply-chain
+    tmpDir: .cache/phpstan

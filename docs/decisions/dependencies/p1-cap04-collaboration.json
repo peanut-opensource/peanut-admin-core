@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "decision_id": "P1-CAP04-DEPENDENCIES",
+  "status": "accepted",
+  "reviewed_at": "2026-08-12",
+  "prerequisite_commit": "c27e03006135adce56627b438a2ac82a4fef5d95",
+  "prerequisite_tree": "f253b76ca09f056b60e2abd49a43251ba38383ef",
+  "public_package": "@peanut-admin/admin",
+  "dependencies": [
+    {
+      "name": "yjs",
+      "exact_version": "13.6.32",
+      "constraint": "13.6.32",
+      "license": "MIT",
+      "purpose": "CRDT document and update engine behind the public CollaborationEngine port",
+      "alternatives": ["@automerge/automerge@3.4.0"],
+      "adapter": "@peanut-admin/admin collaboration engine; PHP persists opaque bounded envelopes",
+      "exit_plan": "Freeze sessions, persist final revisions and migrate versioned opaque envelopes behind the same engine port",
+      "security_status": "Official metadata, security policy and GitHub advisories reviewed 2026-08-12; lock audit remains mandatory",
+      "official_sources": [
+        "https://www.npmjs.com/package/yjs",
+        "https://github.com/yjs/yjs",
+        "https://github.com/yjs/yjs/security/policy",
+        "https://docs.yjs.dev/"
+      ]
+    },
+    {
+      "name": "y-websocket",
+      "exact_version": "3.1.0",
+      "constraint": "3.1.0",
+      "license": "MIT",
+      "purpose": "UI-neutral Yjs WebSocket client provider and protocol adapter",
+      "alternatives": ["custom transport adapter", "@automerge/automerge-repo@2.6.0-alpha.3"],
+      "adapter": "@peanut-admin/admin transport port; Host owns authenticated WSS endpoint and deployment",
+      "exit_plan": "Replace only the transport adapter while retaining collaboration session and engine contracts",
+      "security_status": "Official metadata and repository activity reviewed 2026-08-12; lock audit remains mandatory",
+      "official_sources": [
+        "https://www.npmjs.com/package/y-websocket",
+        "https://github.com/yjs/y-websocket",
+        "https://docs.yjs.dev/ecosystem/connection-provider/y-websocket"
+      ]
+    }
+  ],
+  "host_reference": {
+    "name": "@hocuspocus/server",
+    "exact_reviewed_version": "4.6.0",
+    "license": "MIT",
+    "dependency": false,
+    "reason": "Reviewed production Host sidecar reference; excluded from Core packages and installed only by an independently owned Host",
+    "official_sources": [
+      "https://www.npmjs.com/package/@hocuspocus/server",
+      "https://tiptap.dev/docs/hocuspocus/server/configuration"
+    ]
+  },
+  "rejected": [
+    {
+      "name": "@y/websocket-server",
+      "reason": "Official project describes it as development/prototype infrastructure rather than the production reference"
+    },
+    {
+      "name": "@automerge/automerge-repo",
+      "reviewed_version": "2.6.0-alpha.3",
+      "reason": "Required Repo transport and storage surface remained prerelease at review time"
+    },
+    {
+      "name": "y-redis",
+      "reason": "AGPL-3.0 is not accepted for the default public package and Host topology"
+    }
+  ],
+  "runtime_install_authorization": {
+    "authorized": true,
+    "scope": "Only the independently accepted CAP04 exact Runtime contract may install these exact versions",
+    "effective_after": "CAP04 contract merge"
+  },
+  "publication_authorized": false
+}

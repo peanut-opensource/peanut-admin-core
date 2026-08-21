@@ -1,0 +1,140 @@
+ResponseMeta:
+  type: object
+  additionalProperties: false
+  required: [request_id]
+  properties:
+    request_id: { type: string, minLength: 1, maxLength: 128 }
+HealthCheck:
+  type: object
+  additionalProperties: false
+  required: [key, status, critical, latency_ms]
+  properties:
+    key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 64 }
+    status: { type: string, enum: [up, down] }
+    critical: { type: boolean }
+    latency_ms: { type: number, minimum: 0, maximum: 60000 }
+OpsStatus:
+  type: object
+  additionalProperties: false
+  required: [health, version, migrations, upgrade]
+  properties:
+    health:
+      type: object
+      additionalProperties: false
+      required: [status, checks]
+      properties:
+        status: { type: string, enum: [healthy, degraded, unhealthy] }
+        checks: { type: array, maxItems: 32, items: { $ref: '#/HealthCheck' } }
+    version:
+      type: object
+      additionalProperties: false
+      required: [commit, tree, release_key, built_at]
+      properties:
+        commit: { type: string, pattern: '^[0-9a-f]{40}$' }
+        tree: { type: string, pattern: '^[0-9a-f]{40}$' }
+        release_key: { type: [string, 'null'], pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 128 }
+        built_at: { type: string, format: date-time }
+    migrations:
+      type: object
+      additionalProperties: false
+      required: [applied, target, pending, inventory_digest, drift]
+      properties:
+        applied: { type: integer, minimum: 0 }
+        target: { type: integer, minimum: 0 }
+        pending: { type: integer, minimum: 0 }
+        inventory_digest: { type: string, pattern: '^[0-9a-f]{64}$' }
+        drift: { type: boolean }
+    upgrade:
+      type: object
+      additionalProperties: false
+      required: [state, code, source_commit, target_commit, repository_clean, backup_verified, source_evidence_matches]
+      properties:
+        state: { type: string, enum: [configuration_required, blocked, ready, running, succeeded, failed] }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$', maxLength: 128 }
+        source_commit: { type: [string, 'null'], pattern: '^[0-9a-f]{40}$' }
+        target_commit: { type: [string, 'null'], pattern: '^[0-9a-f]{40}$' }
+        repository_clean: { type: boolean }
+        backup_verified: { type: boolean }
+        source_evidence_matches: { type: boolean }
+OpsTask:
+  type: object
+  additionalProperties: false
+  required: [task_key, task_type, status, attempt_count, max_attempts, revision, last_error_code, available_at, created_at, updated_at, completed_at]
+  properties:
+    task_key: { type: string, pattern: '^job_[0-9a-f]{32}$' }
+    task_type: { type: string, enum: [ops.backup.create, ops.restore.verify] }
+    status: { type: string, enum: [queued, running, succeeded, dead, cancelled] }
+    attempt_count: { type: integer, minimum: 0, maximum: 10 }
+    max_attempts: { type: integer, minimum: 1, maximum: 10 }
+    revision: { type: integer, minimum: 1 }
+    last_error_code: { type: [string, 'null'], pattern: '^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$', maxLength: 128 }
+    available_at: { type: string, format: date-time }
+    created_at: { type: string, format: date-time }
+    updated_at: { type: string, format: date-time }
+    completed_at: { type: [string, 'null'], format: date-time }
+MaintenanceWindow:
+  type: object
+  additionalProperties: false
+  required: [maintenance_key, state, reason_key, starts_at, ends_at, revision]
+  properties:
+    maintenance_key: { type: string, pattern: '^maintenance_[0-9a-f]{32}$' }
+    state: { type: string, enum: [scheduled, active, closed] }
+    reason_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 64 }
+    starts_at: { type: string, format: date-time }
+    ends_at: { type: string, format: date-time }
+    revision: { type: integer, minimum: 1 }
+RuntimeLogEntry:
+  type: object
+  additionalProperties: false
+  required: [event_key, severity, component_key, message, occurred_at, request_id, occurrences]
+  properties:
+    event_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 128 }
+    severity: { type: string, enum: [info, warning, error, critical] }
+    component_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 128 }
+    message: { type: string, minLength: 1, maxLength: 240 }
+    occurred_at: { type: string, format: date-time }
+    request_id: { type: [string, 'null'], pattern: '^[A-Za-z0-9._-]{1,128}$' }
+    occurrences: { type: integer, minimum: 1, maximum: 1000000 }
+RuntimeLogPage:
+  type: object
+  additionalProperties: false
+  required: [items, next_cursor]
+  properties:
+    items: { type: array, maxItems: 100, items: { $ref: '#/RuntimeLogEntry' } }
+    next_cursor: { type: [string, 'null'], pattern: '^cursor_[A-Za-z0-9_-]{8,200}$' }
+ObjectData:
+  oneOf:
+    - { $ref: '#/OpsStatus' }
+    - { $ref: '#/OpsTask' }
+    - { $ref: '#/MaintenanceWindow' }
+    - { $ref: '#/RuntimeLogPage' }
+    - { type: 'null' }
+ObjectResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/ObjectData' }
+    meta: { $ref: '#/ResponseMeta' }
+BackupRequest:
+  type: object
+  additionalProperties: false
+  required: [provider_key]
+  properties:
+    provider_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 128 }
+RestoreRequest:
+  type: object
+  additionalProperties: false
+  required: [provider_key, backup_reference_key, target_key]
+  properties:
+    provider_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 128 }
+    backup_reference_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 128 }
+    target_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 128 }
+MaintenanceRequest:
+  type: object
+  additionalProperties: false
+  required: [reason_key, starts_at, ends_at]
+  properties:
+    reason_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$', maxLength: 64 }
+    starts_at: { type: string, format: date-time }
+    ends_at: { type: string, format: date-time }

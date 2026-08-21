@@ -1,0 +1,30 @@
+[
+  {
+    "key": "example.work-item.list",
+    "scope": "tenant",
+    "parent_key": null,
+    "type": "page",
+    "name": "Example Work Items",
+    "route_name": "example-work-item-list",
+    "route_path": "/app/examples/work-items",
+    "component_key": "example.work-item.list",
+    "required_permission": "example.work-item.read",
+    "icon": "ListTodo",
+    "sort_order": 120,
+    "client_keys": ["admin-web"]
+  },
+  {
+    "key": "example.work-item.policy",
+    "scope": "tenant",
+    "parent_key": null,
+    "type": "page",
+    "name": "Example View Policies",
+    "route_name": "example-work-item-policy",
+    "route_path": "/app/examples/work-item-policies",
+    "component_key": "example.work-item.policy",
+    "required_permission": "example.work-item.policy-publish",
+    "icon": "ShieldCheck",
+    "sort_order": 121,
+    "client_keys": ["admin-web"]
+  }
+]

@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+export PEANUT_BROWSER_BACKEND_PORT="${PEANUT_BROWSER_BACKEND_PORT:-4180}"
+export PEANUT_BROWSER_FRONTEND_PORT="${PEANUT_BROWSER_FRONTEND_PORT:-4173}"
+for required_port in PEANUT_BROWSER_BACKEND_PORT PEANUT_BROWSER_FRONTEND_PORT; do
+  value="${!required_port}"
+  if [[ ! "$value" =~ ^[0-9]+$ ]] || (( 10#$value < 1 || 10#$value > 65535 )); then
+    echo "ERROR: $required_port must be an integer between 1 and 65535" >&2
+    exit 1
+  fi
+done
+
+full_stack_test='frontend/tests/e2e/full-stack.e2e.ts'
+full_stack_fixture='frontend/tests/fixtures/full-stack.ts'
+if rg -n 'page\.route|context\.route|routeFromHAR|installApiFixture' "$full_stack_test" "$full_stack_fixture"; then
+  echo 'ERROR: full-stack browser evidence must not intercept API requests' >&2
+  exit 1
+fi
+if rg -n 'test\.(skip|fixme)\s*\(' frontend/tests/e2e; then
+  echo 'ERROR: P0 browser qualification cannot contain skipped or fixme tests' >&2
+  exit 1
+fi
+
+docker compose up -d mysql cache
+
+for attempt in $(seq 1 60); do
+  if php -r '
+    try {
+        new PDO(
+            "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+            "root",
+            getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+        );
+    } catch (Throwable) {
+        exit(1);
+    }
+  ' 2>/dev/null; then
+    break
+  fi
+
+  if [[ "$attempt" -eq 60 ]]; then
+    echo 'ERROR: MySQL 8 did not become ready for browser tests' >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+export DB_HOST=127.0.0.1
+export DB_PORT="${MYSQL_PORT:-3306}"
+export DB_DATABASE=peanut_admin_browser_test
+export DB_USERNAME=root
+export DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}"
+export AUTH_IDENTIFIER_HMAC_KEY="$(php -r 'echo bin2hex(random_bytes(32));')"
+export PEANUT_BROWSER_PASSWORD="$(php -r 'echo bin2hex(random_bytes(24));')"
+export PEANUT_SETTINGS_ACTIVE_SECRET_KEY_ID=browser
+export PEANUT_SETTINGS_SECRET_KEYS="$(php -r 'echo json_encode(["browser" => base64_encode(random_bytes(SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES))], JSON_THROW_ON_ERROR);')"
+
+cleanup() {
+  php frontend/tests/fixtures/full-stack-setup.php drop >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+php frontend/tests/fixtures/full-stack-setup.php setup
+rm -rf /tmp/peanut-admin-playwright-results
+pnpm exec playwright test "$@"

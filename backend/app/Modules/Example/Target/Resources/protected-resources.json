@@ -1,0 +1,42 @@
+[
+  {
+    "key": "example.project",
+    "name": "Project",
+    "ownership": "tenant_owned",
+    "provider": "PeanutAdmin\\App\\Modules\\Example\\Target\\Infrastructure\\Authorization\\ProjectPolicyProvider",
+    "operations": [
+      {"key": "list", "access_mode": "rule_filtered", "target_cardinality": "none", "permission_match": "all", "audit_level": "deny", "permissions": ["example.target.read"], "target_types": [], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.self", "selector_resource_key": null},
+        {"key": "core.own_department", "selector_resource_key": null},
+        {"key": "core.department_tree", "selector_resource_key": null},
+        {"key": "core.specified_departments", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"}
+      ]},
+      {"key": "select", "access_mode": "rule_filtered", "target_cardinality": "many_readable", "permission_match": "all", "audit_level": "deny", "permissions": ["example.target.read"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"}
+      ]}
+    ]
+  },
+  {
+    "key": "example.queue",
+    "name": "Queue",
+    "ownership": "tenant_owned",
+    "provider": "PeanutAdmin\\App\\Modules\\Example\\Target\\Infrastructure\\Authorization\\QueuePolicyProvider",
+    "operations": [
+      {"key": "list", "access_mode": "rule_filtered", "target_cardinality": "none", "permission_match": "all", "audit_level": "deny", "permissions": ["example.target.read"], "target_types": [], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.queue"}
+      ]},
+      {"key": "select", "access_mode": "rule_filtered", "target_cardinality": "many_readable", "permission_match": "all", "audit_level": "deny", "permissions": ["example.target.read"], "target_types": [
+        {"target_resource_key": "example.queue", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.queue"}
+      ]}
+    ]
+  }
+]

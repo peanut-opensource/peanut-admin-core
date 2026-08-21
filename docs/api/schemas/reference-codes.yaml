@@ -1,0 +1,167 @@
+MillisecondDateTime:
+  type: string
+  format: date-time
+  pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.(?:\d0{0,5}|\d{2}0{0,4}|\d{3}0{0,3}))?(?:Z|[+-]\d{2}:\d{2})$'
+
+ModuleKey:
+  type: string
+  minLength: 3
+  maxLength: 96
+  pattern: '^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*$'
+
+LocalKey:
+  type: string
+  minLength: 1
+  maxLength: 64
+  pattern: '^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$'
+
+StrongReferenceCodeEtag:
+  type: string
+  pattern: '^"rev-[1-9][0-9]*"$'
+
+ReferenceCodeMetadataScalar:
+  oneOf:
+    - { type: 'null' }
+    - { type: boolean }
+    - { type: number }
+    - { type: string, maxLength: 500 }
+
+ReferenceCodeMetadata:
+  type: object
+  maxProperties: 32
+  propertyNames:
+    maxLength: 64
+    pattern: '^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$'
+  additionalProperties: { $ref: '#/ReferenceCodeMetadataScalar' }
+
+ReferenceCodeSetSummary:
+  type: object
+  additionalProperties: false
+  required: [module_key, set_key, name, description, definition_revision]
+  properties:
+    module_key: { $ref: '#/ModuleKey' }
+    set_key: { $ref: '#/LocalKey' }
+    name: { type: string, minLength: 1, maxLength: 160 }
+    description: { type: string, minLength: 1, maxLength: 500 }
+    definition_revision: { type: integer, minimum: 1 }
+
+ReferenceCodeEffectiveVersion:
+  type: object
+  additionalProperties: false
+  required: [revision, label, metadata, status, sort_order, effective_at, expires_at]
+  properties:
+    revision: { type: integer, minimum: 1 }
+    label: { type: string, minLength: 1, maxLength: 160 }
+    metadata: { $ref: '#/ReferenceCodeMetadata' }
+    status: { enum: [active, inactive] }
+    sort_order: { type: integer, minimum: -1000000, maximum: 1000000 }
+    effective_at: { $ref: '#/MillisecondDateTime' }
+    expires_at:
+      anyOf:
+        - { $ref: '#/MillisecondDateTime' }
+        - { type: 'null' }
+
+ReferenceCodeEntry:
+  type: object
+  additionalProperties: false
+  required:
+    - module_key
+    - set_key
+    - code
+    - lifecycle
+    - revision
+    - etag
+    - effective
+    - created_at
+    - updated_at
+    - retired_at
+  properties:
+    module_key: { $ref: '#/ModuleKey' }
+    set_key: { $ref: '#/LocalKey' }
+    code: { $ref: '#/LocalKey' }
+    lifecycle: { enum: [active, retired] }
+    revision: { type: integer, minimum: 1 }
+    etag: { $ref: '#/StrongReferenceCodeEtag' }
+    effective:
+      oneOf:
+        - { $ref: '#/ReferenceCodeEffectiveVersion' }
+        - { type: 'null' }
+    created_at: { $ref: '#/MillisecondDateTime' }
+    updated_at: { $ref: '#/MillisecondDateTime' }
+    retired_at:
+      anyOf:
+        - { $ref: '#/MillisecondDateTime' }
+        - { type: 'null' }
+
+ReferenceCodeCreateRequest:
+  type: object
+  additionalProperties: false
+  required: [code, label, metadata, status, sort_order, effective_at, expires_at]
+  properties:
+    code: { $ref: '#/LocalKey' }
+    label: { type: string, minLength: 1, maxLength: 160 }
+    metadata: { $ref: '#/ReferenceCodeMetadata' }
+    status: { enum: [active, inactive] }
+    sort_order: { type: integer, minimum: -1000000, maximum: 1000000 }
+    effective_at: { $ref: '#/MillisecondDateTime' }
+    expires_at:
+      anyOf:
+        - { $ref: '#/MillisecondDateTime' }
+        - { type: 'null' }
+
+ReferenceCodeReplaceRequest:
+  type: object
+  additionalProperties: false
+  required: [label, metadata, status, sort_order, effective_at, expires_at]
+  properties:
+    label: { type: string, minLength: 1, maxLength: 160 }
+    metadata: { $ref: '#/ReferenceCodeMetadata' }
+    status: { enum: [active, inactive] }
+    sort_order: { type: integer, minimum: -1000000, maximum: 1000000 }
+    effective_at: { $ref: '#/MillisecondDateTime' }
+    expires_at:
+      anyOf:
+        - { $ref: '#/MillisecondDateTime' }
+        - { type: 'null' }
+
+ReferenceCodeSetListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/ReferenceCodeSetSummary' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+ReferenceCodeEntryResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/ReferenceCodeEntry' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+ReferenceCodeListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      additionalProperties: false
+      required: [items, as_of, page, page_size, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/ReferenceCodeEntry' }
+        as_of: { $ref: '#/MillisecondDateTime' }
+        page: { type: integer, minimum: 1, maximum: 10000 }
+        page_size: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }

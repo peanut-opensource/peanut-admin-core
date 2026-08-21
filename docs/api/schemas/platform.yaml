@@ -1,0 +1,267 @@
+PlatformLoginRequest:
+  type: object
+  additionalProperties: false
+  required: [email, password]
+  properties:
+    email: { type: string, format: email }
+    password: { type: string, minLength: 1, writeOnly: true }
+
+PlatformContext:
+  type: object
+  additionalProperties: false
+  required: [audience, account_id, platform_operator_id]
+  properties:
+    audience: { type: string, const: platform }
+    account_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    platform_operator_id: { $ref: './common.yaml#/$defs/BigIntString' }
+
+PlatformContextOperator:
+  type: object
+  additionalProperties: false
+  required: [id, display_name]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    display_name: { type: string }
+
+PlatformContextView:
+  type: object
+  additionalProperties: false
+  required: [audience, account, operator, permission_keys, authorization_revision]
+  properties:
+    audience: { type: string, const: platform }
+    account: { $ref: './auth.yaml#/ContextAccount' }
+    operator: { $ref: '#/PlatformContextOperator' }
+    permission_keys: { type: array, items: { type: string } }
+    authorization_revision: { type: string, minLength: 1 }
+
+PlatformAuthentication:
+  type: object
+  additionalProperties: false
+  required: [state, access_token, token_type, expires_in, context]
+  properties:
+    state: { type: string, const: authenticated }
+    access_token: { type: string }
+    token_type: { type: string, const: Bearer }
+    expires_in: { type: integer, minimum: 1 }
+    context: { $ref: '#/PlatformContext' }
+
+PlatformAuthenticationResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/PlatformAuthentication' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+PlatformContextResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/PlatformContextView' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+PlatformOperator:
+  type: object
+  additionalProperties: false
+  required: [id, account_id, display_name, email, status, security_revision, role_keys, created_at, updated_at]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    account_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    display_name: { type: [string, 'null'] }
+    email: { type: [string, 'null'], format: email }
+    status: { enum: [active, suspended, closed] }
+    security_revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    role_keys: { type: array, items: { type: string } }
+    suspended_at: { type: [string, 'null'] }
+    closed_at: { type: [string, 'null'] }
+    created_at: { type: string }
+    updated_at: { type: string }
+
+PlatformRole:
+  type: object
+  additionalProperties: false
+  required: [id, key, name, description, is_builtin, status, revision, created_at, updated_at]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    key: { type: string }
+    name: { type: string }
+    description: { type: [string, 'null'] }
+    is_builtin: { type: boolean }
+    status: { enum: [active, disabled, archived] }
+    revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    permission_count: { type: integer, minimum: 0 }
+    permission_keys: { type: array, items: { type: string } }
+    archived_at: { type: [string, 'null'] }
+    created_at: { type: string }
+    updated_at: { type: string }
+
+PlatformOperatorResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/PlatformOperator' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+PlatformOperatorListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/PlatformOperator' } }
+    meta: { $ref: './common.yaml#/$defs/PageMeta' }
+
+PlatformRoleResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/PlatformRole' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+PlatformRoleListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/PlatformRole' } }
+    meta: { $ref: './common.yaml#/$defs/PageMeta' }
+
+PlatformAuditEvent:
+  type: object
+  additionalProperties: false
+  required: [id, event_type, action, outcome, operator_label, target_type, target_id, request_id, created_at]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    event_type: { type: string }
+    action: { type: string }
+    outcome: { type: string }
+    reason_code: { type: [string, 'null'] }
+    operator_id: { type: [string, 'null'] }
+    account_id: { type: [string, 'null'] }
+    operator_label: { type: string }
+    target_type: { type: [string, 'null'] }
+    target_id: { type: [string, 'null'] }
+    target_tenant_id: { type: [string, 'null'] }
+    request_id: { type: string }
+    operation_id: { type: [string, 'null'] }
+    metadata:
+      type: object
+      additionalProperties:
+        type: [boolean, integer, string, 'null']
+    created_at: { type: string }
+
+PlatformAuditEventDetail:
+  allOf:
+    - { $ref: '#/PlatformAuditEvent' }
+    - type: object
+      required: [metadata]
+
+PlatformAuditListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/PlatformAuditEvent' } }
+    meta: { $ref: './common.yaml#/$defs/PageMeta' }
+
+PlatformAuditEventResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/PlatformAuditEventDetail' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+CreatePlatformTenantRequest:
+  type: object
+  additionalProperties: false
+  required: [code, name]
+  properties:
+    code: { type: string, minLength: 1, maxLength: 96 }
+    name: { type: string, minLength: 1, maxLength: 160 }
+    display_name: { type: [string, 'null'], maxLength: 160 }
+    locale: { type: string }
+    timezone: { type: string }
+
+UpdatePlatformTenantRequest:
+  type: object
+  additionalProperties: false
+  required: [name, display_name, locale, timezone, change_reason]
+  properties:
+    name: { type: string, minLength: 1, maxLength: 160 }
+    display_name: { type: [string, 'null'], maxLength: 160 }
+    locale: { type: string }
+    timezone: { type: string }
+    change_reason: { type: string, minLength: 1, maxLength: 500 }
+
+ChangeReasonRequest:
+  type: object
+  additionalProperties: false
+  required: [change_reason]
+  properties:
+    change_reason: { type: string, minLength: 1, maxLength: 500 }
+
+EnableTenantModuleRequest:
+  type: object
+  additionalProperties: false
+  required: [status, source, config, change_reason]
+  properties:
+    status: { type: string, const: enabled }
+    source: { type: string, const: manual }
+    config: { type: object, additionalProperties: true }
+    effective_at: { type: [string, 'null'], format: date-time }
+    expires_at: { type: [string, 'null'], format: date-time }
+    change_reason: { type: string, minLength: 1, maxLength: 500 }
+
+CreatePlatformOperatorRequest:
+  type: object
+  additionalProperties: false
+  required: [email, display_name]
+  properties:
+    email: { type: string, format: email }
+    display_name: { type: string, minLength: 1, maxLength: 120 }
+    initial_password: { type: string, writeOnly: true }
+
+UpdatePlatformOperatorRequest:
+  type: object
+  additionalProperties: false
+  required: [display_name, change_reason]
+  properties:
+    display_name: { type: string, minLength: 1, maxLength: 120 }
+    change_reason: { type: string, minLength: 1, maxLength: 500 }
+
+ReplacePlatformOperatorRolesRequest:
+  type: object
+  additionalProperties: false
+  required: [role_ids, change_reason]
+  properties:
+    role_ids: { type: array, uniqueItems: true, items: { $ref: './common.yaml#/$defs/BigIntString' } }
+    change_reason: { type: string, minLength: 1, maxLength: 500 }
+
+CreatePlatformRoleRequest:
+  type: object
+  additionalProperties: false
+  required: [key, name]
+  properties:
+    key: { type: string, minLength: 1, maxLength: 96 }
+    name: { type: string, minLength: 1, maxLength: 120 }
+    description: { type: [string, 'null'], maxLength: 500 }
+
+UpdatePlatformRoleRequest:
+  type: object
+  additionalProperties: false
+  required: [name, change_reason]
+  properties:
+    name: { type: string, minLength: 1, maxLength: 120 }
+    description: { type: [string, 'null'], maxLength: 500 }
+    change_reason: { type: string, minLength: 1, maxLength: 500 }
+
+ReplacePlatformRolePermissionsRequest:
+  type: object
+  additionalProperties: false
+  required: [permission_keys, change_reason]
+  properties:
+    permission_keys: { type: array, uniqueItems: true, items: { type: string } }
+    change_reason: { type: string, minLength: 1, maxLength: 500 }

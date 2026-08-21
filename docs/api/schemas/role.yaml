@@ -1,0 +1,60 @@
+Role:
+  type: object
+  additionalProperties: false
+  required: [id, key, name, is_builtin, status, revision, permission_keys]
+  properties:
+    id: { type: string, pattern: '^[1-9][0-9]*$' }
+    key: { type: string, maxLength: 96 }
+    name: { type: string, maxLength: 120 }
+    description: { type: [string, 'null'], maxLength: 500 }
+    is_builtin: { type: boolean }
+    status: { type: string, enum: [active, disabled, archived] }
+    revision: { type: string, pattern: '^[1-9][0-9]*$' }
+    permission_keys:
+      type: array
+      items: { type: string }
+
+CreateRoleRequest:
+  type: object
+  additionalProperties: false
+  required: [key, name]
+  properties:
+    key: { type: string, minLength: 1, maxLength: 96 }
+    name: { type: string, minLength: 1, maxLength: 120 }
+    description: { type: [string, 'null'], maxLength: 500 }
+
+UpdateRoleRequest:
+  type: object
+  additionalProperties: false
+  required: [name]
+  properties:
+    name: { type: string, minLength: 1, maxLength: 120 }
+    description: { type: [string, 'null'], maxLength: 500 }
+
+ReplaceRolePermissionsRequest:
+  type: object
+  additionalProperties: false
+  required: [permission_keys]
+  properties:
+    permission_keys:
+      type: array
+      uniqueItems: true
+      items: { type: string }
+
+RoleResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/Role' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+RoleListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: array
+      items: { $ref: '#/Role' }
+    meta: { $ref: './common.yaml#/$defs/PageMeta' }

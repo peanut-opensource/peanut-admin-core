@@ -1,0 +1,34 @@
+TenantOwnerCandidate:
+  type: object
+  additionalProperties: false
+  required: [tenant_id, member]
+  properties:
+    tenant_id: { type: string, pattern: '^[1-9][0-9]*$' }
+    member: { $ref: './member.yaml#/Member' }
+
+CreateTenantOwnerCandidateRequest:
+  type: object
+  additionalProperties: false
+  required: [email, display_name]
+  properties:
+    email: { type: string, format: email }
+    display_name: { type: string, minLength: 1, maxLength: 120 }
+    initial_password:
+      type: string
+      writeOnly: true
+      description: Required only for a new account and never returned or audited.
+
+ActivateTenantOwnerCandidateRequest:
+  type: object
+  additionalProperties: false
+  required: [change_reason]
+  properties:
+    change_reason: { type: string, minLength: 1, maxLength: 500 }
+
+TenantOwnerCandidateResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/TenantOwnerCandidate' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }

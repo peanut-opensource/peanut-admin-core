@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-23T11:15:49+08:00",
+  "task": "PA-SV1-C01-S01-settings",
+  "input_commit": "1a84a1b5b79f65b8510d2547f06eaee898ad0305",
+  "input_tree": "b9b1e31d74fdd5b446cf5d6854f3eca67dee0107",
+  "runtime_prerequisite_commit": "1a84a1b5b79f65b8510d2547f06eaee898ad0305",
+  "implementation_commit": "edd72dbe9af4597b04898e15c53c6fe3b19fcf99",
+  "qualified_downstream_lock_unchanged": "0ab02a9b735ba9f4c23509cb366b9bf04039ebf8",
+  "source_lineage": {
+    "p1_b03_contract_runtime_prerequisite": "3ab9a7ddf7488a9cc941b4c4f8fa9ba25470a9ad",
+    "selective_source_commits": [
+      "92daadeb6bbf53d0ab7385fcb16bc8fc8dbeb9cb",
+      "8aa030a4593a6e7dd04d67c23c28c4434e0757ae",
+      "020ea4abe998f31819c493a1f1eac2731d9e2d84",
+      "e40051be2ebc7e82991de032c32ac2ad1166d4a1"
+    ]
+  },
+  "slice_status": "development-only",
+  "third_party_dependency_change": false,
+  "tools_observed_and_used": {
+    "php": "8.3.24",
+    "composer": "2.8.10",
+    "node": "24.13.0",
+    "vitest": "4.1.10",
+    "vite": "8.1.4",
+    "vue_tsc": "3.3.7"
+  },
+  "locks": {
+    "composer.lock": {
+      "sha256": "8a4a927b544b6d7f45eb99032553ae092452de4fd21e03be47529e62098d6861",
+      "delta": "first-party-settings-only",
+      "first_party_package": "peanut-admin/settings@0.1.0"
+    },
+    "pnpm-lock.yaml": {
+      "sha256": "f4a891066e53b575a9c279ba450738ce762927a9bfb852cacee3a6197ab07229",
+      "delta": "first-party-settings-only",
+      "first_party_package": "@peanut-admin/settings@0.1.0"
+    },
+    "starter/backend/composer.lock": {
+      "sha256": "d9332690bd4aab039fe8a5c389bb918cb422082803aa38e5631692d855383735",
+      "delta": "first-party-settings-only",
+      "first_party_package": "peanut-admin/settings@0.1.0"
+    },
+    "starter/pnpm-lock.yaml": {
+      "sha256": "02803870d9de9212dcdd7e66d7583591ea4cb430c9931693c3f5368750babaab",
+      "delta": "first-party-settings-only",
+      "first_party_package": "@peanut-admin/settings@0.1.0"
+    }
+  },
+  "verification": {
+    "lock_sha256_consistency": "checked",
+    "manifest_lock_consistency": "checked",
+    "security_audit": "not-run-in-development-slice",
+    "two_independent_frozen_installs": "not-run-in-development-slice",
+    "fixed_commit_qualification": "not-run-in-development-slice"
+  },
+  "accepted_reuse": [
+    "ext-json",
+    "ext-pdo",
+    "ext-sodium",
+    "opis/json-schema@2.6.0",
+    "peanut-admin/kernel@0.1.0",
+    "@peanut-admin/admin-core@0.1.0",
+    "@peanut-admin/admin-shell@0.1.0"
+  ],
+  "notes": [
+    "The four lock deltas add only the first-party Settings packages and reuse dependencies already accepted by the input tree.",
+    "This development slice checked lock hashes and manifest-to-lock consistency only; it did not run an audit, two independent frozen installs, or qualification.",
+    "No encryption key, credential, token, cookie, private path, or product-domain value is recorded.",
+    "This evidence is not fixed-commit qualification, package publication, release, or downstream consumption approval."
+  ]
+}

@@ -1,0 +1,3 @@
+[
+  {"key":"peanut.task-job.page","scope":"tenant","parent_key":null,"type":"page","name":"Tasks","route_name":"peanut.task-job.list","route_path":"/app/tasks","component_key":"peanut.task-job.page","required_permission":"peanut.task-job.read","icon":"ListChecks","sort_order":850,"client_keys":["admin-web"]}
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "key": "peanut.reference-codes.read",
+    "type": "api",
+    "name": "Read Tenant reference codes",
+    "risk_level": "normal"
+  },
+  {
+    "key": "peanut.reference-codes.manage",
+    "type": "action",
+    "name": "Manage Tenant reference codes",
+    "risk_level": "sensitive"
+  }
+]

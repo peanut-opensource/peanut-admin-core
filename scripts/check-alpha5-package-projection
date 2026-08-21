@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+if [[ $# -ne 1 ]]; then
+  echo 'ERROR: usage: scripts/check-alpha5-package-projection OUTPUT_DIR' >&2
+  exit 2
+fi
+
+output="$1"
+if [[ -e "$output" && ! -d "$output" ]]; then
+  echo 'ERROR: output path is not a directory' >&2
+  exit 1
+fi
+mkdir -p "$output"
+if find "$output" -mindepth 1 -print -quit | rg -q .; then
+  echo 'ERROR: output directory must be empty' >&2
+  exit 1
+fi
+if ! git diff --quiet HEAD -- packages/php; then
+  echo 'ERROR: packages/php must match the committed candidate' >&2
+  exit 1
+fi
+
+archive="$output/peanut-admin-core-alpha5.tar"
+projection="$output/composer"
+mkdir -p "$projection"
+git archive --format=tar HEAD packages/php >"$archive"
+tar -xf "$archive" --strip-components=2 -C "$projection"
+
+php -r '
+$manifest = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$expected = [
+    "PeanutAdmin\\ArtifactRevision\\" => "artifact-revision/src/",
+    "PeanutAdmin\\DataPermission\\" => "data-permission/src/",
+    "PeanutAdmin\\EntitlementQuota\\" => "entitlement-quota/src/",
+    "PeanutAdmin\\FileMedia\\" => "file-media/src/",
+    "PeanutAdmin\\ImportExport\\" => "import-export/src/",
+    "PeanutAdmin\\IntegrationSecurity\\" => "integration-security/src/",
+    "PeanutAdmin\\Kernel\\" => "kernel/src/",
+    "PeanutAdmin\\NotificationSms\\" => "notification-sms/src/",
+    "PeanutAdmin\\OpsConsole\\" => "ops-console/src/",
+    "PeanutAdmin\\ReferenceCodes\\" => "reference-codes/src/",
+    "PeanutAdmin\\Settings\\" => "settings/src/",
+    "PeanutAdmin\\TaskJob\\" => "task-job/src/",
+    "PeanutAdmin\\Workflow\\" => "workflow/src/",
+];
+if (($manifest["name"] ?? null) !== "peanut-admin/core"
+    || ($manifest["version"] ?? null) !== "0.1.0-alpha.6"
+    || ($manifest["license"] ?? null) !== "Apache-2.0"
+    || ($manifest["autoload"]["psr-4"] ?? null) !== $expected
+    || isset($manifest["replace"])
+    || isset($manifest["provide"])) {
+    fwrite(STDERR, "ERROR: Alpha.5 Composer projection metadata is invalid\n");
+    exit(1);
+}
+' "$projection/composer.json"
+
+if find "$projection" -mindepth 2 -name composer.json -print -quit | rg -q .; then
+  echo 'ERROR: Alpha.5 contains a child Composer package' >&2
+  exit 1
+fi
+if find "$projection" -type f \( -name '.env' -o -name '.env.*' -o -iname '*.pem' -o -iname '*.key' \) -print -quit | rg -q .; then
+  echo 'ERROR: Alpha.5 projection contains a forbidden credential file' >&2
+  exit 1
+fi
+if rg -qi '(article|newsroom|audio|video|broadcast|transcoding|copyright|three[-_ ]review)' \
+  "$projection/artifact-revision/src" "$projection/entitlement-quota/src" "$projection/workflow/src"; then
+  echo 'ERROR: Alpha.5 projection contains product-specific behavior' >&2
+  exit 1
+fi
+
+composer_bin="${PEANUT_COMPOSER:-composer}"
+"$composer_bin" validate --no-check-publish --working-dir "$projection"
+
+consumer="$output/consumer"
+mkdir -p "$consumer"
+php -r '
+$path = realpath($argv[1]);
+if ($path === false) {
+    fwrite(STDERR, "ERROR: Composer projection path cannot be resolved\n");
+    exit(1);
+}
+$manifest = [
+    "name" => "peanut-admin/alpha5-consumer-probe",
+    "type" => "project",
+    "repositories" => [[
+        "type" => "path",
+        "url" => $path,
+        "options" => ["symlink" => false],
+    ]],
+    "require" => [
+        "php" => "^8.3",
+        "peanut-admin/core" => "0.1.0-alpha.6",
+    ],
+    "minimum-stability" => "stable",
+    "prefer-stable" => true,
+    "config" => ["allow-plugins" => new stdClass()],
+];
+file_put_contents(
+    $argv[2],
+    json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n",
+);
+' "$projection" "$consumer/composer.json"
+"$composer_bin" install \
+  --working-dir "$consumer" \
+  --no-interaction \
+  --no-progress \
+  --no-dev \
+  --prefer-dist
+php -r '
+require $argv[1];
+foreach ([
+    "PeanutAdmin\\ArtifactRevision\\Package",
+    "PeanutAdmin\\ArtifactRevision\\Database\\Schema",
+    "PeanutAdmin\\EntitlementQuota\\Package",
+    "PeanutAdmin\\EntitlementQuota\\Database\\Schema",
+    "PeanutAdmin\\Kernel\\Package",
+    "PeanutAdmin\\Workflow\\Application\\WorkflowRuntime",
+    "PeanutAdmin\\Workflow\\Database\\Schema",
+] as $class) {
+    if (!class_exists($class)) {
+        fwrite(STDERR, "ERROR: isolated Composer consumer cannot autoload {$class}\n");
+        exit(1);
+    }
+}
+' "$consumer/vendor/autoload.php"
+
+printf 'Alpha.5 Composer projection: commit=%s; files=%s; psr4_roots=13; isolated_consumer=passed\n' \
+  "$(git rev-parse HEAD)" "$(find "$projection" -type f | wc -l | tr -d ' ')"

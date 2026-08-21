@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+docker compose up -d mysql cache
+for attempt in $(seq 1 60); do
+  if php -r '
+    try {
+        new PDO(
+            "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+            "root",
+            getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+        );
+    } catch (Throwable) {
+        exit(1);
+    }
+  ' 2>/dev/null; then
+    break
+  fi
+  if [[ "$attempt" -eq 60 ]]; then
+    echo 'ERROR: MySQL 8 did not become ready for clean-install verification' >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+database='peanut_admin_clean_install_test'
+cleanup() {
+  CLEAN_DATABASE="$database" php -r '
+  $database = getenv("CLEAN_DATABASE");
+  $pdo = new PDO(
+      "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+      "root",
+      getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+      [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+  );
+  $pdo->exec("DROP DATABASE IF EXISTS `{$database}`");
+  ' >/dev/null
+}
+trap cleanup EXIT
+cleanup
+
+CLEAN_DATABASE="$database" php -r '
+$database = getenv("CLEAN_DATABASE");
+$pdo = new PDO(
+    "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+    "root",
+    getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+);
+$pdo->exec("CREATE DATABASE `{$database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci");
+'
+
+started="$(date +%s)"
+fixture_password="$(php -r 'echo bin2hex(random_bytes(24));')"
+DB_DATABASE="$database" \
+DB_USERNAME=root \
+DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+PEANUT_BOOTSTRAP_PASSWORD="$fixture_password" \
+./scripts/install \
+  --email clean-owner@example.test \
+  --display-name 'Clean Install Owner' \
+  --tenant-code clean-tenant \
+  --tenant-name 'Clean Tenant' \
+  --tenant-owner-email clean-owner@example.test \
+  --tenant-owner-name 'Clean Tenant Owner' >/dev/null
+
+upgrade_output="$(
+  DB_DATABASE="$database" \
+  DB_USERNAME=root \
+  DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+  ./scripts/upgrade
+)"
+UPGRADE_OUTPUT="$upgrade_output" php -r '
+$result = json_decode(getenv("UPGRADE_OUTPUT"), true, 512, JSON_THROW_ON_ERROR);
+if (($result["applied_module_migrations"] ?? null) !== 0) {
+    fwrite(STDERR, "ERROR: CLEAN_INSTALL_UPGRADE_NOT_IDEMPOTENT\n");
+    exit(1);
+}
+'
+
+DB_DATABASE="$database" \
+DB_USERNAME=root \
+DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+./scripts/health-check >/dev/null
+
+duration="$(( $(date +%s) - started ))"
+echo "Clean install verified in ${duration}s"

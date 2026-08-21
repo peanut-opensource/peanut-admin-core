@@ -1,0 +1,6 @@
+[
+  {"key": "example.work-item.read", "type": "api", "name": "Read example work items", "risk_level": "normal"},
+  {"key": "example.work-item.create", "type": "action", "name": "Create example work items", "risk_level": "sensitive"},
+  {"key": "example.work-item.update", "type": "action", "name": "Update example work items", "risk_level": "sensitive"},
+  {"key": "example.work-item.policy-publish", "type": "action", "name": "Publish example view policy", "risk_level": "critical"}
+]

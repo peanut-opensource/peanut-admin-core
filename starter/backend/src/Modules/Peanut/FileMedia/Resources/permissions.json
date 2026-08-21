@@ -1,0 +1,26 @@
+[
+  {
+    "key": "peanut.file-media.read",
+    "type": "api",
+    "name": "Read Tenant private files",
+    "risk_level": "normal"
+  },
+  {
+    "key": "peanut.file-media.create",
+    "type": "action",
+    "name": "Upload Tenant private files",
+    "risk_level": "sensitive"
+  },
+  {
+    "key": "peanut.file-media.delete",
+    "type": "action",
+    "name": "Archive Tenant private files",
+    "risk_level": "sensitive"
+  },
+  {
+    "key": "peanut.file-media.manage",
+    "type": "action",
+    "name": "Manage Tenant media delivery",
+    "risk_level": "sensitive"
+  }
+]

@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [[ "$#" -ne 1 ]]; then
+  echo 'Usage: ./scripts/create-internal-starter <empty-target-directory>' >&2
+  exit 64
+fi
+
+target="$1"
+if [[ -e "$target" ]] && [[ ! -d "$target" ]]; then
+  echo "ERROR: starter target is not a directory: $target" >&2
+  exit 1
+fi
+if [[ -d "$target" ]] && [[ -n "$(find "$target" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+  echo "ERROR: starter target must be empty: $target" >&2
+  exit 1
+fi
+
+mkdir -p "$target"
+cp -R "$ROOT/starter/." "$target/"
+
+copy_runtime_directory() {
+  local source="$1"
+  local destination="$2"
+
+  mkdir -p "$destination"
+  cp -R "$source/src" "$destination/src"
+  for directory in database resources; do
+    if [[ -d "$source/$directory" ]]; then
+      cp -R "$source/$directory" "$destination/$directory"
+    fi
+  done
+}
+
+mkdir -p "$target/packages/php" "$target/packages/web"
+cp "$ROOT/packages/php/composer.json" "$target/packages/php/composer.json"
+cp "$ROOT/packages/php/LICENSE" "$target/packages/php/LICENSE"
+cp "$ROOT/packages/web/package.json" "$target/packages/web/package.json"
+cp "$ROOT/packages/web/LICENSE" "$target/packages/web/LICENSE"
+
+for package in \
+  kernel data-permission testing settings reference-codes file-media task-job \
+  notification-sms import-export ops-console integration-security; do
+  copy_runtime_directory "$ROOT/packages/php/$package" "$target/packages/php/$package"
+done
+
+for package in \
+  admin-core admin-shell testing settings reference-codes file-media task-job \
+  notification-sms import-export ops-console integration-security; do
+  copy_runtime_directory "$ROOT/packages/web/$package" "$target/packages/web/$package"
+done
+
+echo "Internal starter created at: $target"

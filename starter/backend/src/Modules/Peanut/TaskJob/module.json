@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "key": "peanut.task-job",
+  "name": "Peanut Task And Job",
+  "description": "Tenant task ledger and trusted local worker",
+  "version": "0.1.0",
+  "kernel_constraint": "^1.0",
+  "license": "Apache-2.0",
+  "php_package": "peanut-admin/core",
+  "web_package": "@peanut-admin/admin/task-job",
+  "dependencies": [],
+  "backend": { "provider": "ExampleHost\\App\\Modules\\Peanut\\TaskJob\\ModuleProvider", "migrations": "Database/Migrations", "menus": "Resources/menus.json", "permissions": "Resources/permissions.json", "protected_resources": "Resources/protected-resources.json" },
+  "frontend": { "entry": "frontend/src/modules/peanut-task-job.ts" },
+  "database": { "owned_tables": ["pa_task_job", "pa_task_job_attempt", "pa_task_job_event"] },
+  "contracts": { "exports": [], "events": [] },
+  "tenant": { "enableable": true, "disable_behavior": "reject_new_operations", "requires": [] }
+}

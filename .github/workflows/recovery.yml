@@ -1,0 +1,56 @@
+name: Recovery
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'backend/**'
+      - 'packages/php/**'
+      - 'packages/web/**'
+      - 'profiles/**'
+      - 'schemas/**'
+      - 'starter/**'
+      - 'scripts/backup-*'
+      - 'scripts/create-internal-starter'
+      - 'scripts/restore-*'
+      - 'scripts/verify-internal-starter'
+      - 'scripts/verify-recovery'
+      - 'scripts/verify-clean-install'
+      - 'scripts/test-recovery'
+      - 'tests/recovery/**'
+      - '.github/workflows/recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    env:
+      MYSQL_PORT: '3306'
+      DB_PORT: '3306'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          tools: composer:2.10.2
+          coverage: none
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: 11.13.0
+          run_install: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.18.0
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Run clean-install, recovery, and starter drills
+        run: ./scripts/test-recovery

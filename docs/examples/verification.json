@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "checks": [
+    {
+      "document": "docs/guide/installation.md",
+      "document_contains": "./scripts/install",
+      "source": "scripts/install",
+      "source_contains": "InstallCli::run"
+    },
+    {
+      "document": "docs/guide/upgrade.md",
+      "document_contains": "pa_module_migration",
+      "source": "packages/php/kernel/src/Migration/ModuleMigrationLedger.php",
+      "source_contains": "MODULE_MIGRATION_CHECKSUM_MISMATCH"
+    },
+    {
+      "document": "docs/guide/authentication.md",
+      "document_contains": "__Host-pa_tenant_refresh",
+      "source": "packages/php/kernel/src/Http/TenantRefreshCookie.php",
+      "source_contains": "return $client->refreshCookieName;"
+    },
+    {
+      "document": "docs/guide/authorization.md",
+      "document_contains": "DataPermissionEngine::queryConstraint()",
+      "source": "packages/php/data-permission/src/Engine/DataPermissionEngine.php",
+      "source_contains": "public function queryConstraint"
+    },
+    {
+      "document": "docs/reference/typed-targets.md",
+      "document_contains": "TypedResourceTargetCollection",
+      "source": "packages/php/data-permission/src/Target/TypedResourceTargetCollection.php",
+      "source_contains": "A typed target set cannot be repeated."
+    },
+    {
+      "document": "docs/reference/shared-master.md",
+      "document_contains": "compileVisiblePredicate()",
+      "source": "packages/php/data-permission/src/Provider/SharedMasterScopeProvider.php",
+      "source_contains": "compileVisiblePredicate"
+    },
+    {
+      "document": "docs/guide/module-development.md",
+      "document_contains": "OwnedMigration",
+      "source": "packages/php/kernel/src/Migration/OwnedMigration.php",
+      "source_contains": "public static function reversible"
+    },
+    {
+      "document": "docs/guide/admin-web.md",
+      "document_contains": "defineAdminModule",
+      "source": "packages/web/admin-core/src/module/contribution.ts",
+      "source_contains": "export const defineAdminModule"
+    },
+    {
+      "document": "docs/guide/testing.md",
+      "document_contains": "ExampleModuleContractTest.php",
+      "source": "examples/module-contract/ExampleModuleContractTest.php",
+      "source_contains": "testTypedTargetsUnifiedReferenceAndWorkItemContracts"
+    },
+    {
+      "document": "docs/security/p0-baseline.md",
+      "document_contains": "Refresh tokens are hashed at rest",
+      "source": "packages/php/kernel/src/Auth/TenantAuthService.php",
+      "source_contains": "refresh_reused"
+    },
+    {
+      "document": "docs/api/index.md",
+      "document_contains": "All 75 P0 operations",
+      "source": "scripts/verify-doc-examples",
+      "source_contains": "$p0OperationCount !== 75"
+    },
+    {
+      "document": "docs/guide/internal-starter.md",
+      "document_contains": "./scripts/verify-internal-starter",
+      "source": "scripts/verify-internal-starter",
+      "source_contains": "Internal starter: OK"
+    },
+    {
+      "document": "docs/reference/kernel-schema.md",
+      "document_contains": "pa_platform_operator",
+      "source": "packages/php/kernel/src/Persistence/Schema/KernelSchema.php",
+      "source_contains": "pa_platform_operator"
+    }
+  ]
+}

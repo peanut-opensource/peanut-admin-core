@@ -1,0 +1,34 @@
+[
+  {
+    "key": "display-density",
+    "name": "Display density",
+    "description": "Fictional scalar setting used to verify Module-owned definitions",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": ["compact", "comfortable"]
+    },
+    "required": false,
+    "secret": false,
+    "allowed_scopes": ["deployment", "tenant"],
+    "target_resource_key": null,
+    "target_operation": null,
+    "default": "comfortable"
+  },
+  {
+    "key": "fixture-secret",
+    "name": "Fictional secret",
+    "description": "Write-only fixture used to verify secret redaction",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "required": false,
+    "secret": true,
+    "allowed_scopes": ["tenant"],
+    "target_resource_key": null,
+    "target_operation": null
+  }
+]

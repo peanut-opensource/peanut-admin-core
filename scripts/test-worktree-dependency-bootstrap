@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+workdir="$(mktemp -d "${TMPDIR:-/tmp}/peanut-admin-worktree-bootstrap.XXXXXX")"
+trap 'rm -rf "$workdir"' EXIT
+
+outer="$workdir/outer-project"
+repo="$outer/repositories/repo"
+bin="$workdir/bin"
+store="$workdir/store/v11"
+log="$workdir/pnpm.log"
+external="$workdir/other-worktree/node_modules/.pnpm"
+mkdir -p "$repo/scripts" "$repo/frontend" "$repo/packages/web/example" "$bin" "$store"
+cp "$ROOT/scripts/bootstrap-worktree-dependencies" "$repo/scripts/"
+cp "$ROOT/scripts/warm-worktree-dependencies" "$repo/scripts/"
+chmod +x "$repo/scripts/bootstrap-worktree-dependencies" "$repo/scripts/warm-worktree-dependencies"
+
+printf 'node_modules/\n' >"$repo/.gitignore"
+printf 'engine-strict=true\n' >"$repo/.npmrc"
+printf '{"name":"fixture","private":true}\n' >"$repo/package.json"
+printf 'lockfileVersion: 9.0\n' >"$repo/pnpm-lock.yaml"
+printf 'packages:\n  - frontend\n  - packages/web/*\n' >"$repo/pnpm-workspace.yaml"
+printf '{"name":"fixture-frontend","private":true}\n' >"$repo/frontend/package.json"
+printf '{"name":"fixture-package","private":true}\n' >"$repo/packages/web/example/package.json"
+git -C "$outer" init -q
+git -C "$repo" init -q
+ln -s "$outer" "$workdir/outer-alias"
+
+cat >"$bin/node" <<'NODE'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == '--version' ]]; then
+  echo 'v24.13.0'
+  exit 0
+fi
+echo 'fake node accepts only --version' >&2
+exit 1
+NODE
+
+cat >"$bin/pnpm" <<'PNPM'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == '--version' ]]; then
+  echo '11.13.0'
+  exit 0
+fi
+printf '%s\n' "$*" >>"$FAKE_PNPM_LOG"
+store="$FAKE_STORE_PATH"
+if [[ "${1:-}" == '--store-dir' ]]; then
+  store="$2"
+  shift 2
+fi
+command="${1:-}"
+shift || true
+case "$command" in
+  config)
+    [[ "${1:-}" == 'get' && "${2:-}" == 'store-dir' ]]
+    echo 'undefined'
+    ;;
+  store)
+    [[ "${1:-}" == 'path' ]]
+    echo "$store"
+    ;;
+  fetch)
+    mkdir -p "$store/files"
+    ;;
+  install)
+    if [[ " ${*} " != *' --offline '* || " ${*} " != *' --frozen-lockfile '* ]]; then
+      echo 'fake pnpm expected an offline frozen install' >&2
+      exit 1
+    fi
+    if [[ "${FAKE_PNPM_OFFLINE_MISS:-0}" == '1' ]]; then
+      mkdir -p node_modules/.pnpm/partial/node_modules frontend/node_modules
+      ln -s missing-package node_modules/.pnpm/partial/node_modules/broken-package
+      echo 'ERR_PNPM_NO_OFFLINE_META fixture metadata is missing' >&2
+      exit 1
+    fi
+    mkdir -p \
+      node_modules/.pnpm/fake-package@1/node_modules/fake-package \
+      frontend/node_modules \
+      packages/web/example/node_modules
+    ln -s .pnpm/fake-package@1/node_modules/fake-package node_modules/fake-package
+    if [[ "${FAKE_PNPM_BROKEN_INSTALL:-0}" == '1' ]]; then
+      rm -rf node_modules/.pnpm/fake-package@1/node_modules/fake-package
+    fi
+    ;;
+  *)
+    echo "unexpected fake pnpm command: $command" >&2
+    exit 1
+    ;;
+esac
+PNPM
+chmod +x "$bin/node" "$bin/pnpm"
+
+run_bootstrap() {
+  local fake_store="${FAKE_STORE_PATH:-$store}"
+  PATH="$bin:$PATH" \
+  FAKE_PNPM_LOG="$log" \
+  FAKE_STORE_PATH="$fake_store" \
+  "$repo/scripts/bootstrap-worktree-dependencies"
+}
+
+run_warm() {
+  local fake_store="${FAKE_STORE_PATH:-$store}"
+  PATH="$bin:$PATH" \
+  FAKE_PNPM_LOG="$log" \
+  FAKE_STORE_PATH="$fake_store" \
+  "$repo/scripts/warm-worktree-dependencies"
+}
+
+for local_store in \
+  "$repo/.pnpm-store/v11" \
+  "$outer/.pnpm-store/v11" \
+  "$workdir/outer-alias/.pnpm-store/v11"; do
+  for command in bootstrap warm; do
+    set +e
+    default_local_output="$(cd "$repo" && FAKE_STORE_PATH="$local_store" "run_$command" 2>&1)"
+    default_local_status=$?
+    explicit_local_output="$(cd "$repo" && PNPM_STORE_DIR="$local_store" "run_$command" 2>&1)"
+    explicit_local_status=$?
+    set -e
+    [[ "$default_local_status" -ne 0 ]]
+    [[ "$explicit_local_status" -ne 0 ]]
+    [[ "$default_local_output" == *'refusing pnpm content store inside a repository/worktree tree'* ]]
+    [[ "$explicit_local_output" == *'outside any Git worktree'* ]]
+    [[ ! -e "$repo/.pnpm-store" ]]
+    [[ ! -e "$outer/.pnpm-store" ]]
+  done
+done
+
+missing_external_store="$workdir/non-git-parent/missing-store/v11"
+mkdir -p "$workdir/non-git-parent"
+missing_external_output="$(cd "$repo" && FAKE_STORE_PATH="$missing_external_store" run_bootstrap)"
+[[ "$missing_external_output" == *'Worktree dependency bootstrap complete'* ]]
+[[ ! -e "$missing_external_store" ]]
+rm -rf "$repo/node_modules" "$repo/frontend/node_modules" "$repo/packages/web/example/node_modules"
+: >"$log"
+
+cold_output="$(cd "$repo" && run_bootstrap)"
+[[ -d "$repo/node_modules/.pnpm" && ! -L "$repo/node_modules/.pnpm" ]]
+[[ -f "$repo/node_modules/.peanut-admin-worktree-bootstrap" ]]
+[[ "$(grep -c ' install --offline --frozen-lockfile$' "$log")" -eq 1 ]]
+
+noop_output="$(cd "$repo" && run_bootstrap)"
+[[ "$noop_output" == *'no install needed'* ]]
+[[ "$(grep -c ' install --offline --frozen-lockfile$' "$log")" -eq 1 ]]
+
+rm "$repo/node_modules/fake-package"
+ln -s .pnpm/fake-package@1/node_modules/missing-package "$repo/node_modules/fake-package"
+set +e
+broken_output="$(cd "$repo" && run_bootstrap 2>&1)"
+broken_status=$?
+set -e
+[[ "$broken_status" -ne 0 ]]
+[[ "$broken_output" == *'ERROR: broken dependency link: node_modules/fake-package'* ]]
+[[ "$broken_output" == *'removed the broken current-worktree dependency layout'* ]]
+[[ "$broken_output" != *'no install needed'* ]]
+[[ ! -e "$repo/node_modules" ]]
+[[ "$(grep -c ' install --offline --frozen-lockfile$' "$log")" -eq 1 ]]
+
+recovery_output="$(cd "$repo" && run_bootstrap)"
+[[ "$recovery_output" == *'Worktree dependency bootstrap complete'* ]]
+[[ "$(grep -c ' install --offline --frozen-lockfile$' "$log")" -eq 2 ]]
+
+rm -rf "$repo/frontend/node_modules"
+incomplete_output="$(cd "$repo" && run_bootstrap)"
+[[ "$incomplete_output" == *'Dependency layout missing or not local: frontend/node_modules'* ]]
+[[ "$incomplete_output" != *'no install needed'* ]]
+[[ "$(grep -c ' install --offline --frozen-lockfile$' "$log")" -eq 3 ]]
+
+printf '# force post-install validation\n' >>"$repo/pnpm-lock.yaml"
+set +e
+post_install_output="$(cd "$repo" && FAKE_PNPM_BROKEN_INSTALL=1 run_bootstrap 2>&1)"
+post_install_status=$?
+set -e
+[[ "$post_install_status" -ne 0 ]]
+[[ "$post_install_output" == *'ERROR: pnpm created a broken dependency link: node_modules/fake-package'* ]]
+[[ ! -e "$repo/node_modules" ]]
+[[ ! -e "$repo/frontend/node_modules" ]]
+
+post_install_recovery_output="$(cd "$repo" && run_bootstrap)"
+[[ "$post_install_recovery_output" == *'Worktree dependency bootstrap complete'* ]]
+
+warm_output="$(cd "$repo" && run_warm)"
+[[ "$warm_output" == *'network access allowed'* ]]
+grep -q ' fetch --frozen-lockfile$' "$log"
+if grep ' fetch ' "$log" | grep -q -- '--offline'; then
+  echo 'ERROR: cache warm was incorrectly marked offline.' >&2
+  exit 1
+fi
+
+printf '# lock changed\n' >>"$repo/pnpm-lock.yaml"
+set +e
+miss_output="$(cd "$repo" && FAKE_PNPM_OFFLINE_MISS=1 run_bootstrap 2>&1)"
+miss_status=$?
+set -e
+[[ "$miss_status" -ne 0 ]]
+[[ "$miss_output" == *'ERR_PNPM_NO_OFFLINE_META'* ]]
+[[ "$miss_output" == *'Run ./scripts/warm-worktree-dependencies'* ]]
+[[ ! -e "$repo/node_modules" ]]
+[[ ! -e "$repo/frontend/node_modules" ]]
+
+mkdir -p "$repo/node_modules" "$external"
+printf 'shared-store-sentinel\n' >"$external/sentinel"
+ln -s "$external" "$repo/node_modules/.pnpm"
+set +e
+repair_output="$(cd "$repo" && run_bootstrap)"
+repair_status=$?
+set -e
+[[ "$repair_status" -ne 0 ]]
+[[ "$repair_output" == *'Detected external dependency link: node_modules/.pnpm'* ]]
+[[ "$repair_output" == *'Removing ignored dependency layout: node_modules'* ]]
+[[ "$repair_output" == *'removed the external current-worktree dependency layout'* ]]
+[[ -f "$external/sentinel" ]]
+[[ ! -e "$repo/node_modules" ]]
+
+post_repair_output="$(cd "$repo" && run_bootstrap)"
+[[ "$post_repair_output" == *'Worktree dependency bootstrap complete'* ]]
+[[ -d "$repo/node_modules/.pnpm" && ! -L "$repo/node_modules/.pnpm" ]]
+
+rm -rf "$repo/node_modules"
+printf '# node_modules deliberately not ignored\n' >"$repo/.gitignore"
+mkdir -p "$repo/node_modules"
+ln -s "$external" "$repo/node_modules/.pnpm"
+set +e
+refusal_output="$(cd "$repo" && run_bootstrap 2>&1)"
+refusal_status=$?
+set -e
+[[ "$refusal_status" -ne 0 ]]
+[[ "$refusal_output" == *'refusing to remove non-ignored dependency layout: node_modules'* ]]
+[[ -L "$repo/node_modules/.pnpm" ]]
+[[ -f "$external/sentinel" ]]
+
+echo 'Worktree dependency bootstrap tests: OK'

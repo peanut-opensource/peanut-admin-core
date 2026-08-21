@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "key": "peanut.file-media",
+  "name": "Peanut File And Media",
+  "description": "Tenant-private file metadata, upload, download, and archive infrastructure",
+  "version": "0.1.0",
+  "kernel_constraint": "^1.0",
+  "license": "Apache-2.0",
+  "php_package": "peanut-admin/core",
+  "web_package": "@peanut-admin/admin/file-media",
+  "dependencies": [],
+  "backend": {
+    "provider": "ExampleHost\\App\\Modules\\Peanut\\FileMedia\\ModuleProvider",
+    "migrations": "Database/Migrations",
+    "menus": "Resources/menus.json",
+    "permissions": "Resources/permissions.json",
+    "protected_resources": "Resources/protected-resources.json"
+  },
+  "frontend": { "entry": "frontend/src/modules/peanut-file-media.ts" },
+  "database": { "owned_tables": ["pa_file_object", "pa_file_delivery_policy", "pa_file_image_metadata", "pa_file_image_variant", "pa_file_delivery_nonce"] },
+  "contracts": { "exports": [], "events": [] },
+  "tenant": { "enableable": true, "disable_behavior": "reject_new_operations", "requires": [] }
+}

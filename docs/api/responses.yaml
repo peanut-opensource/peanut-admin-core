@@ -1,0 +1,200 @@
+x-base-headers: &baseHeaders
+  X-Request-Id:
+    description: Request correlation identifier.
+    schema: { type: string }
+  Cache-Control:
+    description: Sensitive API responses are not cached.
+    schema: { type: string, const: no-store }
+x-versioned-headers: &versionedHeaders
+  <<: *baseHeaders
+  ETag:
+    description: Current resource revision.
+    schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' }
+x-created-headers: &createdHeaders
+  <<: *versionedHeaders
+  Location:
+    description: Canonical resource URL.
+    schema: { type: string }
+x-authenticated-headers: &authenticatedHeaders
+  <<: *baseHeaders
+  Set-Cookie:
+    description: HttpOnly refresh credential cookie.
+    schema: { type: string }
+
+TenantLoginOk:
+  description: Authentication completed or tenant selection is required.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/auth.yaml#/TenantLoginResponse' } } }
+TenantAuthenticatedOk:
+  description: Tenant session authenticated.
+  headers: *authenticatedHeaders
+  content: { application/json: { schema: { $ref: './schemas/auth.yaml#/TenantAuthenticationResponse' } } }
+TenantSelectionOk:
+  description: A fresh tenant selection challenge.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/auth.yaml#/TenantSelectionResponse' } } }
+TenantContextOk:
+  description: Current tenant access context.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/auth.yaml#/TenantContextResponse' } } }
+PlatformAuthenticatedOk:
+  description: Platform session authenticated.
+  headers: *authenticatedHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformAuthenticationResponse' } } }
+PlatformContextOk:
+  description: Current platform access context.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformContextResponse' } } }
+
+TenantOk:
+  description: Tenant resource.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/TenantResponse' } } }
+TenantCreated:
+  description: Tenant created.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/TenantResponse' } } }
+TenantVersionedOk:
+  description: Tenant resource updated.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/TenantResponse' } } }
+TenantListOk:
+  description: Tenant page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/TenantListResponse' } } }
+PermissionListOk:
+  description: Permission catalog.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/PermissionListResponse' } } }
+TenantModuleOk:
+  description: Tenant module state.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/TenantModuleResponse' } } }
+TenantModuleListOk:
+  description: Tenant module catalog.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/TenantModuleListResponse' } } }
+TenantAuditListOk:
+  description: Tenant audit event page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/TenantAuditListResponse' } } }
+MenuListOk:
+  description: Visible menu tree.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/workspace.yaml#/MenuListResponse' } } }
+
+MemberOk:
+  description: Member resource.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/member.yaml#/MemberResponse' } } }
+MemberCreated:
+  description: Member created in pending state.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/member.yaml#/MemberResponse' } } }
+MemberListOk:
+  description: Member page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/member.yaml#/MemberListResponse' } } }
+DepartmentOk:
+  description: Department resource.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/department.yaml#/DepartmentResponse' } } }
+DepartmentCreated:
+  description: Department created.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/department.yaml#/DepartmentResponse' } } }
+DepartmentListOk:
+  description: Department page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/department.yaml#/DepartmentListResponse' } } }
+RoleOk:
+  description: Role resource.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/role.yaml#/RoleResponse' } } }
+RoleCreated:
+  description: Role created.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/role.yaml#/RoleResponse' } } }
+RoleListOk:
+  description: Role page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/role.yaml#/RoleListResponse' } } }
+TenantOwnerCreated:
+  description: Tenant owner candidate created.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/tenant-owner.yaml#/TenantOwnerCandidateResponse' } } }
+TenantOwnerOk:
+  description: Tenant owner candidate activated.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/tenant-owner.yaml#/TenantOwnerCandidateResponse' } } }
+
+TargetCandidateListOk:
+  description: Authorized target candidate page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/authorization.yaml#/TargetCandidateListResponse' } } }
+MemberEffectiveAccessOk:
+  description: Current effective authorization inputs for one tenant member.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/authorization.yaml#/MemberEffectiveAccessResponse' } } }
+DataPolicyOk:
+  description: Role data policy.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/authorization.yaml#/DataPolicyResponse' } } }
+
+WorkItemListOk:
+  description: Authorized multi-target work item page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/WorkItemListResponse' } } }
+WorkItemCreated:
+  description: Work item created.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/WorkItemCommandResponse' } } }
+WorkItemOk:
+  description: Work item resource.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/WorkItemResponse' } } }
+WorkItemUpdated:
+  description: Work item updated.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/WorkItemCommandResponse' } } }
+WorkItemAggregateOk:
+  description: Authorized work item aggregate.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/WorkItemAggregateResponse' } } }
+ReferenceCandidateListOk:
+  description: Shared reference candidates available to the selected target.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/ReferenceCandidateListResponse' } } }
+WorkItemPolicyPublished:
+  description: Work item view policy published.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/WorkItemPolicyPublicationResponse' } } }
+
+PlatformOperatorOk:
+  description: Platform operator resource.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformOperatorResponse' } } }
+PlatformOperatorCreated:
+  description: Platform operator created.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformOperatorResponse' } } }
+PlatformOperatorListOk:
+  description: Platform operator page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformOperatorListResponse' } } }
+PlatformRoleOk:
+  description: Platform role resource.
+  headers: *versionedHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformRoleResponse' } } }
+PlatformRoleCreated:
+  description: Platform role created.
+  headers: *createdHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformRoleResponse' } } }
+PlatformRoleListOk:
+  description: Platform role page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformRoleListResponse' } } }
+PlatformAuditListOk:
+  description: Platform audit event page.
+  headers: *baseHeaders
+  content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformAuditListResponse' } } }

@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+manifest='docs/examples/verification.json'
+if [[ ! -f "$manifest" ]]; then
+  echo "ERROR: documentation verification manifest is missing: $manifest" >&2
+  exit 1
+fi
+
+php -r '
+$manifest = json_decode(
+    (string) file_get_contents("docs/examples/verification.json"),
+    true,
+    512,
+    JSON_THROW_ON_ERROR,
+);
+foreach ($manifest["checks"] ?? [] as $index => $check) {
+    foreach (["document", "document_contains", "source", "source_contains"] as $field) {
+        if (!isset($check[$field]) || !is_string($check[$field]) || $check[$field] === "") {
+            fwrite(STDERR, "ERROR: documentation verification check {$index} has invalid {$field}\n");
+            exit(1);
+        }
+    }
+    foreach (["document", "source"] as $field) {
+        if (!is_file($check[$field])) {
+            fwrite(STDERR, "ERROR: documentation verification file is missing: {$check[$field]}\n");
+            exit(1);
+        }
+    }
+    if (!str_contains((string) file_get_contents($check["document"]), $check["document_contains"])) {
+        fwrite(STDERR, "ERROR: documented contract marker is missing from {$check["document"]}\n");
+        exit(1);
+    }
+    if (!str_contains((string) file_get_contents($check["source"]), $check["source_contains"])) {
+        fwrite(STDERR, "ERROR: source contract drifted for {$check["document"]}\n");
+        exit(1);
+    }
+}
+'
+
+./scripts/check-module-manifests
+php vendor/bin/phpunit \
+  backend/tests/Install/EnvironmentCheckerTest.php \
+  backend/tests/Install/ProductProfileTest.php \
+  backend/tests/Health/HealthCheckServiceTest.php
+
+docker compose up -d mysql
+for attempt in $(seq 1 60); do
+  if php -r '
+    try {
+        new PDO(
+            "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+            "root",
+            getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+        );
+    } catch (Throwable) {
+        exit(1);
+    }
+  ' 2>/dev/null; then
+    break
+  fi
+  if [[ "$attempt" -eq 60 ]]; then
+    echo 'ERROR: MySQL 8 did not become ready for documentation examples' >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+example_database='peanut_admin_docs_example'
+cleanup() {
+  DOC_EXAMPLE_DATABASE="$example_database" php -r '
+  $database = getenv("DOC_EXAMPLE_DATABASE");
+  if (!is_string($database) || preg_match("/^[a-z0-9_]+$/D", $database) !== 1) {
+      exit(1);
+  }
+  $pdo = new PDO(
+      "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+      "root",
+      getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+      [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+  );
+  $pdo->exec("DROP DATABASE IF EXISTS `{$database}`");
+  ' >/dev/null
+}
+trap cleanup EXIT
+cleanup
+
+DOC_EXAMPLE_DATABASE="$example_database" php -r '
+$database = getenv("DOC_EXAMPLE_DATABASE");
+if (!is_string($database) || preg_match("/^[a-z0-9_]+$/D", $database) !== 1) {
+    exit(1);
+}
+$pdo = new PDO(
+    "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+    "root",
+    getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+);
+$pdo->exec("CREATE DATABASE `{$database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci");
+'
+
+DB_DATABASE="$example_database" \
+DB_USERNAME=root \
+DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+PEANUT_BOOTSTRAP_PASSWORD='docs-example-password-only' \
+./scripts/install \
+  --email docs-owner@example.test \
+  --display-name 'Docs Owner' \
+  --tenant-code docs-example \
+  --tenant-name 'Docs Example' \
+  --tenant-owner-email docs-owner@example.test \
+  --tenant-owner-name 'Docs Tenant Owner' >/dev/null
+
+PEANUT_INTEGRATION=1 php vendor/bin/phpunit examples/module-contract/ExampleModuleContractTest.php
+
+php -r '
+$routes = require "backend/route/openapi-generated.php";
+$ledger = json_decode(
+    (string) file_get_contents("docs/status/runtime-operation-coverage.json"),
+    true,
+    512,
+    JSON_THROW_ON_ERROR,
+);
+$operations = $ledger["operations"] ?? [];
+$p0Operations = array_values(array_filter(
+    $operations,
+    static fn(array $operation): bool => ($operation["scope"] ?? null) === "p0",
+));
+$p1OperationCount = count(array_filter(
+    $operations,
+    static fn(array $operation): bool => ($operation["scope"] ?? null) === "p1",
+));
+$p0OperationCount = count($p0Operations);
+if ($p0OperationCount !== 75 || $p1OperationCount !== 64 || count($routes) !== 139) {
+    fwrite(STDERR, "ERROR: documentation expects 75 P0 and 64 P1 Runtime operations\n");
+    exit(1);
+}
+$routesByOperation = [];
+foreach ($routes as $binding) {
+    $routesByOperation[$binding[3] ?? ""] = $binding;
+}
+foreach ($p0Operations as $operation) {
+    $operationId = $operation["operation_id"] ?? "";
+    $binding = $routesByOperation[$operationId] ?? null;
+    if (!is_array($binding)) {
+        fwrite(STDERR, "ERROR: documented P0 operation has no generated route: {$operationId}\n");
+        exit(1);
+    }
+    if (str_ends_with($binding[0], "\\ContractController")) {
+        fwrite(STDERR, "ERROR: documented P0 operation uses a fallback handler: {$operationId}\n");
+        exit(1);
+    }
+}
+'
+
+./scripts/verify-internal-starter
+
+echo 'Documentation examples: OK'

@@ -1,0 +1,7 @@
+{
+  "schema_version":1,"key":"peanut.notification-sms","name":"Peanut Notification And SMS","description":"Tenant inbox and trusted asynchronous delivery","version":"0.1.0","kernel_constraint":"^1.0","license":"Apache-2.0","php_package":"peanut-admin/core","web_package":"@peanut-admin/admin/notification-sms","dependencies":[{"module_key":"peanut.task-job","version":"^0.1"},{"module_key":"peanut.file-media","version":"^0.1"}],
+  "backend":{"provider":"PeanutAdmin\\App\\Modules\\Peanut\\NotificationSms\\ModuleProvider","migrations":"Database/Migrations","menus":"Resources/menus.json","permissions":"Resources/permissions.json","protected_resources":"Resources/protected-resources.json"},
+  "frontend":{"entry":"frontend/src/modules/peanut-notification-sms/index.ts","routes":"frontend/src/modules/peanut-notification-sms/routes.ts"},
+  "database":{"owned_tables":["pa_notification_template","pa_notification_message","pa_notification_attachment","pa_notification_outbox","pa_sms_rate_bucket","pa_notification_event"]},
+  "contracts":{"exports":[],"events":[]},"tenant":{"enableable":true,"disable_behavior":"reject_new_operations","requires":["peanut.task-job","peanut.file-media"]}
+}

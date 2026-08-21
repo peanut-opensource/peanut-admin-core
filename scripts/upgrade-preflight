@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+if [[ "${1:-}" == "--print-target-inventory" ]]; then
+  exec "$ROOT/scripts/upgrade" "$@"
+fi
+
+exec "$ROOT/scripts/upgrade" --preflight-only "$@"

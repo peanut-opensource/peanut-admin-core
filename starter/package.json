@@ -1,0 +1,15 @@
+{
+  "name": "peanut-admin-internal-starter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.13.0",
+  "engines": {
+    "node": ">=24.13.0 <25"
+  },
+  "scripts": {
+    "build": "pnpm --filter @peanut-admin/internal-starter-admin build",
+    "test": "pnpm --filter @peanut-admin/internal-starter-admin test",
+    "typecheck": "pnpm --filter @peanut-admin/internal-starter-admin typecheck"
+  }
+}

@@ -1,0 +1,1 @@
+[{"key":"peanut.file-media.page","scope":"tenant","parent_key":null,"type":"page","name":"Files","route_name":"peanut.file-media.list","route_path":"/app/files","component_key":"peanut.file-media.page","required_permission":"peanut.file-media.read","icon":"Files","sort_order":870,"client_keys":["operations-web"]}]

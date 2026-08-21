@@ -1,0 +1,10 @@
+[
+  {
+    "key":"peanut.notification-sms","name":"Tenant notification","ownership":"tenant_owned",
+    "provider":"PeanutAdmin\\App\\Modules\\Peanut\\NotificationSms\\ModuleProvider",
+    "operations":[
+      {"key":"read","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny","permissions":["peanut.notification-sms.read"],"target_types":[],"conditions":[]},
+      {"key":"manage","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny_and_write","permissions":["peanut.notification-sms.manage"],"target_types":[],"conditions":[]}
+    ]
+  }
+]

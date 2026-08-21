@@ -1,0 +1,210 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+usage() {
+  echo 'ERROR: usage: scripts/check-alpha2-package-projections OUTPUT_DIR' >&2
+  exit 2
+}
+
+fail() {
+  printf 'ERROR: %s\n' "$1" >&2
+  exit 1
+}
+
+[[ $# -eq 1 ]] || usage
+output="$1"
+
+if [[ -e "$output" && ! -d "$output" ]]; then
+  fail 'output path is not a directory'
+fi
+mkdir -p "$output"
+if find "$output" -mindepth 1 -print -quit | rg -q .; then
+  fail 'output directory must be empty'
+fi
+
+candidate='b0dc376c2147b98522764486342c9525fe5678ce'
+composer_digest='176608c1602b0ccf8acf79a9755eb7417c25445330ccde7baddcae7df8620bdc'
+npm_digest='94b15ddcbe031b109e687b01c61002b343c8259d4b0745b05e64b391718b13ef'
+version='0.1.0-alpha.2'
+composer_file_count=604
+npm_file_count=67
+
+composer_bin="${PEANUT_COMPOSER:-composer}"
+composer_version="$($composer_bin --version --no-ansi 2>/dev/null | sed -E 's/^Composer version ([0-9.]+).*/\1/')" \
+  || fail 'Composer is unavailable'
+[[ "$composer_version" == '2.10.2' ]] || fail 'Composer 2.10.2 is required'
+[[ "$(corepack pnpm@11.13.0 --version 2>/dev/null)" == '11.13.0' ]] \
+  || fail 'pnpm 11.13.0 is required'
+
+resolved_candidate="$(git rev-parse --verify "${candidate}^{commit}" 2>/dev/null)" \
+  || fail 'qualified candidate commit is unavailable'
+[[ "$resolved_candidate" == "$candidate" ]] || fail 'qualified candidate does not resolve exactly'
+
+sha256_file() {
+  php -r 'echo hash_file("sha256", $argv[1]);' "$1"
+}
+
+composer_projection="$output/composer"
+npm_projection="$output/npm"
+mkdir -p "$composer_projection" "$npm_projection"
+
+composer_archive="$output/composer-subtree.tar"
+if ! git archive --format=tar "$candidate" packages/php >"$composer_archive" 2>"$output/composer-archive.log"; then
+  fail 'Composer projection archive failed'
+fi
+[[ "$(sha256_file "$composer_archive")" == "$composer_digest" ]] \
+  || fail 'Composer projection digest does not match qualification'
+if ! tar -xf "$composer_archive" --strip-components=2 -C "$composer_projection" 2>"$output/composer-extract.log"; then
+  fail 'Composer projection extraction failed'
+fi
+
+if ! php -r '
+$manifest = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$expected = [
+    "PeanutAdmin\\DataPermission\\" => "data-permission/src/",
+    "PeanutAdmin\\FileMedia\\" => "file-media/src/",
+    "PeanutAdmin\\ImportExport\\" => "import-export/src/",
+    "PeanutAdmin\\IntegrationSecurity\\" => "integration-security/src/",
+    "PeanutAdmin\\Kernel\\" => "kernel/src/",
+    "PeanutAdmin\\NotificationSms\\" => "notification-sms/src/",
+    "PeanutAdmin\\OpsConsole\\" => "ops-console/src/",
+    "PeanutAdmin\\ReferenceCodes\\" => "reference-codes/src/",
+    "PeanutAdmin\\Settings\\" => "settings/src/",
+    "PeanutAdmin\\TaskJob\\" => "task-job/src/",
+];
+if (($manifest["name"] ?? null) !== "peanut-admin/core"
+    || ($manifest["version"] ?? null) !== "0.1.0-alpha.2"
+    || ($manifest["license"] ?? null) !== "Apache-2.0"
+    || ($manifest["autoload"]["psr-4"] ?? null) !== $expected
+    || count($expected) !== 10) {
+    exit(1);
+}
+' "$composer_projection/composer.json" >"$output/composer-manifest.log" 2>&1; then
+  fail 'Composer package metadata or Runtime PSR-4 roots do not match qualification'
+fi
+
+composer_files="$(find "$composer_projection" -type f -print | wc -l | tr -d ' ')"
+[[ "$composer_files" == "$composer_file_count" ]] || fail 'Composer file count does not match qualification'
+approved_license_hash='cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30'
+[[ -f "$composer_projection/LICENSE" ]] || fail 'Composer projection license is missing'
+[[ "$(sha256_file "$composer_projection/LICENSE")" == "$approved_license_hash" ]] \
+  || fail 'Composer projection license does not match Apache-2.0 baseline'
+if find "$composer_projection" -type f \( \
+  -name '.env' -o -name '.env.*' -o -iname '*.pem' -o -iname '*.key' \
+\) -print -quit | rg -q .; then
+  fail 'Composer projection contains forbidden credential content'
+fi
+if rg -q --hidden 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|npm_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}' \
+  "$composer_projection"; then
+  fail 'Composer projection contains a credential payload'
+fi
+if ! "$composer_bin" validate --no-check-publish --working-dir "$composer_projection" \
+  >"$output/composer-validate.log" 2>&1; then
+  fail 'Composer projection validation failed'
+fi
+
+npm_archive="$output/npm-subtree.tar"
+if ! git archive --format=tar "$candidate" packages/web >"$npm_archive" 2>"$output/npm-archive.log"; then
+  fail 'npm projection archive failed'
+fi
+if ! tar -xf "$npm_archive" --strip-components=2 -C "$npm_projection" 2>"$output/npm-extract.log"; then
+  fail 'npm projection extraction failed'
+fi
+
+if ! php -r '
+$manifest = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$expected = [
+    "./core", "./shell", "./settings", "./reference-codes", "./file-media",
+    "./task-job", "./notification-sms", "./import-export", "./ops-console",
+    "./integration-security", "./testing", "./client", "./client/nuxt", "./client/uniapp",
+];
+$actual = array_keys(is_array($manifest["exports"] ?? null) ? $manifest["exports"] : []);
+sort($expected);
+sort($actual);
+if (($manifest["name"] ?? null) !== "@peanut-admin/admin"
+    || ($manifest["version"] ?? null) !== "0.1.0-alpha.2"
+    || ($manifest["license"] ?? null) !== "Apache-2.0"
+    || $actual !== $expected
+    || !isset($manifest["exports"]["./client"])
+    || !isset($manifest["exports"]["./client/nuxt"])
+    || !isset($manifest["exports"]["./client/uniapp"])) {
+    exit(1);
+}
+' "$npm_projection/package.json" >"$output/npm-manifest.log" 2>&1; then
+  fail 'npm package metadata or public exports do not match qualification'
+fi
+if find "$npm_projection" -type f \( \
+  -name '.env' -o -name '.env.*' -o -iname '*.pem' -o -iname '*.key' \
+\) -print -quit | rg -q .; then
+  fail 'npm projection contains a forbidden credential file'
+fi
+if rg -q --hidden 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|npm_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}' \
+  "$npm_projection"; then
+  fail 'npm projection contains a credential payload'
+fi
+[[ -f "$npm_projection/LICENSE" ]] || fail 'npm projection license is missing'
+[[ "$(sha256_file "$npm_projection/LICENSE")" == "$approved_license_hash" ]] \
+  || fail 'npm projection license does not match Apache-2.0 baseline'
+
+if ! (
+  cd "$npm_projection"
+  corepack pnpm@11.13.0 pack --dry-run --json >"$output/npm-dry-run.json" 2>"$output/npm-dry-run.log"
+); then
+  fail 'npm dry-run packing failed'
+fi
+
+if ! php -r '
+$decoded = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$item = is_array($decoded) && array_is_list($decoded) ? ($decoded[0] ?? []) : $decoded;
+$files = $item["files"] ?? null;
+if (!is_array($files)) {
+    exit(1);
+}
+foreach ($files as $file) {
+    $path = is_string($file) ? $file : ($file["path"] ?? null);
+    if (!is_string($path) || $path === "") {
+        exit(1);
+    }
+    echo preg_replace("#^package/#", "", $path), "\n";
+}
+' "$output/npm-dry-run.json" | LC_ALL=C sort >"$output/npm-dry-files.txt"; then
+  fail 'npm dry-run file list is malformed'
+fi
+
+if ! (
+  cd "$npm_projection"
+  corepack pnpm@11.13.0 pack --json >"$output/npm-pack.json" 2>"$output/npm-pack.log"
+); then
+  fail 'npm tarball packing failed'
+fi
+npm_tarball_name="$(php -r '
+$decoded = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$item = is_array($decoded) && array_is_list($decoded) ? ($decoded[0] ?? []) : $decoded;
+$filename = $item["filename"] ?? null;
+if (!is_string($filename) || $filename === "") {
+    exit(1);
+}
+echo basename($filename);
+' "$output/npm-pack.json" 2>"$output/npm-pack-name.log")" || fail 'npm pack did not return a tarball name'
+npm_tarball="$npm_projection/$npm_tarball_name"
+[[ -f "$npm_tarball" ]] || fail 'npm tarball is missing'
+
+if ! tar -tzf "$npm_tarball" | sed -E 's#^package/##; /^$/d; /\/$/d' | LC_ALL=C sort >"$output/npm-tar-files.txt"; then
+  fail 'npm tarball file list could not be read'
+fi
+if ! cmp -s "$output/npm-dry-files.txt" "$output/npm-tar-files.txt"; then
+  fail 'npm dry-run and tarball file lists differ'
+fi
+npm_files="$(wc -l <"$output/npm-tar-files.txt" | tr -d ' ')"
+[[ "$npm_files" == "$npm_file_count" ]] || fail 'npm file count does not match qualification'
+[[ "$(sha256_file "$npm_tarball")" == "$npm_digest" ]] \
+  || fail 'npm projection digest does not match qualification'
+if rg -q '(^|/)\.env($|\.)|\.(pem|key)$' "$output/npm-tar-files.txt"; then
+  fail 'npm projection contains forbidden credential content'
+fi
+
+printf 'Alpha.2 projection preflight: candidate=%s; Composer files=%s; npm files=%s; npm exports=14; digests=matched\n' \
+  "$candidate" "$composer_files" "$npm_files"

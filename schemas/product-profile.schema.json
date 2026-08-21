@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peanut-admin.dev/schemas/product-profile.schema.json",
+  "title": "Peanut Admin ProductProfile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "key", "name", "modules"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "key": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["module_key", "config"],
+        "properties": {
+          "module_key": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$" },
+          "config": { "type": "object" }
+        }
+      }
+    },
+    "role_templates": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$" }
+    },
+    "default_department": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "name"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 }
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "key": "peanut.reference-code",
+    "name": "Reference code",
+    "ownership": "tenant_owned",
+    "provider": "ExampleHost\\App\\Modules\\Peanut\\ReferenceCodes\\ModuleProvider",
+    "operations": [
+      {
+        "key": "read",
+        "access_mode": "tenant_wide",
+        "target_cardinality": "none",
+        "permission_match": "all",
+        "audit_level": "deny",
+        "permissions": ["peanut.reference-codes.read"],
+        "target_types": [],
+        "conditions": []
+      },
+      {
+        "key": "create",
+        "access_mode": "tenant_wide",
+        "target_cardinality": "none",
+        "permission_match": "all",
+        "audit_level": "deny_and_write",
+        "permissions": ["peanut.reference-codes.manage"],
+        "target_types": [],
+        "conditions": []
+      },
+      {
+        "key": "replace",
+        "access_mode": "tenant_wide",
+        "target_cardinality": "none",
+        "permission_match": "all",
+        "audit_level": "deny_and_write",
+        "permissions": ["peanut.reference-codes.manage"],
+        "target_types": [],
+        "conditions": []
+      },
+      {
+        "key": "retire",
+        "access_mode": "tenant_wide",
+        "target_cardinality": "none",
+        "permission_match": "all",
+        "audit_level": "deny_and_write",
+        "permissions": ["peanut.reference-codes.manage"],
+        "target_types": [],
+        "conditions": []
+      }
+    ]
+  }
+]

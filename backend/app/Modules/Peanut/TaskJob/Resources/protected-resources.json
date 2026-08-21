@@ -1,0 +1,10 @@
+[
+  {
+    "key":"peanut.task-job","name":"Tenant task","ownership":"tenant_owned",
+    "provider":"PeanutAdmin\\App\\Modules\\Peanut\\TaskJob\\ModuleProvider",
+    "operations":[
+      {"key":"read","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny","permissions":["peanut.task-job.read"],"target_types":[],"conditions":[]},
+      {"key":"manage","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny_and_write","permissions":["peanut.task-job.manage"],"target_types":[],"conditions":[]}
+    ]
+  }
+]

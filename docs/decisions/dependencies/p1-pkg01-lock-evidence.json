@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-07T07:45:20+08:00",
+  "task": "P1-PKG01-INTEGRATION",
+  "input_commit": "f19cebd3007ba1015a531caab79d50c815931b61",
+  "contract_commit": "e1ba27afec9e95096f0d65bb4b75da340c9998b4",
+  "source_commits": {
+    "composer_consolidation": "a4ffa988c495f168663f11511cfcfb9a977a1bb3",
+    "web_consolidation": "f19cebd3007ba1015a531caab79d50c815931b61"
+  },
+  "slice_status": "fixed-package-boundary-candidate",
+  "third_party_dependency_change": false,
+  "public_runtime_packages": [
+    "peanut-admin/core@0.1.0-alpha.1",
+    "@peanut-admin/admin@0.1.0-alpha.1"
+  ],
+  "locks": {
+    "composer.lock": {
+      "sha256": "034d604658dc9b5bf4d44180f5f94bee229bbda7f38109e2a47d673cc43d2add",
+      "delta": "first-party-package-boundary-consolidation-only"
+    },
+    "pnpm-lock.yaml": {
+      "sha256": "fe45cba185049aa22df22bd99f0a2fb6f079aa07630364465da97fa63505d38b",
+      "delta": "first-party-package-boundary-consolidation-only"
+    },
+    "starter/backend/composer.lock": {
+      "sha256": "9165575c6e7de0efa92a7463c5ed3ae6b10e780295e99aac558a496ece2157a3",
+      "delta": "first-party-package-boundary-consolidation-only"
+    },
+    "starter/pnpm-lock.yaml": {
+      "sha256": "ca803b334c016040cdebc3ba7747b9a68b3ec379ce4d63b751b9a778a2f3b07d",
+      "delta": "first-party-package-boundary-consolidation-only"
+    }
+  },
+  "formatter_scope": {
+    "source_command": "php vendor/bin/php-cs-fixer check --diff --config=scripts/php-cs-fixer.php",
+    "fix_command": "php vendor/bin/php-cs-fixer fix --config=scripts/php-cs-fixer.php",
+    "file_count": 85,
+    "sorted_path_sha256": "b87174327141e84f85a08896ca8074a708f0e7e068fd3aba2f58beb257e7cc51",
+    "contract_commit": "1f0aec5e04ff272cfc88337af37e2aaa62f36e19",
+    "actual_changed_file_count": 85,
+    "actual_changed_path_sha256": "b87174327141e84f85a08896ca8074a708f0e7e068fd3aba2f58beb257e7cc51",
+    "changed_path_set": "matched-frozen-inventory"
+  },
+  "verification": {
+    "lock_sha256_consistency": "checked",
+    "manifest_lock_consistency": "passed",
+    "isolated_composer_consumer": "passed",
+    "isolated_pnpm_consumer": "passed",
+    "phpunit": "passed: 562 tests, 3510 assertions, 253 skipped",
+    "phpstan": "passed: 0 errors",
+    "deptrac": "passed: 0 violations, 0 uncovered",
+    "php_cs_fixer": "passed: 801 files",
+    "web_lint": "passed",
+    "web_typecheck": "passed",
+    "web_unit": "passed at a5f44faa2191d84a792f6ca64559a37bf14aabf2: 51 files, 208 tests",
+    "web_build": "passed",
+    "compose_config": "passed",
+    "fixed_commit_qualification": "not-run-in-package-boundary-slice"
+  },
+  "notes": [
+    "The four lock deltas remove the former first-party child package boundaries and add only peanut-admin/core and @peanut-admin/admin at 0.1.0-alpha.1.",
+    "The Starter platform Ops Console remains Host-owned and is not registered as a Tenant Module.",
+    "No third-party package version changed.",
+    "Internal source domains remain separate directories but are not independently installable or publishable packages.",
+    "This evidence does not publish a package, create a tag or release, move the downstream lock, or claim production readiness."
+  ]
+}

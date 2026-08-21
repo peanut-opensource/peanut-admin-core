@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+backup=''
+target=''
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --backup)
+      backup="${2:-}"
+      shift 2
+      ;;
+    --target)
+      target="${2:-}"
+      shift 2
+      ;;
+    *)
+      echo "ERROR: unknown restore argument: $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
+active_database="${DB_DATABASE:-peanut_admin}"
+if [[ -z "$backup" || -z "$target" ]]; then
+  echo 'ERROR: --backup and --target are required' >&2
+  exit 1
+fi
+if [[ ! "$target" =~ ^[a-z][a-z0-9_]{0,63}$ ]]; then
+  echo 'ERROR: RESTORE_TARGET_NAME_INVALID' >&2
+  exit 1
+fi
+if [[ "$target" == "$active_database" ]]; then
+  echo 'ERROR: RESTORE_TARGET_IS_ACTIVE_DATABASE' >&2
+  exit 1
+fi
+for required in manifest.json inventory.json dump.sql dump.sql.sha256; do
+  if [[ ! -f "$backup/$required" ]]; then
+    echo "ERROR: RESTORE_ARTIFACT_MISSING: $required" >&2
+    exit 1
+  fi
+done
+
+BACKUP_DIR="$backup" php -r '
+$root = getenv("BACKUP_DIR");
+$manifest = json_decode((string) file_get_contents($root . "/manifest.json"), true, 512, JSON_THROW_ON_ERROR);
+$inventory = json_decode((string) file_get_contents($root . "/inventory.json"), true, 512, JSON_THROW_ON_ERROR);
+if (($manifest["schema_version"] ?? null) !== 1
+    || ($manifest["dump"]["path"] ?? null) !== "dump.sql"
+    || !is_string($manifest["dump"]["dump_sha256"] ?? null)
+    || ($manifest["inventory"] ?? null) !== $inventory) {
+    fwrite(STDERR, "ERROR: RESTORE_MANIFEST_INVALID\n");
+    exit(1);
+}
+$actual = hash_file("sha256", $root . "/dump.sql");
+if (!hash_equals($manifest["dump"]["dump_sha256"], $actual)) {
+    fwrite(STDERR, "ERROR: BACKUP_CHECKSUM_MISMATCH\n");
+    exit(1);
+}
+'
+
+RESTORE_TARGET="$target" php -r '
+$target = getenv("RESTORE_TARGET");
+$pdo = new PDO(
+    "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+    "root",
+    getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+);
+$statement = $pdo->prepare("SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = :target");
+$statement->execute(["target" => $target]);
+if ((int) $statement->fetchColumn() !== 0) {
+    fwrite(STDERR, "ERROR: RESTORE_TARGET_ALREADY_EXISTS\n");
+    exit(1);
+}
+$pdo->exec("CREATE DATABASE `{$target}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci");
+'
+
+restored=false
+actual_inventory=''
+cleanup() {
+  if [[ -n "$actual_inventory" ]]; then
+    rm -f "$actual_inventory"
+  fi
+  if [[ "$restored" != true ]]; then
+    RESTORE_TARGET="$target" php -r '
+    $target = getenv("RESTORE_TARGET");
+    if (!is_string($target) || preg_match("/^[a-z][a-z0-9_]{0,63}$/D", $target) !== 1) {
+        exit(1);
+    }
+    $pdo = new PDO(
+        "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+        "root",
+        getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+    );
+    $pdo->exec("DROP DATABASE IF EXISTS `{$target}`");
+    ' >/dev/null
+  fi
+}
+trap cleanup EXIT
+
+docker compose exec -T mysql sh -c '
+  export MYSQL_PWD="$MYSQL_ROOT_PASSWORD"
+  exec mysql --user=root "$1"
+' sh "$target" <"$backup/dump.sql"
+
+actual_inventory="$(mktemp)"
+DB_DATABASE="$target" DB_USERNAME=root \
+  DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+  ./scripts/backup-mysql-metadata >"$actual_inventory"
+BACKUP_DIR="$backup" ACTUAL_INVENTORY="$actual_inventory" php -r '
+$expected = json_decode(
+    (string) file_get_contents(getenv("BACKUP_DIR") . "/inventory.json"),
+    true,
+    512,
+    JSON_THROW_ON_ERROR,
+);
+$actual = json_decode(
+    (string) file_get_contents(getenv("ACTUAL_INVENTORY")),
+    true,
+    512,
+    JSON_THROW_ON_ERROR,
+);
+foreach (["tables", "migrations"] as $section) {
+    if (($expected[$section] ?? null) !== ($actual[$section] ?? null)) {
+        fwrite(STDERR, "ERROR: RESTORE_INVENTORY_MISMATCH: {$section}\n");
+        exit(1);
+    }
+}
+'
+rm -f "$actual_inventory"
+actual_inventory=''
+
+restored=true
+echo "Restore verified: $target"

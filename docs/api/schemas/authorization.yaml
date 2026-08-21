@@ -1,0 +1,290 @@
+TargetCandidate:
+  type: object
+  additionalProperties: false
+  required: [target_resource_key, target_id, label]
+  properties:
+    target_resource_key: { type: string }
+    target_id: { type: string }
+    label: { type: string }
+
+TargetCandidateMeta:
+  type: object
+  additionalProperties: false
+  required: [request_id, page, page_size, total, total_pages, target_cardinality, available_count]
+  properties:
+    request_id: { type: string }
+    page: { type: integer, minimum: 1 }
+    page_size: { type: integer, minimum: 1, maximum: 100 }
+    total: { type: integer, minimum: 0 }
+    total_pages: { type: integer, minimum: 0 }
+    target_cardinality: { enum: [none, single, multiple] }
+    available_count: { type: integer, minimum: 0 }
+
+TargetCandidateListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/TargetCandidate' } }
+    meta: { $ref: '#/TargetCandidateMeta' }
+
+EffectiveAccessMember:
+  type: object
+  additionalProperties: false
+  required: [id, display_name, status, primary_department_id, effective]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    display_name: { type: [string, 'null'], maxLength: 120 }
+    status: { enum: [pending, active, suspended, left] }
+    primary_department_id:
+      anyOf:
+        - { $ref: './common.yaml#/$defs/BigIntString' }
+        - { type: 'null' }
+    effective: { type: boolean }
+
+EffectiveAccessRole:
+  type: object
+  additionalProperties: false
+  required: [id, key, name, is_builtin]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    key: { type: string, minLength: 1, maxLength: 96 }
+    name: { type: string, minLength: 1, maxLength: 120 }
+    is_builtin: { type: boolean }
+
+EffectiveAccessCondition:
+  type: object
+  additionalProperties: false
+  required: [condition_key, target_resource_key, target_count]
+  properties:
+    condition_key: { type: string, minLength: 1, maxLength: 160 }
+    target_resource_key: { type: [string, 'null'], minLength: 1, maxLength: 160 }
+    target_count: { type: integer, minimum: 0 }
+
+EffectiveAccessGroup:
+  type: object
+  additionalProperties: false
+  required: [source_role_key, condition_match, conditions]
+  properties:
+    source_role_key: { type: string, minLength: 1, maxLength: 96 }
+    condition_match: { type: string, const: all }
+    conditions:
+      type: array
+      minItems: 1
+      items: { $ref: '#/EffectiveAccessCondition' }
+
+EffectiveDataAccess:
+  type: object
+  additionalProperties: false
+  required: [mode, runtime_decision_required, group_match, groups]
+  properties:
+    mode:
+      enum:
+        - functional_denied
+        - tenant_wide
+        - global_reference_read
+        - conditional
+        - no_effective_policy
+        - tenant_actor_denied
+    runtime_decision_required: { type: boolean }
+    group_match: { type: string, const: any }
+    groups:
+      type: array
+      items: { $ref: '#/EffectiveAccessGroup' }
+
+EffectiveResourceOperation:
+  type: object
+  additionalProperties: false
+  required:
+    - resource_key
+    - module_key
+    - operation
+    - ownership
+    - access_mode
+    - target_cardinality
+    - permission_match
+    - required_permission_keys
+    - functional_allowed
+    - data_access
+  properties:
+    resource_key: { type: string, minLength: 1, maxLength: 160 }
+    module_key: { type: string, minLength: 1, maxLength: 96 }
+    operation: { type: string, minLength: 1, maxLength: 64 }
+    ownership:
+      enum: [tenant_owned, business_target_owned, shared_master, global_reference, platform_internal]
+    access_mode:
+      enum: [tenant_wide, rule_filtered, explicit_targets, global_reference_read, system_internal]
+    target_cardinality:
+      enum: [none, one_required, zero_or_one, many_readable, aggregate_read, policy_publish, bulk_write]
+    permission_match: { enum: [all, any] }
+    required_permission_keys:
+      type: array
+      uniqueItems: true
+      items: { type: string, minLength: 1, maxLength: 160 }
+    functional_allowed: { type: boolean }
+    data_access: { $ref: '#/EffectiveDataAccess' }
+
+MemberEffectiveAccess:
+  type: object
+  additionalProperties: false
+  required:
+    - preview_kind
+    - evaluated_at
+    - snapshot_revision
+    - member
+    - roles
+    - permission_keys
+    - resource_operations
+  properties:
+    preview_kind: { type: string, const: authorization_inputs }
+    evaluated_at: { type: string, format: date-time }
+    snapshot_revision: { type: string, pattern: '^[a-f0-9]{64}$' }
+    member: { $ref: '#/EffectiveAccessMember' }
+    roles:
+      type: array
+      items: { $ref: '#/EffectiveAccessRole' }
+    permission_keys:
+      type: array
+      uniqueItems: true
+      items: { type: string, minLength: 1, maxLength: 160 }
+    resource_operations:
+      type: array
+      items: { $ref: '#/EffectiveResourceOperation' }
+
+MemberEffectiveAccessResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/MemberEffectiveAccess' }
+    meta: { $ref: './common.yaml#/$defs/PageMeta' }
+
+DataPolicyTarget:
+  type: object
+  additionalProperties: false
+  required: [target_id]
+  properties:
+    target_id: { type: string }
+
+DataPolicyTargetSet:
+  type: object
+  additionalProperties: false
+  required: [id, name, target_mode, target_resource_key, status, revision, targets]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    name: { type: string }
+    target_mode: { type: string }
+    target_resource_key: { type: string }
+    status: { type: string }
+    revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    targets: { type: array, items: { $ref: '#/DataPolicyTarget' } }
+
+DataPolicyCondition:
+  type: object
+  additionalProperties: false
+  required: [id, condition_key, status, revision, target_set, config]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    condition_key: { type: string }
+    status: { type: string }
+    revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    target_set:
+      oneOf:
+        - { $ref: '#/DataPolicyTargetSet' }
+        - { type: 'null' }
+    config: { type: [object, 'null'], additionalProperties: true }
+
+DataPolicyGroup:
+  type: object
+  additionalProperties: false
+  required: [id, name, match_mode, sort_order, status, revision, conditions]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    name: { type: string }
+    match_mode: { type: string }
+    sort_order: { type: integer }
+    status: { type: string }
+    revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    conditions: { type: array, items: { $ref: '#/DataPolicyCondition' } }
+
+DataPolicy:
+  type: object
+  additionalProperties: false
+  required: [id, tenant_id, role_id, resource_key, operation, status, revision, groups, created_at, updated_at]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    tenant_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    role_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    resource_key: { type: string }
+    operation: { type: string }
+    status: { enum: [active, disabled] }
+    valid_from: { type: [string, 'null'] }
+    valid_until: { type: [string, 'null'] }
+    revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    reason: { type: [string, 'null'] }
+    groups: { type: array, items: { $ref: '#/DataPolicyGroup' } }
+    created_at: { type: string }
+    updated_at: { type: string }
+
+DataPolicyResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/DataPolicy' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+DataPolicyTargetSetWrite:
+  type: object
+  additionalProperties: false
+  required: [name, target_resource_key, targets]
+  properties:
+    name: { type: string, minLength: 1, maxLength: 120 }
+    target_resource_key: { type: string, minLength: 1 }
+    targets:
+      type: array
+      minItems: 1
+      maxItems: 500
+      items:
+        type: object
+        additionalProperties: false
+        required: [target_id]
+        properties:
+          target_id: { type: string, minLength: 1, maxLength: 128 }
+
+DataPolicyConditionWrite:
+  type: object
+  additionalProperties: false
+  required: [condition_key]
+  properties:
+    condition_key: { type: string, minLength: 1 }
+    target_set:
+      oneOf:
+        - { $ref: '#/DataPolicyTargetSetWrite' }
+        - { type: 'null' }
+
+DataPolicyGroupWrite:
+  type: object
+  additionalProperties: false
+  required: [name, conditions]
+  properties:
+    name: { type: string, minLength: 1, maxLength: 120 }
+    conditions:
+      type: array
+      minItems: 1
+      maxItems: 50
+      items: { $ref: '#/DataPolicyConditionWrite' }
+
+ReplaceDataPolicyRequest:
+  type: object
+  additionalProperties: false
+  required: [status, groups]
+  properties:
+    status: { enum: [active, disabled] }
+    reason: { type: [string, 'null'], maxLength: 300 }
+    valid_from: { type: [string, 'null'], format: date-time }
+    valid_until: { type: [string, 'null'], format: date-time }
+    groups:
+      type: array
+      maxItems: 50
+      items: { $ref: '#/DataPolicyGroupWrite' }

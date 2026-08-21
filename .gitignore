@@ -1,0 +1,21 @@
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+.env
+.env.*
+!.env.example
+
+vendor/
+node_modules/
+.pnpm-store/
+coverage/
+dist/
+.cache/
+/backend/runtime/
+*.log
+
+# Company-internal Agent rules are synchronized locally and never published.
+company-rules/

@@ -1,0 +1,16 @@
+[
+  {
+    "key": "example.target.list",
+    "scope": "tenant",
+    "parent_key": null,
+    "type": "page",
+    "name": "Example Targets",
+    "route_name": "example-target-list",
+    "route_path": "/app/examples/targets",
+    "component_key": "example.target.list",
+    "required_permission": "example.target.read",
+    "icon": "PanelsTopLeft",
+    "sort_order": 100,
+    "client_keys": ["admin-web"]
+  }
+]

@@ -1,0 +1,222 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$root = dirname(__DIR__);
+$decisionPath = $root . '/docs/decisions/dependencies/p0-dependencies.json';
+$errors = [];
+
+if (!is_file($decisionPath)) {
+    fwrite(STDERR, "ERROR: docs/decisions/dependencies/p0-dependencies.json is missing\n");
+    exit(1);
+}
+
+try {
+    $manifest = json_decode(
+        (string) file_get_contents($decisionPath),
+        true,
+        512,
+        JSON_THROW_ON_ERROR
+    );
+} catch (Throwable $error) {
+    fwrite(STDERR, "ERROR: p0-dependencies.json: {$error->getMessage()}\n");
+    exit(1);
+}
+
+if (!is_array($manifest) || ($manifest['schema_version'] ?? null) !== 1) {
+    $errors[] = 'p0-dependencies.json: schema_version must equal 1';
+}
+
+$decisions = $manifest['decisions'] ?? null;
+if (!is_array($decisions)) {
+    $errors[] = 'p0-dependencies.json: decisions must be an array';
+    $decisions = [];
+}
+
+$requiredAccepted = [
+    'php.framework',
+    'php.orm',
+    'php.migration',
+    'php.json-schema',
+    'php.phpunit',
+    'php.phpstan',
+    'php.deptrac',
+    'php.formatter',
+    'web.vue',
+    'web.vite',
+    'web.typescript',
+    'web.element-plus',
+    'web.pinia',
+    'web.vue-router',
+    'web.vite-plugin-vue',
+    'web.vitest',
+    'web.playwright',
+    'web.eslint',
+    'web.eslint-plugin-vue',
+    'web.typescript-eslint',
+    'web.vue-tsc',
+    'web.vue-test-utils',
+    'web.dom-test-runtime',
+    'web.node-types',
+    'api.openapi-validator',
+    'api.openapi-typescript',
+    'api.openapi-fetch',
+    'docs.vitepress',
+    'tool.node',
+    'tool.pnpm',
+    'tool.composer',
+    'image.mysql',
+    'image.cache',
+    'ci.gitleaks',
+    'ci.dependency-review',
+    'ci.checkout',
+    'ci.setup-node',
+    'ci.setup-php',
+    'ci.pnpm-setup',
+    'ci.configure-pages',
+    'ci.upload-pages',
+    'ci.deploy-pages',
+];
+
+$requiredDeferred = [
+    'defer.flysystem',
+    'defer.queue-ui',
+    'defer.excel',
+    'defer.notifications',
+    'defer.plugin-runtime',
+    'defer.mfa',
+    'defer.oidc',
+];
+
+$requiredFields = [
+    'id',
+    'status',
+    'category',
+    'name',
+    'exact_version',
+    'constraint',
+    'direct_dependency',
+    'license',
+    'purpose',
+    'alternatives',
+    'adapter',
+    'exit_plan',
+    'security_status',
+    'official_sources',
+];
+
+$byId = [];
+foreach ($decisions as $index => $decision) {
+    $label = "decisions[{$index}]";
+    if (!is_array($decision)) {
+        $errors[] = "{$label}: entry must be an object";
+        continue;
+    }
+
+    foreach ($requiredFields as $field) {
+        if (!array_key_exists($field, $decision)) {
+            $errors[] = "{$label}: missing {$field}";
+        }
+    }
+
+    $id = $decision['id'] ?? null;
+    if (!is_string($id) || trim($id) === '') {
+        $errors[] = "{$label}: id must be a non-empty string";
+        continue;
+    }
+    if (isset($byId[$id])) {
+        $errors[] = "{$id}: duplicate dependency decision";
+        continue;
+    }
+    $byId[$id] = $decision;
+
+    $status = $decision['status'] ?? null;
+    if (!in_array($status, ['accepted', 'deferred'], true)) {
+        $errors[] = "{$id}: status must be accepted or deferred";
+    }
+
+    if (!is_bool($decision['direct_dependency'] ?? null)) {
+        $errors[] = "{$id}: direct_dependency must be boolean";
+    }
+
+    foreach (['category', 'name', 'license', 'purpose', 'adapter', 'exit_plan', 'security_status'] as $field) {
+        if (!is_string($decision[$field] ?? null) || trim($decision[$field]) === '') {
+            $errors[] = "{$id}: {$field} must be a non-empty string";
+        }
+    }
+
+    foreach (['alternatives', 'official_sources'] as $field) {
+        $values = $decision[$field] ?? null;
+        if (!is_array($values) || $values === []) {
+            $errors[] = "{$id}: {$field} must be a non-empty array";
+            continue;
+        }
+        foreach ($values as $value) {
+            if (!is_string($value) || trim($value) === '') {
+                $errors[] = "{$id}: {$field} values must be non-empty strings";
+            }
+        }
+    }
+
+    foreach (($decision['official_sources'] ?? []) as $source) {
+        if (!str_starts_with((string) $source, 'https://')) {
+            $errors[] = "{$id}: official source must use https";
+        }
+    }
+
+    if ($status === 'accepted') {
+        foreach (['exact_version', 'constraint'] as $field) {
+            $value = $decision[$field] ?? null;
+            if (!is_string($value) || trim($value) === '' || preg_match('/placeholder|latest|todo|tbd/i', $value)) {
+                $errors[] = "{$id}: accepted {$field} must be exact and cannot be a placeholder";
+            }
+        }
+    }
+
+    if ($status === 'deferred') {
+        if (($decision['exact_version'] ?? null) !== null || ($decision['constraint'] ?? null) !== null) {
+            $errors[] = "{$id}: deferred decisions must not reserve versions";
+        }
+        if (($decision['direct_dependency'] ?? null) !== false) {
+            $errors[] = "{$id}: deferred decisions cannot be direct dependencies";
+        }
+    }
+}
+
+foreach ($requiredAccepted as $id) {
+    if (!isset($byId[$id])) {
+        $errors[] = "{$id}: required accepted decision is missing";
+    } elseif (($byId[$id]['status'] ?? null) !== 'accepted') {
+        $errors[] = "{$id}: required decision must be accepted";
+    }
+}
+
+foreach ($requiredDeferred as $id) {
+    if (!isset($byId[$id])) {
+        $errors[] = "{$id}: required deferred decision is missing";
+    } elseif (($byId[$id]['status'] ?? null) !== 'deferred') {
+        $errors[] = "{$id}: decision must remain deferred in P0";
+    }
+}
+
+$typescriptVersion = $byId['web.typescript']['exact_version'] ?? '';
+if (!is_string($typescriptVersion) || !str_starts_with($typescriptVersion, '5.')) {
+    $errors[] = 'web.typescript: P0 must stay on TypeScript 5 for openapi-typescript 7 compatibility';
+}
+
+$mysqlVersion = $byId['image.mysql']['exact_version'] ?? '';
+if (!is_string($mysqlVersion) || !str_starts_with($mysqlVersion, '8.')) {
+    $errors[] = 'image.mysql: P0 requires MySQL 8';
+}
+
+if ($errors !== []) {
+    foreach ($errors as $error) {
+        fwrite(STDERR, "ERROR: {$error}\n");
+    }
+    exit(1);
+}
+
+$accepted = count(array_filter($decisions, static fn (array $item): bool => $item['status'] === 'accepted'));
+$deferred = count(array_filter($decisions, static fn (array $item): bool => $item['status'] === 'deferred'));
+fwrite(STDOUT, "Dependency decisions: OK ({$accepted} accepted, {$deferred} deferred)\n");

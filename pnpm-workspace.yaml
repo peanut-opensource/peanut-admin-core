@@ -1,0 +1,47 @@
+packages:
+  - frontend
+  - packages/web
+
+allowBuilds:
+  esbuild: true
+
+minimumReleaseAge: 1440
+
+minimumReleaseAgeExclude:
+  - pinia@4.0.2
+  - vue-router@5.2.0
+
+supportedArchitectures:
+  os:
+    - aix
+    - android
+    - darwin
+    - freebsd
+    - linux
+    - netbsd
+    - openbsd
+    - openharmony
+    - sunos
+    - win32
+  cpu:
+    - arm
+    - arm64
+    - ia32
+    - loong64
+    - mips64el
+    - ppc64
+    - riscv64
+    - s390x
+    - wasm32
+    - x64
+  libc:
+    - glibc
+    - musl
+
+overrides:
+  'brace-expansion@2': 2.1.4
+  'brace-expansion@5': 5.0.9
+  'js-yaml@4': 4.3.1
+  'nanoid@3': 3.3.18
+  'vitepress>@vitejs/plugin-vue': 5.2.4
+  'vitepress>vite': 6.4.3

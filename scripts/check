@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+for required_port in MYSQL_PORT DB_PORT; do
+  value="${!required_port-}"
+  if [[ -z "$value" ]]; then
+    echo "ERROR: $required_port is required for repository checks" >&2
+    exit 1
+  fi
+  if [[ ! "$value" =~ ^[0-9]+$ ]] || (( 10#$value < 1 || 10#$value > 65535 )); then
+    echo "ERROR: $required_port must be an integer between 1 and 65535" >&2
+    exit 1
+  fi
+done
+
+./scripts/check-doc-content-status
+./scripts/check-docs
+./scripts/check-dependency-decisions
+PEANUT_RUNTIME_STAGE=runtime ./scripts/check-architecture
+./scripts/check-openapi
+./scripts/check-runtime-coverage
+./scripts/check-supply-chain
+./scripts/test-unit
+./scripts/test-integration
+./scripts/test-security --php-only
+./scripts/test-browser
+./scripts/test-recovery
+./scripts/test-performance
+./scripts/verify-internal-starter
+./scripts/check-workspace
+
+php -r '
+$expected = "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30";
+$actual = hash_file("sha256", "LICENSE");
+if ($actual !== $expected) {
+    fwrite(STDERR, "ERROR: LICENSE is not the approved Apache-2.0 text\n");
+    exit(1);
+}
+'
+
+if rg -n '/Users/|base-framework|BusinessSpace|PermissionDomain|MemberIdentity|DataScope|DCS|Finance Manager' \
+  AGENTS.md README.md NOTICE docs; then
+  echo 'ERROR: private path, legacy model, or product-specific content detected' >&2
+  exit 1
+fi
+
+for required_dir in backend frontend packages/php/kernel packages/php/data-permission packages/php/settings packages/php/testing packages/web/admin-core packages/web/admin-shell packages/web/settings packages/web/testing docker; do
+  if [[ ! -d "$required_dir" ]]; then
+    echo "ERROR: P0 workspace directory is missing: $required_dir" >&2
+    exit 1
+  fi
+done
+
+for deferred_dir in templates; do
+  if [[ -e "$deferred_dir" ]]; then
+    echo "ERROR: $deferred_dir is not introduced in P0-A04" >&2
+    exit 1
+  fi
+done
+
+git diff --check
+echo 'Repository checks: OK'

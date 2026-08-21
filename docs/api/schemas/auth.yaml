@@ -1,0 +1,199 @@
+TenantLoginRequest:
+  type: object
+  additionalProperties: false
+  required: [email, password]
+  properties:
+    email: { type: string, format: email }
+    password: { type: string, minLength: 1, writeOnly: true }
+    tenant_code: { type: [string, 'null'], maxLength: 96 }
+
+SelectTenantRequest:
+  type: object
+  additionalProperties: false
+  required: [challenge_token, tenant_id]
+  properties:
+    challenge_token: { type: string, minLength: 16, writeOnly: true }
+    tenant_id: { $ref: './common.yaml#/$defs/BigIntString' }
+
+TenantChoice:
+  type: object
+  additionalProperties: false
+  required: [tenant_id, tenant_code, tenant_name, tenant_member_id, member_display_name]
+  properties:
+    tenant_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    tenant_code: { type: string }
+    tenant_name: { type: string }
+    tenant_member_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    member_display_name: { type: string }
+
+TenantContext:
+  type: object
+  additionalProperties: false
+  required: [audience, account_id, tenant_id, tenant_member_id]
+  properties:
+    audience: { type: string, const: tenant }
+    account_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    tenant_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    tenant_member_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    authorization_revision: { $ref: './common.yaml#/$defs/BigIntString' }
+
+ContextAccount:
+  type: object
+  additionalProperties: false
+  required: [id, display_name, avatar_uri]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    display_name: { type: string }
+    avatar_uri: { type: [string, 'null'] }
+
+ContextTenant:
+  type: object
+  additionalProperties: false
+  required: [id, code, display_name, timezone]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    code: { type: string }
+    display_name: { type: string }
+    timezone: { type: string }
+
+ContextMember:
+  type: object
+  additionalProperties: false
+  required: [id, display_name, primary_department_id, role_ids]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    display_name: { type: string }
+    primary_department_id: { type: [string, 'null'] }
+    role_ids:
+      type: array
+      items: { $ref: './common.yaml#/$defs/BigIntString' }
+
+TenantContextView:
+  type: object
+  additionalProperties: false
+  required: [audience, account, tenant, member, module_keys, permission_keys, authorization_revision]
+  properties:
+    audience: { type: string, const: tenant }
+    account: { $ref: '#/ContextAccount' }
+    tenant: { $ref: '#/ContextTenant' }
+    member: { $ref: '#/ContextMember' }
+    module_keys: { type: array, items: { type: string } }
+    permission_keys: { type: array, items: { type: string } }
+    authorization_revision: { $ref: './common.yaml#/$defs/BigIntString' }
+
+TenantAuthentication:
+  type: object
+  additionalProperties: false
+  required: [state, access_token, token_type, expires_in, context]
+  properties:
+    state: { type: string, const: authenticated }
+    access_token: { type: string }
+    token_type: { type: string, const: Bearer }
+    expires_in: { type: integer, minimum: 1 }
+    context: { $ref: '#/TenantContext' }
+
+TenantSelection:
+  type: object
+  additionalProperties: false
+  required: [state, challenge_token, expires_at, tenants]
+  properties:
+    state: { type: string, const: tenant_selection_required }
+    challenge_token: { type: string }
+    expires_at: { type: string, format: date-time }
+    tenants:
+      type: array
+      minItems: 1
+      items: { $ref: '#/TenantChoice' }
+
+TenantLoginResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      oneOf:
+        - { $ref: '#/TenantAuthentication' }
+        - { $ref: '#/TenantSelection' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+TenantAuthenticationResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/TenantAuthentication' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+TenantSelectionResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/TenantSelection' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+TenantContextResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/TenantContextView' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+AccountCredentialSummary:
+  type: object
+  additionalProperties: false
+  required: [kind, identifier_type, identifier_masked, verified_at, secret_changed_at]
+  properties:
+    kind: { type: string, const: email_password }
+    identifier_type: { type: string, const: email }
+    identifier_masked: { type: string, minLength: 5 }
+    verified_at: { type: string }
+    secret_changed_at: { type: string }
+
+AccountProfile:
+  type: object
+  additionalProperties: false
+  required: [account_id, display_name, avatar_uri, credential]
+  properties:
+    account_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    display_name: { type: string, minLength: 1, maxLength: 120 }
+    avatar_uri:
+      type: [string, 'null']
+      format: uri
+      pattern: '^[Hh][Tt][Tt][Pp][Ss]://'
+      maxLength: 512
+      description: Absolute HTTPS URI without user information.
+    credential: { $ref: '#/AccountCredentialSummary' }
+
+AccountProfileResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/AccountProfile' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+UpdateAccountProfileRequest:
+  type: object
+  additionalProperties: false
+  required: [display_name, avatar_uri]
+  properties:
+    display_name: { type: string, minLength: 1, maxLength: 120 }
+    avatar_uri:
+      type: [string, 'null']
+      format: uri
+      pattern: '^[Hh][Tt][Tt][Pp][Ss]://'
+      maxLength: 512
+      description: Absolute HTTPS URI without user information.
+
+ChangePasswordRequest:
+  type: object
+  additionalProperties: false
+  required: [current_password, new_password]
+  properties:
+    current_password: { type: string, minLength: 1, maxLength: 1024, writeOnly: true }
+    new_password:
+      type: string
+      writeOnly: true
+      description: New password containing between 12 and 128 UTF-8 bytes.

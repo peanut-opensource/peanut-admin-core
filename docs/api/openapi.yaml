@@ -1,0 +1,1480 @@
+openapi: 3.1.2
+info:
+  title: Peanut Admin API
+  version: 0.1.0
+  description: Tenant and platform administration contracts for the Peanut Admin foundation.
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+
+x-read-errors: &readErrors
+  '401': { $ref: '#/components/responses/Problem' }
+  '403': { $ref: '#/components/responses/Problem' }
+  '404': { $ref: '#/components/responses/Problem' }
+  '422': { $ref: '#/components/responses/Problem' }
+  '429': { $ref: '#/components/responses/RateLimitedProblem' }
+  '500': { $ref: '#/components/responses/Problem' }
+  '503': { $ref: '#/components/responses/Problem' }
+x-write-errors: &writeErrors
+  <<: *readErrors
+  '409': { $ref: '#/components/responses/Problem' }
+  '412': { $ref: '#/components/responses/Problem' }
+  '428': { $ref: '#/components/responses/Problem' }
+
+x-tenant-login-responses: &tenantLoginResponses
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/TenantLoginOk' }
+x-tenant-authenticated-responses: &tenantAuthenticatedResponses
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/TenantAuthenticatedOk' }
+x-tenant-selection-responses: &tenantSelectionResponses
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/TenantSelectionOk' }
+x-tenant-context-responses: &tenantContextResponses
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/TenantContextOk' }
+x-platform-authenticated-responses: &platformAuthenticatedResponses
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/PlatformAuthenticatedOk' }
+x-platform-context-responses: &platformContextResponses
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/PlatformContextOk' }
+x-account-profile-responses: &accountProfileResponses
+  <<: *writeErrors
+  '200':
+    description: Authenticated account profile.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/auth.yaml#/AccountProfileResponse' }
+x-setting-list-responses: &settingListResponses
+  <<: *readErrors
+  '200':
+    description: Effective settings for the managed scope.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"settings-[a-f0-9]{64}"$' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/settings.yaml#/SettingListResponse' }
+x-setting-responses: &settingResponses
+  <<: *writeErrors
+  '200':
+    description: Setting scope value updated.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/settings.yaml#/SettingResponse' }
+
+x-tenant-response: &tenantResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/TenantOk' }
+x-tenant-list-response: &tenantListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/TenantListOk' }
+x-tenant-created-response: &tenantCreatedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/TenantCreated' }
+x-tenant-versioned-response: &tenantVersionedResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/TenantVersionedOk' }
+x-permission-list-response: &permissionListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/PermissionListOk' }
+x-tenant-module-response: &tenantModuleResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/TenantModuleOk' }
+x-tenant-module-list-response: &tenantModuleListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/TenantModuleListOk' }
+x-tenant-audit-list-response: &tenantAuditListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/TenantAuditListOk' }
+x-tenant-audit-response: &tenantAuditResponse
+  <<: *readErrors
+  '200':
+    description: Redacted Tenant audit event detail.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/workspace.yaml#/TenantAuditEventResponse' }
+x-platform-audit-response: &platformAuditResponse
+  <<: *readErrors
+  '200':
+    description: Redacted platform audit event detail.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/platform.yaml#/PlatformAuditEventResponse' }
+x-menu-list-response: &menuListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/MenuListOk' }
+x-menu-diagnostic-list-response: &menuDiagnosticListResponse
+  <<: *readErrors
+  '200':
+    description: Permission-gated menu declaration diagnostics.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/workspace.yaml#/MenuDiagnosticListResponse' }
+x-upgrade-status-response: &upgradeStatusResponse
+  <<: *readErrors
+  '200':
+    description: Read-only operator upgrade preparation status.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/upgrade.yaml#/UpgradeStatusResponse' }
+
+x-member-response: &memberResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/MemberOk' }
+x-member-created-response: &memberCreatedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/MemberCreated' }
+x-member-list-response: &memberListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/MemberListOk' }
+x-department-response: &departmentResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/DepartmentOk' }
+x-department-created-response: &departmentCreatedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/DepartmentCreated' }
+x-department-list-response: &departmentListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/DepartmentListOk' }
+x-role-response: &roleResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/RoleOk' }
+x-role-created-response: &roleCreatedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/RoleCreated' }
+x-role-list-response: &roleListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/RoleListOk' }
+x-owner-created-response: &ownerCreatedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/TenantOwnerCreated' }
+x-owner-response: &ownerResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/TenantOwnerOk' }
+
+x-target-candidate-list-response: &targetCandidateListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/TargetCandidateListOk' }
+x-member-effective-access-response: &memberEffectiveAccessResponse
+  '200': { $ref: './responses.yaml#/MemberEffectiveAccessOk' }
+  '401': { $ref: '#/components/responses/Problem' }
+  '403': { $ref: '#/components/responses/Problem' }
+  '404': { $ref: '#/components/responses/Problem' }
+  '422': { $ref: '#/components/responses/Problem' }
+  '500': { $ref: '#/components/responses/Problem' }
+x-data-policy-response: &dataPolicyResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/DataPolicyOk' }
+
+x-work-item-list-response: &workItemListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/WorkItemListOk' }
+x-work-item-created-response: &workItemCreatedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/WorkItemCreated' }
+x-work-item-response: &workItemResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/WorkItemOk' }
+x-work-item-updated-response: &workItemUpdatedResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/WorkItemUpdated' }
+x-work-item-aggregate-response: &workItemAggregateResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/WorkItemAggregateOk' }
+x-reference-candidate-list-response: &referenceCandidateListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/ReferenceCandidateListOk' }
+x-work-item-policy-published-response: &workItemPolicyPublishedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/WorkItemPolicyPublished' }
+
+x-reference-code-set-list-response: &referenceCodeSetListResponse
+  <<: *readErrors
+  '200':
+    description: Active reference-code set declarations visible to the current Tenant.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/reference-codes.yaml#/ReferenceCodeSetListResponse' }
+x-reference-code-list-response: &referenceCodeListResponse
+  <<: *readErrors
+  '200':
+    description: Current-Tenant reference-code entries at one fixed as-of instant.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/reference-codes.yaml#/ReferenceCodeListResponse' }
+x-reference-code-entry-response: &referenceCodeEntryResponse
+  <<: *readErrors
+  '200':
+    description: One current-Tenant reference-code identity and effective version.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { $ref: './schemas/reference-codes.yaml#/StrongReferenceCodeEtag' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/reference-codes.yaml#/ReferenceCodeEntryResponse' }
+x-reference-code-write-response: &referenceCodeWriteResponse
+  <<: *writeErrors
+  '200':
+    description: Updated or retired current-Tenant reference-code identity.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { $ref: './schemas/reference-codes.yaml#/StrongReferenceCodeEtag' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/reference-codes.yaml#/ReferenceCodeEntryResponse' }
+x-reference-code-created-response: &referenceCodeCreatedResponse
+  <<: *writeErrors
+  '201':
+    description: Reference-code identity and initial version created.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { $ref: './schemas/reference-codes.yaml#/StrongReferenceCodeEtag' } }
+      Location: { schema: { type: string, pattern: '^/api/v1/reference-code-sets/[^/?#]+/[^/?#]+/codes/[^/?#]+$' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/reference-codes.yaml#/ReferenceCodeEntryResponse' }
+
+x-file-list-response: &fileListResponse
+  <<: *readErrors
+  '200':
+    description: Current-Tenant private file metadata.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/file-media.yaml#/FileListResponse' }
+x-file-response: &fileResponse
+  <<: *writeErrors
+  '200':
+    description: Current-Tenant private file metadata.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { $ref: './schemas/file-media.yaml#/StrongFileEtag' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/file-media.yaml#/FileResponse' }
+x-file-created-response: &fileCreatedResponse
+  <<: *writeErrors
+  '201':
+    description: Private file stored for the current Tenant.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { $ref: './schemas/file-media.yaml#/StrongFileEtag' } }
+      Location: { schema: { type: string, pattern: '^/api/v1/files/file_[0-9a-f]{32}$' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/file-media.yaml#/FileResponse' }
+x-file-asset-list-response: &fileAssetListResponse
+  <<: *readErrors
+  '200':
+    description: Tenant image assets with short-lived private previews.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/file-media.yaml#/FileAssetListResponse' }
+x-file-delivery-grant-response: &fileDeliveryGrantResponse
+  <<: *writeErrors
+  '201':
+    description: Short-lived single-use private delivery grant.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/file-media.yaml#/FileDeliveryGrantResponse' }
+x-task-list-response: &taskListResponse
+  <<: *readErrors
+  '200':
+    description: Tenant task ledger page.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/task-job.yaml#/TaskListResponse' }
+x-task-response: &taskResponse
+  <<: *writeErrors
+  '200':
+    description: Current Tenant task state.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { $ref: './schemas/task-job.yaml#/StrongTaskEtag' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/task-job.yaml#/TaskResponse' }
+x-task-accepted-response: &taskAcceptedResponse
+  <<: *writeErrors
+  '202':
+    description: Trusted notification task queued.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/task-job.yaml#/TaskResponse' }
+x-notification-list-response: &notificationListResponse
+  <<: *readErrors
+  '200':
+    description: Current member notification inbox.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/notification-sms.yaml#/NotificationListResponse' }
+x-notification-response: &notificationResponse
+  <<: *writeErrors
+  '200':
+    description: Current member notification state.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/notification-sms.yaml#/NotificationResponse' }
+x-notification-bulk-response: &notificationBulkResponse
+  <<: *writeErrors
+  '200':
+    description: Notification inbox bulk update count.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/notification-sms.yaml#/NotificationBulkResponse' }
+x-notification-template-response: &notificationTemplateResponse
+  <<: *writeErrors
+  '200':
+    description: Active notification template revision.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/notification-sms.yaml#/NotificationTemplateResponse' }
+x-notification-created-response: &notificationCreatedResponse
+  <<: *writeErrors
+  '201':
+    description: Notification messages and asynchronous delivery jobs created atomically.
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content:
+      application/json:
+        schema: { $ref: './schemas/notification-sms.yaml#/NotificationPublishResponse' }
+x-import-export-response: &importExportResponse
+  <<: *writeErrors
+  '200':
+    description: Import/export operation
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content: { application/json: { schema: { $ref: './schemas/import-export.yaml#/OperationResponse' } } }
+x-import-export-list-response: &importExportListResponse
+  <<: *readErrors
+  '200':
+    description: Import/export operations
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content: { application/json: { schema: { $ref: './schemas/import-export.yaml#/OperationListResponse' } } }
+x-import-export-created-response: &importExportCreatedResponse
+  <<: *writeErrors
+  '201':
+    description: Import/export operation queued
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content: { application/json: { schema: { $ref: './schemas/import-export.yaml#/OperationResponse' } } }
+x-integration-security-response: &integrationSecurityResponse
+  <<: *writeErrors
+  '200':
+    description: Integration security result
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content: { application/json: { schema: { $ref: './schemas/integration-security.yaml#/ObjectResponse' } } }
+x-integration-security-versioned-response: &integrationSecurityVersionedResponse
+  <<: *writeErrors
+  '200':
+    description: Versioned integration security result
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content: { application/json: { schema: { $ref: './schemas/integration-security.yaml#/ObjectResponse' } } }
+x-integration-security-created-response: &integrationSecurityCreatedResponse
+  <<: *writeErrors
+  '201':
+    description: Integration security credential created
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content: { application/json: { schema: { $ref: './schemas/integration-security.yaml#/ObjectResponse' } } }
+x-integration-security-list-response: &integrationSecurityListResponse
+  <<: *readErrors
+  '200':
+    description: Integration security objects
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content: { application/json: { schema: { $ref: './schemas/integration-security.yaml#/ListResponse' } } }
+x-integration-security-page-response: &integrationSecurityPageResponse
+  <<: *readErrors
+  '200':
+    description: Integration security page
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content: { application/json: { schema: { $ref: './schemas/integration-security.yaml#/PageResponse' } } }
+x-ops-response: &opsResponse
+  <<: *writeErrors
+  '200':
+    description: Operations result
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+    content: { application/json: { schema: { $ref: './schemas/ops-console.yaml#/ObjectResponse' } } }
+x-ops-versioned-response: &opsVersionedResponse
+  <<: *writeErrors
+  '200':
+    description: Versioned operations result
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content: { application/json: { schema: { $ref: './schemas/ops-console.yaml#/ObjectResponse' } } }
+x-ops-created-response: &opsCreatedResponse
+  <<: *writeErrors
+  '201':
+    description: Operations resource created
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content: { application/json: { schema: { $ref: './schemas/ops-console.yaml#/ObjectResponse' } } }
+x-ops-accepted-response: &opsAcceptedResponse
+  <<: *writeErrors
+  '202':
+    description: Operations task accepted
+    headers:
+      X-Request-Id: { schema: { type: string } }
+      Cache-Control: { schema: { type: string, const: no-store } }
+      ETag: { schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    content: { application/json: { schema: { $ref: './schemas/ops-console.yaml#/ObjectResponse' } } }
+
+x-platform-operator-response: &platformOperatorResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/PlatformOperatorOk' }
+x-platform-operator-created-response: &platformOperatorCreatedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/PlatformOperatorCreated' }
+x-platform-operator-list-response: &platformOperatorListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/PlatformOperatorListOk' }
+x-platform-role-response: &platformRoleResponse
+  <<: *writeErrors
+  '200': { $ref: './responses.yaml#/PlatformRoleOk' }
+x-platform-role-created-response: &platformRoleCreatedResponse
+  <<: *writeErrors
+  '201': { $ref: './responses.yaml#/PlatformRoleCreated' }
+x-platform-role-list-response: &platformRoleListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/PlatformRoleListOk' }
+x-platform-audit-list-response: &platformAuditListResponse
+  <<: *readErrors
+  '200': { $ref: './responses.yaml#/PlatformAuditListOk' }
+
+paths:
+  /api/v1/import-export/operations:
+    get:
+      operationId: listImportExportOperations
+      summary: listImportExportOperations
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ImportExportController::index'
+      x-module-key: peanut.import-export
+      x-permission: peanut.import-export.read
+      parameters: [{ in: query, name: status, schema: { type: string } }, { $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses: *importExportListResponse
+  /api/v1/import-export/operations/{operation_key}:
+    parameters: [{ in: path, name: operation_key, required: true, schema: { $ref: './schemas/import-export.yaml#/OperationKey' } }]
+    get: { operationId: getImportExportOperation, summary: getImportExportOperation, x-handler: 'PeanutAdmin\App\controller\api\v1\ImportExportController::show', x-module-key: peanut.import-export, x-permission: peanut.import-export.read, responses: *importExportResponse }
+  /api/v1/import-export/imports:
+    post:
+      operationId: submitImport
+      summary: submitImport
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ImportExportController::submitImport'
+      x-module-key: peanut.import-export
+      x-permission: peanut.import-export.create
+      x-host-atomic-idempotency: true
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/import-export.yaml#/SubmitImportRequest' } } } }
+      responses: *importExportCreatedResponse
+  /api/v1/import-export/exports:
+    post:
+      operationId: submitExport
+      summary: submitExport
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ImportExportController::submitExport'
+      x-module-key: peanut.import-export
+      x-permission: peanut.import-export.create
+      x-host-atomic-idempotency: true
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/import-export.yaml#/SubmitExportRequest' } } } }
+      responses: *importExportCreatedResponse
+  /api/v1/import-export/operations/{operation_key}/cancel:
+    parameters: [{ in: path, name: operation_key, required: true, schema: { $ref: './schemas/import-export.yaml#/OperationKey' } }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+    post: { operationId: cancelImportExportOperation, summary: cancelImportExportOperation, x-handler: 'PeanutAdmin\App\controller\api\v1\ImportExportController::cancel', x-module-key: peanut.import-export, x-permission: peanut.import-export.cancel, x-host-atomic-idempotency: true, responses: *importExportResponse }
+  /api/v1/integration-security/machine-identities:
+    get: { operationId: listMachineIdentities, summary: listMachineIdentities, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::machines', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.machine.read, responses: *integrationSecurityListResponse }
+    post: { operationId: createMachineIdentity, summary: createMachineIdentity, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::createMachine', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.machine.manage, x-host-atomic-idempotency: true, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/integration-security.yaml#/MachineCreateRequest' } } } }, responses: *integrationSecurityCreatedResponse }
+  /api/v1/integration-security/machine-identities/{identity_key}:
+    parameters: [{ in: path, name: identity_key, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+    delete: { operationId: revokeMachineIdentity, summary: revokeMachineIdentity, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::revokeMachine', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.machine.manage, x-host-atomic-idempotency: true, responses: *integrationSecurityVersionedResponse }
+  /api/v1/integration-security/machine-identities/{identity_key}/rotate:
+    parameters: [{ in: path, name: identity_key, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+    post: { operationId: rotateMachineIdentity, summary: rotateMachineIdentity, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::rotateMachine', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.machine.manage, x-host-atomic-idempotency: true, responses: *integrationSecurityVersionedResponse }
+  /api/v1/integration-security/webhooks:
+    get: { operationId: listWebhookEndpoints, summary: listWebhookEndpoints, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::webhooks', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.webhook.read, responses: *integrationSecurityListResponse }
+    post: { operationId: createWebhookEndpoint, summary: createWebhookEndpoint, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::createWebhook', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.webhook.manage, x-host-atomic-idempotency: true, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/integration-security.yaml#/WebhookCreateRequest' } } } }, responses: *integrationSecurityCreatedResponse }
+  /api/v1/integration-security/webhooks/{endpoint_key}:
+    parameters: [{ in: path, name: endpoint_key, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+    delete: { operationId: disableWebhookEndpoint, summary: disableWebhookEndpoint, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::disableWebhook', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.webhook.manage, x-host-atomic-idempotency: true, responses: *integrationSecurityVersionedResponse }
+  /api/v1/integration-security/webhooks/{endpoint_key}/rotate-secret:
+    parameters: [{ in: path, name: endpoint_key, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+    post: { operationId: rotateWebhookSecret, summary: rotateWebhookSecret, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::rotateWebhook', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.webhook.manage, x-host-atomic-idempotency: true, responses: *integrationSecurityVersionedResponse }
+  /api/v1/integration-security/deliveries:
+    get: { operationId: listWebhookDeliveries, summary: listWebhookDeliveries, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::deliveries', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.delivery.read, parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *integrationSecurityPageResponse }
+  /api/v1/integration-security/deliveries/{delivery_key}/attempts:
+    parameters: [{ in: path, name: delivery_key, required: true, schema: { type: string } }]
+    get: { operationId: listWebhookDeliveryAttempts, summary: listWebhookDeliveryAttempts, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::attempts', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.delivery.read, parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *integrationSecurityPageResponse }
+  /api/v1/integration-security/sessions:
+    get: { operationId: listIntegrationSessions, summary: listIntegrationSessions, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::sessions', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.session.read, responses: *integrationSecurityListResponse }
+  /api/v1/integration-security/sessions/{session_key}/revoke:
+    parameters: [{ in: path, name: session_key, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IdempotencyKey' }]
+    post: { operationId: revokeIntegrationSession, summary: revokeIntegrationSession, x-handler: 'PeanutAdmin\App\controller\api\v1\IntegrationSecurityController::revokeSession', x-module-key: peanut.integration-security, x-permission: peanut.integration-security.session.revoke, x-host-atomic-idempotency: true, responses: *integrationSecurityResponse }
+  /api/v1/tasks:
+    get:
+      operationId: listTasks
+      summary: listTasks
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TaskController::index'
+      x-module-key: peanut.task-job
+      x-permission: peanut.task-job.read
+      parameters:
+        - { in: query, name: status, required: false, schema: { enum: [queued, running, succeeded, dead, cancelled], default: queued } }
+        - { in: query, name: page, required: false, schema: { type: integer, minimum: 1 } }
+        - { in: query, name: page_size, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: *taskListResponse
+  /api/v1/tasks/{job_key}:
+    parameters:
+      - { in: path, name: job_key, required: true, schema: { $ref: './schemas/task-job.yaml#/TaskKey' } }
+    get:
+      operationId: getTask
+      summary: getTask
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TaskController::show'
+      x-module-key: peanut.task-job
+      x-permission: peanut.task-job.read
+      responses: *taskResponse
+  /api/v1/tasks/{job_key}/cancel:
+    parameters:
+      - { in: path, name: job_key, required: true, schema: { $ref: './schemas/task-job.yaml#/TaskKey' } }
+    post:
+      operationId: cancelTask
+      summary: cancelTask
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TaskController::cancel'
+      x-module-key: peanut.task-job
+      x-permission: peanut.task-job.manage
+      parameters:
+        - { in: header, name: If-Match, required: true, schema: { $ref: './schemas/task-job.yaml#/StrongTaskEtag' } }
+      responses: *taskResponse
+  /api/v1/tasks/{job_key}/retry:
+    parameters:
+      - { in: path, name: job_key, required: true, schema: { $ref: './schemas/task-job.yaml#/TaskKey' } }
+    post:
+      operationId: retryTask
+      summary: retryTask
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TaskController::retry'
+      x-module-key: peanut.task-job
+      x-permission: peanut.task-job.manage
+      parameters:
+        - { in: header, name: If-Match, required: true, schema: { $ref: './schemas/task-job.yaml#/StrongTaskEtag' } }
+      responses: *taskResponse
+  /api/v1/notifications:
+    get:
+      operationId: listNotifications
+      summary: listNotifications
+      x-handler: 'PeanutAdmin\App\controller\api\v1\NotificationController::index'
+      x-module-key: peanut.notification-sms
+      x-permission: peanut.notification-sms.read
+      parameters:
+        - { in: query, name: status, required: false, schema: { enum: [unread, read, archived, all], default: all } }
+        - { in: query, name: page, required: false, schema: { type: integer, minimum: 1 } }
+        - { in: query, name: page_size, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: *notificationListResponse
+    post:
+      operationId: createNotification
+      summary: createNotification
+      x-handler: 'PeanutAdmin\App\controller\api\v1\NotificationController::publish'
+      x-module-key: peanut.notification-sms
+      x-permission: peanut.notification-sms.manage
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: './schemas/notification-sms.yaml#/NotificationPublishRequest' } }
+      responses: *notificationCreatedResponse
+  /api/v1/notifications/bulk:
+    post:
+      operationId: bulkUpdateNotifications
+      summary: bulkUpdateNotifications
+      x-handler: 'PeanutAdmin\App\controller\api\v1\NotificationController::bulk'
+      x-module-key: peanut.notification-sms
+      x-permission: peanut.notification-sms.read
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: './schemas/notification-sms.yaml#/NotificationBulkRequest' } }
+      responses: *notificationBulkResponse
+  /api/v1/notifications/{message_key}/read:
+    parameters:
+      - { in: path, name: message_key, required: true, schema: { $ref: './schemas/notification-sms.yaml#/MessageKey' } }
+    post:
+      operationId: markNotificationRead
+      summary: markNotificationRead
+      x-handler: 'PeanutAdmin\App\controller\api\v1\NotificationController::markRead'
+      x-module-key: peanut.notification-sms
+      x-permission: peanut.notification-sms.read
+      parameters:
+        - { in: header, name: If-Match, required: true, schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+      responses: *notificationResponse
+  /api/v1/notification-templates/{template_key}:
+    parameters:
+      - { in: path, name: template_key, required: true, schema: { $ref: './schemas/notification-sms.yaml#/TemplateKey' } }
+    put:
+      operationId: putNotificationTemplate
+      summary: putNotificationTemplate
+      x-handler: 'PeanutAdmin\App\controller\api\v1\NotificationController::putTemplate'
+      x-module-key: peanut.notification-sms
+      x-permission: peanut.notification-sms.manage
+      parameters:
+        - { in: header, name: If-Match, required: false, schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: './schemas/notification-sms.yaml#/NotificationTemplateWrite' } }
+      responses: *notificationTemplateResponse
+  /api/v1/notification-outbox/{outbox_key}/dispatch:
+    parameters:
+      - { in: path, name: outbox_key, required: true, schema: { $ref: './schemas/notification-sms.yaml#/OutboxKey' } }
+    post:
+      operationId: dispatchNotificationOutbox
+      summary: dispatchNotificationOutbox
+      x-handler: 'PeanutAdmin\App\controller\api\v1\NotificationController::dispatch'
+      x-module-key: peanut.notification-sms
+      x-permission: peanut.notification-sms.manage
+      responses: *taskAcceptedResponse
+  /api/v1/file-assets:
+    get:
+      operationId: listFileAssets
+      summary: listFileAssets
+      x-handler: 'PeanutAdmin\App\controller\api\v1\FileController::assets'
+      x-module-key: peanut.file-media
+      x-permission: peanut.file-media.read
+      parameters:
+        - { in: query, name: page, required: false, schema: { type: integer, minimum: 1 } }
+        - { in: query, name: page_size, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: *fileAssetListResponse
+  /api/v1/files/{file_key}/delivery-grants:
+    parameters:
+      - { in: path, name: file_key, required: true, schema: { $ref: './schemas/file-media.yaml#/FileKey' } }
+    post:
+      operationId: createFileDeliveryGrant
+      summary: createFileDeliveryGrant
+      x-handler: 'PeanutAdmin\App\controller\api\v1\FileController::grant'
+      x-module-key: peanut.file-media
+      x-permission: peanut.file-media.read
+      responses: *fileDeliveryGrantResponse
+  /api/v1/file-deliveries/{file_key}:
+    parameters:
+      - { in: path, name: file_key, required: true, schema: { $ref: './schemas/file-media.yaml#/FileKey' } }
+      - { in: query, name: token, required: true, schema: { type: string, minLength: 32, maxLength: 2048 } }
+    get:
+      operationId: downloadFileDelivery
+      summary: downloadFileDelivery
+      security: []
+      x-handler: 'PeanutAdmin\App\controller\api\v1\FileController::deliver'
+      responses:
+        <<: *readErrors
+        '200':
+          description: Exact private file bytes for a valid single-use delivery token.
+          headers:
+            X-Request-Id: { schema: { type: string } }
+            Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+            Content-Disposition: { schema: { type: string } }
+            Content-Length: { schema: { type: integer, minimum: 1 } }
+            Content-Type: { schema: { type: string, minLength: 1, maxLength: 127 } }
+            X-Content-Type-Options: { schema: { type: string, const: nosniff } }
+          content:
+            '*/*': { schema: { $ref: './schemas/file-media.yaml#/FileContent' } }
+  /api/v1/files:
+    get:
+      operationId: listFiles
+      summary: listFiles
+      x-handler: 'PeanutAdmin\App\controller\api\v1\FileController::index'
+      x-module-key: peanut.file-media
+      x-permission: peanut.file-media.read
+      parameters:
+        - { in: query, name: page, required: false, schema: { type: integer, minimum: 1 } }
+        - { in: query, name: page_size, required: false, schema: { type: integer, minimum: 1, maximum: 100 } }
+        - { in: query, name: status, required: false, schema: { enum: [ready, archived], default: ready } }
+      responses: *fileListResponse
+    post:
+      operationId: createFile
+      summary: createFile
+      x-handler: 'PeanutAdmin\App\controller\api\v1\FileController::create'
+      x-module-key: peanut.file-media
+      x-permission: peanut.file-media.create
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses: *fileCreatedResponse
+  /api/v1/files/{file_key}:
+    parameters:
+      - { in: path, name: file_key, required: true, schema: { $ref: './schemas/file-media.yaml#/FileKey' } }
+    get:
+      operationId: getFile
+      summary: getFile
+      x-handler: 'PeanutAdmin\App\controller\api\v1\FileController::show'
+      x-module-key: peanut.file-media
+      x-permission: peanut.file-media.read
+      responses: *fileResponse
+    delete:
+      operationId: archiveFile
+      summary: archiveFile
+      x-handler: 'PeanutAdmin\App\controller\api\v1\FileController::archive'
+      x-module-key: peanut.file-media
+      x-permission: peanut.file-media.delete
+      parameters:
+        - { in: header, name: If-Match, required: true, schema: { $ref: './schemas/file-media.yaml#/StrongFileEtag' } }
+      responses: *fileResponse
+  /api/v1/files/{file_key}/content:
+    parameters:
+      - { in: path, name: file_key, required: true, schema: { $ref: './schemas/file-media.yaml#/FileKey' } }
+    get:
+      operationId: downloadFile
+      summary: downloadFile
+      x-handler: 'PeanutAdmin\App\controller\api\v1\FileController::content'
+      x-module-key: peanut.file-media
+      x-permission: peanut.file-media.read
+      responses:
+        <<: *readErrors
+        '200':
+          description: Exact private file bytes.
+          headers:
+            X-Request-Id: { schema: { type: string } }
+            Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+            Content-Disposition: { schema: { type: string } }
+            Content-Length: { schema: { type: integer, minimum: 1 } }
+            Content-Type: { schema: { type: string, minLength: 1, maxLength: 127 } }
+            X-Content-Type-Options: { schema: { type: string, const: nosniff } }
+          content:
+            '*/*':
+              schema: { $ref: './schemas/file-media.yaml#/FileContent' }
+
+  /api/v1/auth/login:
+    post:
+      operationId: tenantLogin
+      summary: tenantLogin
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TenantAuthController::login'
+      security: []
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/auth.yaml#/TenantLoginRequest' } } } }
+      responses: *tenantLoginResponses
+  /api/v1/auth/tenants/select:
+    post:
+      operationId: selectTenant
+      summary: selectTenant
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TenantAuthController::selectTenant'
+      security: []
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/auth.yaml#/SelectTenantRequest' } } } }
+      responses: *tenantAuthenticatedResponses
+  /api/v1/auth/refresh:
+    post:
+      operationId: refreshTenantSession
+      summary: refreshTenantSession
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TenantAuthController::refresh'
+      security: []
+      responses: *tenantAuthenticatedResponses
+  /api/v1/auth/context:
+    get:
+      operationId: getTenantContext
+      summary: getTenantContext
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TenantAuthController::context'
+      responses: *tenantContextResponses
+  /api/v1/auth/tenant-switch/challenge:
+    post:
+      operationId: createTenantSwitchChallenge
+      summary: createTenantSwitchChallenge
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TenantAuthController::switchChallenge'
+      responses: *tenantSelectionResponses
+  /api/v1/auth/logout:
+    post:
+      operationId: logoutTenantSession
+      summary: logoutTenantSession
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TenantAuthController::logout'
+      responses:
+        <<: *readErrors
+        '204':
+          description: Session revoked
+          headers:
+            X-Request-Id: { schema: { type: string } }
+            Cache-Control: { schema: { type: string, const: no-store } }
+            Set-Cookie: { schema: { type: string } }
+  /api/v1/auth/logout-all:
+    post:
+      operationId: logoutAllTenantSessions
+      summary: logoutAllTenantSessions
+      x-handler: 'PeanutAdmin\App\controller\api\v1\TenantAuthController::logoutAll'
+      responses:
+        <<: *readErrors
+        '204':
+          description: Sessions revoked
+          headers:
+            X-Request-Id: { schema: { type: string } }
+            Cache-Control: { schema: { type: string, const: no-store } }
+            Set-Cookie: { schema: { type: string } }
+
+  /api/v1/account:
+    get:
+      operationId: getMyAccount
+      summary: getMyAccount
+      x-handler: 'PeanutAdmin\App\controller\api\v1\AccountController::show'
+      responses: *accountProfileResponses
+    patch:
+      operationId: updateMyAccount
+      summary: updateMyAccount
+      x-handler: 'PeanutAdmin\App\controller\api\v1\AccountController::update'
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: './schemas/auth.yaml#/UpdateAccountProfileRequest' } } }
+      responses: *accountProfileResponses
+  /api/v1/account/password:
+    post:
+      operationId: changeMyPassword
+      summary: changeMyPassword
+      x-handler: 'PeanutAdmin\App\controller\api\v1\AccountController::changePassword'
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: './schemas/auth.yaml#/ChangePasswordRequest' } } }
+      responses:
+        <<: *writeErrors
+        '204':
+          description: Password changed and account sessions revoked.
+          headers:
+            X-Request-Id: { schema: { type: string } }
+            Cache-Control: { schema: { type: string, const: no-store } }
+            Set-Cookie: { schema: { type: string } }
+
+  /api/v1/settings:
+    get:
+      operationId: listTenantSettings
+      summary: listTenantSettings
+      x-handler: 'PeanutAdmin\App\controller\api\v1\SettingsController::listTenantSettings'
+      x-module-key: peanut.settings
+      x-permission: peanut.settings.read
+      responses: *settingListResponses
+  /api/v1/settings/{module_key}/{setting_key}:
+    parameters:
+      - { $ref: '#/components/parameters/SettingModuleKey' }
+      - { $ref: '#/components/parameters/SettingKey' }
+    put:
+      operationId: replaceTenantSetting
+      summary: replaceTenantSetting
+      x-handler: 'PeanutAdmin\App\controller\api\v1\SettingsController::replaceTenantSetting'
+      x-module-key: peanut.settings
+      x-permission: peanut.settings.manage
+      x-host-atomic-idempotency: true
+      parameters:
+        - { $ref: '#/components/parameters/IfMatchOptional' }
+        - { $ref: '#/components/parameters/IfNoneMatchAny' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas/settings.yaml#/ReplaceSettingRequest' }
+      responses: *settingResponses
+    delete:
+      operationId: unsetTenantSetting
+      summary: unsetTenantSetting
+      x-handler: 'PeanutAdmin\App\controller\api\v1\SettingsController::unsetTenantSetting'
+      x-module-key: peanut.settings
+      x-permission: peanut.settings.manage
+      x-host-atomic-idempotency: true
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: './schemas/settings.yaml#/UnsetSettingRequest' }
+      responses: *settingResponses
+
+  /api/v1/tenant:
+    get: { operationId: getTenant, summary: getTenant, x-handler: 'PeanutAdmin\App\controller\api\v1\TenantWorkspaceController::show', responses: *tenantResponse }
+  /api/v1/members:
+    get:
+      operationId: listMembers
+      summary: listMembers
+      x-handler: 'PeanutAdmin\App\controller\api\v1\MemberController::index'
+      x-permission: core.member.read
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses: *memberListResponse
+    post:
+      operationId: createPendingMember
+      summary: createPendingMember
+      x-handler: 'PeanutAdmin\App\controller\api\v1\MemberController::create'
+      x-permission: core.member.create
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/member.yaml#/CreateMemberRequest' } } } }
+      responses: *memberCreatedResponse
+  /api/v1/members/{member_id}:
+    parameters: [{ $ref: '#/components/parameters/MemberId' }]
+    get: { operationId: getMember, summary: getMember, x-handler: 'PeanutAdmin\App\controller\api\v1\MemberController::show', x-permission: core.member.read, responses: *memberResponse }
+    patch:
+      operationId: updateMember
+      summary: updateMember
+      x-handler: 'PeanutAdmin\App\controller\api\v1\MemberController::update'
+      x-permission: core.member.update
+      parameters: [{ $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/member.yaml#/UpdateMemberRequest' } } } }
+      responses: *memberResponse
+  /api/v1/members/{member_id}/roles:
+    parameters: [{ $ref: '#/components/parameters/MemberId' }]
+    put:
+      operationId: replaceMemberRoles
+      summary: replaceMemberRoles
+      x-handler: 'PeanutAdmin\App\controller\api\v1\MemberController::replaceRoles'
+      x-permission: core.member.role.assign
+      parameters: [{ $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/member.yaml#/ReplaceMemberRolesRequest' } } } }
+      responses: *memberResponse
+  /api/v1/members/{member_id}/effective-access:
+    parameters: [{ $ref: '#/components/parameters/EffectiveAccessMemberId' }]
+    get:
+      operationId: getMemberEffectiveAccess
+      summary: getMemberEffectiveAccess
+      x-handler: 'PeanutAdmin\App\controller\api\v1\DataAuthorizationController::effectiveAccess'
+      x-permission: core.member.effective-access.read
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses: *memberEffectiveAccessResponse
+  /api/v1/members/{member_id}/activate:
+    parameters: [{ $ref: '#/components/parameters/MemberId' }]
+    post: { operationId: activateMember, summary: activateMember, x-handler: 'PeanutAdmin\App\controller\api\v1\MemberController::activate', x-permission: core.member.activate, parameters: [{ $ref: '#/components/parameters/IfMatch' }], responses: *memberResponse }
+  /api/v1/members/{member_id}/suspend:
+    parameters: [{ $ref: '#/components/parameters/MemberId' }]
+    post: { operationId: suspendMember, summary: suspendMember, x-handler: 'PeanutAdmin\App\controller\api\v1\MemberController::suspend', x-permission: core.member.suspend, parameters: [{ $ref: '#/components/parameters/IfMatch' }], responses: *memberResponse }
+  /api/v1/members/{member_id}/leave:
+    parameters: [{ $ref: '#/components/parameters/MemberId' }]
+    post: { operationId: leaveMember, summary: leaveMember, x-handler: 'PeanutAdmin\App\controller\api\v1\MemberController::leave', x-permission: core.member.leave, parameters: [{ $ref: '#/components/parameters/IfMatch' }], responses: *memberResponse }
+
+  /api/v1/departments:
+    get: { operationId: listDepartments, summary: listDepartments, x-handler: 'PeanutAdmin\App\controller\api\v1\DepartmentController::index', x-permission: core.department.read, parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *departmentListResponse }
+    post: { operationId: createDepartment, summary: createDepartment, x-handler: 'PeanutAdmin\App\controller\api\v1\DepartmentController::create', x-permission: core.department.create, requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/department.yaml#/WriteDepartmentRequest' } } } }, responses: *departmentCreatedResponse }
+  /api/v1/departments/{department_id}:
+    parameters: [{ $ref: '#/components/parameters/DepartmentId' }]
+    get: { operationId: getDepartment, summary: getDepartment, x-handler: 'PeanutAdmin\App\controller\api\v1\DepartmentController::show', x-permission: core.department.read, responses: *departmentResponse }
+    patch: { operationId: updateDepartment, summary: updateDepartment, x-handler: 'PeanutAdmin\App\controller\api\v1\DepartmentController::update', x-permission: core.department.update, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/department.yaml#/WriteDepartmentRequest' } } } }, responses: *departmentResponse }
+  /api/v1/departments/{department_id}/move:
+    parameters: [{ $ref: '#/components/parameters/DepartmentId' }]
+    post: { operationId: moveDepartment, summary: moveDepartment, x-handler: 'PeanutAdmin\App\controller\api\v1\DepartmentController::move', x-permission: core.department.move, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/department.yaml#/MoveDepartmentRequest' } } } }, responses: *departmentResponse }
+  /api/v1/departments/{department_id}/archive:
+    parameters: [{ $ref: '#/components/parameters/DepartmentId' }]
+    post: { operationId: archiveDepartment, summary: archiveDepartment, x-handler: 'PeanutAdmin\App\controller\api\v1\DepartmentController::archive', x-permission: core.department.archive, parameters: [{ $ref: '#/components/parameters/IfMatch' }], responses: *departmentResponse }
+
+  /api/v1/roles:
+    get: { operationId: listRoles, summary: listRoles, x-handler: 'PeanutAdmin\App\controller\api\v1\RoleController::index', x-permission: core.role.read, parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *roleListResponse }
+    post: { operationId: createRole, summary: createRole, x-handler: 'PeanutAdmin\App\controller\api\v1\RoleController::create', x-permission: core.role.create, requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/role.yaml#/CreateRoleRequest' } } } }, responses: *roleCreatedResponse }
+  /api/v1/roles/{role_id}:
+    parameters: [{ $ref: '#/components/parameters/RoleId' }]
+    get: { operationId: getRole, summary: getRole, x-handler: 'PeanutAdmin\App\controller\api\v1\RoleController::show', x-permission: core.role.read, responses: *roleResponse }
+    patch: { operationId: updateRole, summary: updateRole, x-handler: 'PeanutAdmin\App\controller\api\v1\RoleController::update', x-permission: core.role.update, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/role.yaml#/UpdateRoleRequest' } } } }, responses: *roleResponse }
+  /api/v1/roles/{role_id}/archive:
+    parameters: [{ $ref: '#/components/parameters/RoleId' }]
+    post: { operationId: archiveRole, summary: archiveRole, x-handler: 'PeanutAdmin\App\controller\api\v1\RoleController::archive', x-permission: core.role.archive, parameters: [{ $ref: '#/components/parameters/IfMatch' }], responses: *roleResponse }
+  /api/v1/roles/{role_id}/permissions:
+    parameters: [{ $ref: '#/components/parameters/RoleId' }]
+    put: { operationId: replaceRolePermissions, summary: replaceRolePermissions, x-handler: 'PeanutAdmin\App\controller\api\v1\RoleController::replacePermissions', x-permission: core.role.permission.assign, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/role.yaml#/ReplaceRolePermissionsRequest' } } } }, responses: *roleResponse }
+  /api/v1/roles/{role_id}/data-policies/{resource_key}/{operation}:
+    parameters:
+      - { $ref: '#/components/parameters/RoleId' }
+      - { in: path, name: resource_key, required: true, schema: { type: string } }
+      - { in: path, name: operation, required: true, schema: { type: string } }
+    get: { operationId: getRoleDataPolicy, summary: getRoleDataPolicy, x-handler: 'PeanutAdmin\App\controller\api\v1\DataAuthorizationController::getRolePolicy', x-permission: core.role.data-policy.read, responses: *dataPolicyResponse }
+    put: { operationId: replaceRoleDataPolicy, summary: replaceRoleDataPolicy, x-handler: 'PeanutAdmin\App\controller\api\v1\DataAuthorizationController::replaceRolePolicy', x-permission: core.role.data-policy.manage, parameters: [{ $ref: '#/components/parameters/IfMatchOptional' }], requestBody: { $ref: '#/components/requestBodies/DataPolicyWrite' }, responses: *dataPolicyResponse }
+  /api/v1/permissions:
+    get: { operationId: listPermissions, summary: listPermissions, x-handler: 'PeanutAdmin\App\controller\api\v1\TenantWorkspaceController::permissions', x-permission: core.permission.read, responses: *permissionListResponse }
+  /api/v1/modules:
+    get: { operationId: listTenantModules, summary: listTenantModules, x-handler: 'PeanutAdmin\App\controller\api\v1\TenantWorkspaceController::modules', x-permission: core.module.read, responses: *tenantModuleListResponse }
+  /api/v1/modules/{module_key}/config:
+    parameters: [{ $ref: '#/components/parameters/ModuleKey' }]
+    patch: { operationId: updateTenantModuleConfig, summary: updateTenantModuleConfig, x-handler: 'PeanutAdmin\App\controller\api\v1\TenantWorkspaceController::updateModuleConfig', x-permission: core.module.configure, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { $ref: '#/components/requestBodies/ModuleConfigWrite' }, responses: *tenantModuleResponse }
+  /api/v1/reference-code-sets:
+    get:
+      operationId: listReferenceCodeSets
+      summary: listReferenceCodeSets
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ReferenceCodeController::listReferenceCodeSets'
+      x-module-key: peanut.reference-codes
+      x-permission: peanut.reference-codes.read
+      responses: *referenceCodeSetListResponse
+  /api/v1/reference-code-sets/{module_key}/{set_key}/codes:
+    parameters:
+      - { $ref: '#/components/parameters/ReferenceCodeOwnerModuleKey' }
+      - { $ref: '#/components/parameters/ReferenceCodeSetKey' }
+    get:
+      operationId: listReferenceCodes
+      summary: listReferenceCodes
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ReferenceCodeController::listReferenceCodes'
+      x-module-key: peanut.reference-codes
+      x-permission: peanut.reference-codes.read
+      parameters:
+        - { in: query, name: as_of, required: false, schema: { $ref: './schemas/reference-codes.yaml#/MillisecondDateTime' } }
+        - { in: query, name: effective_status, required: false, schema: { enum: [active, inactive, all], default: all } }
+        - { in: query, name: include_retired, required: false, schema: { type: boolean, default: false } }
+        - { in: query, name: page, required: false, schema: { type: integer, minimum: 1, maximum: 10000, default: 1 } }
+        - { in: query, name: page_size, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses: *referenceCodeListResponse
+    post:
+      operationId: createReferenceCode
+      summary: createReferenceCode
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ReferenceCodeController::createReferenceCode'
+      x-module-key: peanut.reference-codes
+      x-permission: peanut.reference-codes.manage
+      x-host-atomic-idempotency: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { $ref: '#/components/parameters/ReferenceCodeIfNoneMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas/reference-codes.yaml#/ReferenceCodeCreateRequest' }
+      responses: *referenceCodeCreatedResponse
+  /api/v1/reference-code-sets/{module_key}/{set_key}/codes/{code}:
+    parameters:
+      - { $ref: '#/components/parameters/ReferenceCodeOwnerModuleKey' }
+      - { $ref: '#/components/parameters/ReferenceCodeSetKey' }
+      - { $ref: '#/components/parameters/ReferenceCodeKey' }
+    get:
+      operationId: getReferenceCode
+      summary: getReferenceCode
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ReferenceCodeController::getReferenceCode'
+      x-module-key: peanut.reference-codes
+      x-permission: peanut.reference-codes.read
+      parameters:
+        - { in: query, name: as_of, required: false, schema: { $ref: './schemas/reference-codes.yaml#/MillisecondDateTime' } }
+      responses: *referenceCodeEntryResponse
+    put:
+      operationId: replaceReferenceCode
+      summary: replaceReferenceCode
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ReferenceCodeController::replaceReferenceCode'
+      x-module-key: peanut.reference-codes
+      x-permission: peanut.reference-codes.manage
+      x-host-atomic-idempotency: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { $ref: '#/components/parameters/ReferenceCodeIfMatch' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas/reference-codes.yaml#/ReferenceCodeReplaceRequest' }
+      responses: *referenceCodeWriteResponse
+    delete:
+      operationId: retireReferenceCode
+      summary: retireReferenceCode
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ReferenceCodeController::retireReferenceCode'
+      x-module-key: peanut.reference-codes
+      x-permission: peanut.reference-codes.manage
+      x-host-atomic-idempotency: true
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - { $ref: '#/components/parameters/ReferenceCodeIfMatch' }
+      responses: *referenceCodeWriteResponse
+  /api/v1/audit-events:
+    get: { operationId: listTenantAuditEvents, summary: listTenantAuditEvents, x-handler: 'PeanutAdmin\App\controller\api\v1\TenantWorkspaceController::auditEvents', x-permission: core.audit.read, parameters: [{ $ref: '#/components/parameters/AuditEventType' }, { $ref: '#/components/parameters/AuditAction' }, { $ref: '#/components/parameters/AuditOutcome' }, { $ref: '#/components/parameters/AuditRequestId' }, { $ref: '#/components/parameters/AuditTargetType' }, { $ref: '#/components/parameters/AuditTargetId' }, { $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *tenantAuditListResponse }
+  /api/v1/audit-events/{event_id}:
+    parameters: [{ $ref: '#/components/parameters/AuditEventId' }]
+    get: { operationId: getTenantAuditEvent, summary: getTenantAuditEvent, x-handler: 'PeanutAdmin\App\controller\api\v1\TenantWorkspaceController::auditEvent', x-permission: core.audit.read, responses: *tenantAuditResponse }
+  /api/v1/menus:
+    get: { operationId: getTenantMenus, summary: getTenantMenus, x-handler: 'PeanutAdmin\App\controller\api\v1\TenantWorkspaceController::menus', responses: *menuListResponse }
+  /api/v1/menu-diagnostics:
+    get: { operationId: listTenantMenuDiagnostics, summary: listTenantMenuDiagnostics, x-handler: 'PeanutAdmin\App\controller\api\v1\TenantWorkspaceController::menuDiagnostics', x-permission: core.role.read, responses: *menuDiagnosticListResponse }
+  /api/v1/authorization/target-candidates:
+    get:
+      operationId: listTargetCandidates
+      summary: listTargetCandidates
+      x-handler: 'PeanutAdmin\App\controller\api\v1\DataAuthorizationController::targetCandidates'
+      parameters:
+        - { in: query, name: resource_key, required: true, schema: { type: string } }
+        - { in: query, name: operation, required: true, schema: { type: string } }
+        - { in: query, name: target_resource_key, required: true, schema: { type: string } }
+        - { in: query, name: target_role, required: true, schema: { type: string, default: primary } }
+        - { in: query, name: mode, schema: { enum: [runtime, policy-config], default: runtime } }
+        - { in: query, name: q, schema: { type: string, maxLength: 100 } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses: *targetCandidateListResponse
+
+  /api/v1/example/work-items:
+    get:
+      operationId: listExampleWorkItems
+      summary: listExampleWorkItems
+      x-module-key: example.work-item
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ExampleController::listWorkItems'
+      x-permission: example.work-item.read
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - { in: query, name: target_resource_key, required: true, schema: { type: string } }
+        - { in: query, name: target_role, required: true, schema: { type: string, default: primary } }
+        - { in: query, name: target_id, required: true, schema: { type: array, items: { type: string } }, explode: false }
+        - { in: query, name: status, schema: { enum: [open, active, closed] } }
+        - { in: query, name: sort, schema: { enum: [-created_at, created_at, title, -title] } }
+      responses: *workItemListResponse
+    post:
+      operationId: createExampleWorkItem
+      summary: createExampleWorkItem
+      x-module-key: example.work-item
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ExampleController::createWorkItem'
+      x-permission: example.work-item.create
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/CreateWorkItemRequest' } } }
+      responses: *workItemCreatedResponse
+  /api/v1/example/work-items/aggregate:
+    get:
+      operationId: aggregateExampleWorkItems
+      summary: aggregateExampleWorkItems
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ExampleController::aggregateWorkItems'
+      x-module-key: example.work-item
+      x-permission: example.work-item.read
+      parameters:
+        - { in: query, name: target_resource_key, required: true, schema: { type: string } }
+        - { in: query, name: target_role, required: true, schema: { type: string, default: primary } }
+        - { in: query, name: target_id, required: true, schema: { type: array, items: { type: string } }, explode: false }
+      responses: *workItemAggregateResponse
+  /api/v1/example/work-items/{work_item_id}:
+    parameters: [{ in: path, name: work_item_id, required: true, schema: { $ref: './schemas/common.yaml#/$defs/BigIntString' } }]
+    get: { operationId: getExampleWorkItem, summary: getExampleWorkItem, x-handler: 'PeanutAdmin\App\controller\api\v1\ExampleController::getWorkItem', x-module-key: example.work-item, x-permission: example.work-item.read, responses: *workItemResponse }
+    patch: { operationId: updateExampleWorkItem, summary: updateExampleWorkItem, x-handler: 'PeanutAdmin\App\controller\api\v1\ExampleController::updateWorkItem', x-module-key: example.work-item, x-permission: example.work-item.update, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/UpdateWorkItemRequest' } } } }, responses: *workItemUpdatedResponse }
+  /api/v1/example/reference-items/candidates:
+    get:
+      operationId: listExampleReferenceCandidates
+      summary: listExampleReferenceCandidates
+      x-module-key: example.reference
+      x-handler: 'PeanutAdmin\App\controller\api\v1\ExampleController::referenceCandidates'
+      x-permission: example.reference.use
+      parameters:
+        - { in: query, name: target_resource_key, required: true, schema: { type: string } }
+        - { in: query, name: target_role, required: true, schema: { type: string, default: primary } }
+        - { in: query, name: target_id, required: true, schema: { type: string } }
+        - { in: query, name: q, schema: { type: string, maxLength: 100 } }
+      responses: *referenceCandidateListResponse
+  /api/v1/example/work-item-view-policies:
+    post: { operationId: publishExampleWorkItemPolicy, summary: publishExampleWorkItemPolicy, x-handler: 'PeanutAdmin\App\controller\api\v1\ExampleController::publishWorkItemPolicy', x-module-key: example.work-item, x-permission: example.work-item.policy-publish, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/example.yaml#/$defs/PublishWorkItemPolicyRequest' } } } }, responses: *workItemPolicyPublishedResponse }
+
+  /api/platform/v1/auth/login:
+    post: { operationId: platformLogin, summary: platformLogin, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAuthController::login', security: [], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/PlatformLoginRequest' } } } }, responses: *platformAuthenticatedResponses }
+  /api/platform/v1/auth/refresh:
+    post: { operationId: refreshPlatformSession, summary: refreshPlatformSession, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAuthController::refresh', security: [], responses: *platformAuthenticatedResponses }
+  /api/platform/v1/auth/context:
+    get: { operationId: getPlatformContext, summary: getPlatformContext, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAuthController::context', responses: *platformContextResponses }
+  /api/platform/v1/auth/logout:
+    post:
+      operationId: logoutPlatformSession
+      summary: logoutPlatformSession
+      x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAuthController::logout'
+      responses:
+        <<: *readErrors
+        '204':
+          description: Session revoked
+          headers:
+            X-Request-Id: { schema: { type: string } }
+            Cache-Control: { schema: { type: string, const: no-store } }
+            Set-Cookie: { schema: { type: string } }
+  /api/platform/v1/settings:
+    get:
+      operationId: listDeploymentSettings
+      summary: listDeploymentSettings
+      x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformSettingsController::listDeploymentSettings'
+      x-permission: platform.settings.read
+      responses: *settingListResponses
+  /api/platform/v1/upgrade:
+    get:
+      operationId: getPlatformUpgradeStatus
+      summary: getPlatformUpgradeStatus
+      x-handler: 'PeanutAdmin\App\controller\api\platform\v1\UpgradeStatusController::show'
+      x-permission: platform.upgrade.read
+      responses: *upgradeStatusResponse
+  /api/platform/v1/ops/status:
+    get: { operationId: getOpsStatus, summary: getOpsStatus, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\OpsConsoleController::status', x-permission: platform.ops.read, responses: *opsResponse }
+  /api/platform/v1/ops/maintenance:
+    get: { operationId: getOpsMaintenance, summary: getOpsMaintenance, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\OpsConsoleController::maintenance', x-permission: platform.ops.read, responses: *opsResponse }
+    put: { operationId: scheduleOpsMaintenance, summary: scheduleOpsMaintenance, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\OpsConsoleController::scheduleMaintenance', x-permission: platform.ops.maintenance.manage, x-host-atomic-idempotency: true, parameters: [{ $ref: '#/components/parameters/IfMatchAllowZero' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/ops-console.yaml#/MaintenanceRequest' } } } }, responses: *opsCreatedResponse }
+  /api/platform/v1/ops/maintenance/{maintenance_key}/close:
+    parameters: [{ in: path, name: maintenance_key, required: true, schema: { type: string } }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+    post: { operationId: closeOpsMaintenance, summary: closeOpsMaintenance, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\OpsConsoleController::closeMaintenance', x-permission: platform.ops.maintenance.manage, x-host-atomic-idempotency: true, responses: *opsVersionedResponse }
+  /api/platform/v1/ops/tasks/backup:
+    post: { operationId: submitOpsBackup, summary: submitOpsBackup, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\OpsConsoleController::backup', x-permission: platform.ops.backup.manage, x-host-atomic-idempotency: true, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/ops-console.yaml#/BackupRequest' } } } }, responses: *opsAcceptedResponse }
+  /api/platform/v1/ops/tasks/restore:
+    post: { operationId: submitOpsRestore, summary: submitOpsRestore, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\OpsConsoleController::restore', x-permission: platform.ops.restore.manage, x-host-atomic-idempotency: true, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/ops-console.yaml#/RestoreRequest' } } } }, responses: *opsAcceptedResponse }
+  /api/platform/v1/ops/tasks/{task_key}:
+    parameters: [{ in: path, name: task_key, required: true, schema: { type: string } }]
+    get: { operationId: getOpsTask, summary: getOpsTask, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\OpsConsoleController::task', x-permission: platform.ops.read, responses: *opsVersionedResponse }
+  /api/platform/v1/ops/logs:
+    get: { operationId: listOpsLogs, summary: listOpsLogs, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\OpsConsoleController::logs', x-permission: platform.ops.logs.read, parameters: [{ in: query, name: source, schema: { type: string } }, { in: query, name: severity, schema: { enum: [info, warning, error, critical] } }, { in: query, name: cursor, schema: { type: [string, 'null'] } }, { $ref: '#/components/parameters/PageSize' }], responses: *opsResponse }
+  /api/platform/v1/settings/{module_key}/{setting_key}:
+    parameters:
+      - { $ref: '#/components/parameters/SettingModuleKey' }
+      - { $ref: '#/components/parameters/SettingKey' }
+    put:
+      operationId: replaceDeploymentSetting
+      summary: replaceDeploymentSetting
+      x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformSettingsController::replaceDeploymentSetting'
+      x-permission: platform.settings.manage
+      x-host-atomic-idempotency: true
+      parameters:
+        - { $ref: '#/components/parameters/IfMatchOptional' }
+        - { $ref: '#/components/parameters/IfNoneMatchAny' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './schemas/settings.yaml#/ReplaceSettingRequest' }
+      responses: *settingResponses
+    delete:
+      operationId: unsetDeploymentSetting
+      summary: unsetDeploymentSetting
+      x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformSettingsController::unsetDeploymentSetting'
+      x-permission: platform.settings.manage
+      x-host-atomic-idempotency: true
+      parameters:
+        - { $ref: '#/components/parameters/IfMatch' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: './schemas/settings.yaml#/UnsetSettingRequest' }
+      responses: *settingResponses
+  /api/platform/v1/tenants:
+    get: { operationId: listPlatformTenants, summary: listPlatformTenants, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::tenants', x-permission: platform.tenant.read, parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *tenantListResponse }
+    post: { operationId: createPlatformTenant, summary: createPlatformTenant, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformTenantController::create', x-permission: platform.tenant.create, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/CreatePlatformTenantRequest' } } } }, responses: *tenantCreatedResponse }
+  /api/platform/v1/tenants/{tenant_id}:
+    parameters: [{ $ref: '#/components/parameters/TenantId' }]
+    get: { operationId: getPlatformTenant, summary: getPlatformTenant, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::tenant', x-permission: platform.tenant.read, responses: *tenantVersionedResponse }
+    patch: { operationId: updatePlatformTenant, summary: updatePlatformTenant, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformTenantController::update', x-permission: platform.tenant.update, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/UpdatePlatformTenantRequest' } } } }, responses: *tenantVersionedResponse }
+  /api/platform/v1/tenants/{tenant_id}/owner-candidates:
+    parameters: [{ $ref: '#/components/parameters/TenantId' }]
+    post: { operationId: createTenantOwnerCandidate, summary: createTenantOwnerCandidate, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\TenantOwnerController::create', x-permission: platform.tenant.provision-owner, requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/tenant-owner.yaml#/CreateTenantOwnerCandidateRequest' } } } }, responses: *ownerCreatedResponse }
+  /api/platform/v1/tenants/{tenant_id}/owner-candidates/{member_id}/activate:
+    parameters: [{ $ref: '#/components/parameters/TenantId' }, { $ref: '#/components/parameters/MemberId' }]
+    post: { operationId: activateTenantOwnerCandidate, summary: activateTenantOwnerCandidate, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\TenantOwnerController::activate', x-permission: platform.tenant.provision-owner, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/tenant-owner.yaml#/ActivateTenantOwnerCandidateRequest' } } } }, responses: *ownerResponse }
+  /api/platform/v1/tenants/{tenant_id}/activate:
+    parameters: [{ $ref: '#/components/parameters/TenantId' }]
+    post: { operationId: activatePlatformTenant, summary: activatePlatformTenant, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformTenantController::activate', x-permission: platform.tenant.lifecycle, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ChangeReasonRequest' } } } }, responses: *tenantVersionedResponse }
+  /api/platform/v1/tenants/{tenant_id}/suspend:
+    parameters: [{ $ref: '#/components/parameters/TenantId' }]
+    post: { operationId: suspendPlatformTenant, summary: suspendPlatformTenant, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformTenantController::suspend', x-permission: platform.tenant.lifecycle, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ChangeReasonRequest' } } } }, responses: *tenantVersionedResponse }
+  /api/platform/v1/tenants/{tenant_id}/close:
+    parameters: [{ $ref: '#/components/parameters/TenantId' }]
+    post: { operationId: closePlatformTenant, summary: closePlatformTenant, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformTenantController::close', x-permission: platform.tenant.lifecycle, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ChangeReasonRequest' } } } }, responses: *tenantVersionedResponse }
+  /api/platform/v1/tenants/{tenant_id}/modules/{module_key}:
+    parameters: [{ $ref: '#/components/parameters/TenantId' }, { $ref: '#/components/parameters/ModuleKey' }]
+    put: { operationId: enablePlatformTenantModule, summary: enablePlatformTenantModule, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformTenantController::enableModule', x-permission: platform.tenant.module.manage, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/EnableTenantModuleRequest' } } } }, responses: *tenantModuleResponse }
+    delete: { operationId: disablePlatformTenantModule, summary: disablePlatformTenantModule, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformTenantController::disableModule', x-permission: platform.tenant.module.manage, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ChangeReasonRequest' } } } }, responses: *tenantModuleResponse }
+  /api/platform/v1/operators:
+    get: { operationId: listPlatformOperators, summary: listPlatformOperators, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::operators', x-permission: platform.operator.read, parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *platformOperatorListResponse }
+    post: { operationId: createPlatformOperator, summary: createPlatformOperator, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::createOperator', x-permission: platform.operator.create, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/CreatePlatformOperatorRequest' } } } }, responses: *platformOperatorCreatedResponse }
+  /api/platform/v1/operators/{operator_id}:
+    parameters: [{ $ref: '#/components/parameters/OperatorId' }]
+    get: { operationId: getPlatformOperator, summary: getPlatformOperator, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::operator', x-permission: platform.operator.read, responses: *platformOperatorResponse }
+    patch: { operationId: updatePlatformOperator, summary: updatePlatformOperator, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::updateOperator', x-permission: platform.operator.update, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/UpdatePlatformOperatorRequest' } } } }, responses: *platformOperatorResponse }
+  /api/platform/v1/operators/{operator_id}/roles:
+    parameters: [{ $ref: '#/components/parameters/OperatorId' }]
+    put: { operationId: replacePlatformOperatorRoles, summary: replacePlatformOperatorRoles, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::replaceOperatorRoles', x-permission: platform.operator.role.assign, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ReplacePlatformOperatorRolesRequest' } } } }, responses: *platformOperatorResponse }
+  /api/platform/v1/operators/{operator_id}/suspend:
+    parameters: [{ $ref: '#/components/parameters/OperatorId' }]
+    post: { operationId: suspendPlatformOperator, summary: suspendPlatformOperator, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::suspendOperator', x-permission: platform.operator.lifecycle, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ChangeReasonRequest' } } } }, responses: *platformOperatorResponse }
+  /api/platform/v1/operators/{operator_id}/activate:
+    parameters: [{ $ref: '#/components/parameters/OperatorId' }]
+    post: { operationId: activatePlatformOperator, summary: activatePlatformOperator, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::activateOperator', x-permission: platform.operator.lifecycle, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ChangeReasonRequest' } } } }, responses: *platformOperatorResponse }
+  /api/platform/v1/operators/{operator_id}/close:
+    parameters: [{ $ref: '#/components/parameters/OperatorId' }]
+    post: { operationId: closePlatformOperator, summary: closePlatformOperator, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::closeOperator', x-permission: platform.operator.lifecycle, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ChangeReasonRequest' } } } }, responses: *platformOperatorResponse }
+  /api/platform/v1/roles:
+    get: { operationId: listPlatformRoles, summary: listPlatformRoles, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::roles', x-permission: platform.role.read, parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *platformRoleListResponse }
+    post: { operationId: createPlatformRole, summary: createPlatformRole, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::createRole', x-permission: platform.role.create, parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/CreatePlatformRoleRequest' } } } }, responses: *platformRoleCreatedResponse }
+  /api/platform/v1/roles/{role_id}:
+    parameters: [{ $ref: '#/components/parameters/RoleId' }]
+    get: { operationId: getPlatformRole, summary: getPlatformRole, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::role', x-permission: platform.role.read, responses: *platformRoleResponse }
+    patch: { operationId: updatePlatformRole, summary: updatePlatformRole, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::updateRole', x-permission: platform.role.update, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/UpdatePlatformRoleRequest' } } } }, responses: *platformRoleResponse }
+  /api/platform/v1/roles/{role_id}/archive:
+    parameters: [{ $ref: '#/components/parameters/RoleId' }]
+    post: { operationId: archivePlatformRole, summary: archivePlatformRole, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::archiveRole', x-permission: platform.role.archive, parameters: [{ $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ChangeReasonRequest' } } } }, responses: *platformRoleResponse }
+  /api/platform/v1/roles/{role_id}/permissions:
+    parameters: [{ $ref: '#/components/parameters/RoleId' }]
+    put: { operationId: replacePlatformRolePermissions, summary: replacePlatformRolePermissions, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformAccessController::replaceRolePermissions', x-permission: platform.role.permission.assign, parameters: [{ $ref: '#/components/parameters/IfMatch' }], requestBody: { required: true, content: { application/json: { schema: { $ref: './schemas/platform.yaml#/ReplacePlatformRolePermissionsRequest' } } } }, responses: *platformRoleResponse }
+  /api/platform/v1/permissions:
+    get: { operationId: listPlatformPermissions, summary: listPlatformPermissions, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::permissions', x-permission: platform.permission.read, responses: *permissionListResponse }
+  /api/platform/v1/audit-events:
+    get: { operationId: listPlatformAuditEvents, summary: listPlatformAuditEvents, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::auditEvents', x-permission: platform.audit.read, parameters: [{ $ref: '#/components/parameters/AuditEventType' }, { $ref: '#/components/parameters/AuditAction' }, { $ref: '#/components/parameters/AuditOutcome' }, { $ref: '#/components/parameters/AuditRequestId' }, { $ref: '#/components/parameters/AuditTargetType' }, { $ref: '#/components/parameters/AuditTargetId' }, { $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }], responses: *platformAuditListResponse }
+  /api/platform/v1/audit-events/{event_id}:
+    parameters: [{ $ref: '#/components/parameters/AuditEventId' }]
+    get: { operationId: getPlatformAuditEvent, summary: getPlatformAuditEvent, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::auditEvent', x-permission: platform.audit.read, responses: *platformAuditResponse }
+  /api/platform/v1/menus:
+    get: { operationId: getPlatformMenus, summary: getPlatformMenus, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::menus', responses: *menuListResponse }
+  /api/platform/v1/menu-diagnostics:
+    get: { operationId: listPlatformMenuDiagnostics, summary: listPlatformMenuDiagnostics, x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformWorkspaceController::menuDiagnostics', x-permission: platform.role.read, responses: *menuDiagnosticListResponse }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+  parameters:
+    Page: { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { in: query, name: page_size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+    AuditEventId: { in: path, name: event_id, required: true, schema: { $ref: './schemas/common.yaml#/$defs/BigIntString' } }
+    AuditEventType: { in: query, name: event_type, schema: { type: string, minLength: 1, maxLength: 160 } }
+    AuditAction: { in: query, name: action, schema: { type: string, minLength: 1, maxLength: 160 } }
+    AuditOutcome: { in: query, name: outcome, schema: { type: string, enum: [success, denied, error] } }
+    AuditRequestId: { in: query, name: request_id, schema: { type: string, minLength: 1, maxLength: 160 } }
+    AuditTargetType: { in: query, name: target_type, schema: { type: string, minLength: 1, maxLength: 160 } }
+    AuditTargetId: { in: query, name: target_id, schema: { type: string, minLength: 1, maxLength: 160 } }
+    IfMatch: { in: header, name: If-Match, required: true, schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    IfMatchAllowZero: { in: header, name: If-Match, required: true, schema: { type: string, pattern: '^"rev-(0|[1-9][0-9]*)"$' } }
+    IfMatchOptional: { in: header, name: If-Match, required: false, schema: { type: string, pattern: '^"rev-[1-9][0-9]*"$' } }
+    IfNoneMatchAny: { in: header, name: If-None-Match, required: false, schema: { type: string, const: '*' } }
+    IdempotencyKey: { in: header, name: Idempotency-Key, required: true, schema: { type: string, minLength: 16, maxLength: 128 } }
+    TenantId: { in: path, name: tenant_id, required: true, schema: { $ref: './schemas/common.yaml#/$defs/BigIntString' } }
+    MemberId: { in: path, name: member_id, required: true, schema: { $ref: './schemas/common.yaml#/$defs/BigIntString' } }
+    EffectiveAccessMemberId:
+      in: path
+      name: member_id
+      required: true
+      description: Canonical positive decimal member ID no greater than the server PHP_INT_MAX value.
+      schema: { type: string, pattern: '^[1-9][0-9]*$', maxLength: 19 }
+    DepartmentId: { in: path, name: department_id, required: true, schema: { $ref: './schemas/common.yaml#/$defs/BigIntString' } }
+    RoleId: { in: path, name: role_id, required: true, schema: { $ref: './schemas/common.yaml#/$defs/BigIntString' } }
+    OperatorId: { in: path, name: operator_id, required: true, schema: { $ref: './schemas/common.yaml#/$defs/BigIntString' } }
+    ModuleKey: { in: path, name: module_key, required: true, schema: { type: string, pattern: '^[a-z][a-z0-9.-]+$' } }
+    ReferenceCodeOwnerModuleKey: { in: path, name: module_key, required: true, schema: { $ref: './schemas/reference-codes.yaml#/ModuleKey' } }
+    ReferenceCodeSetKey: { in: path, name: set_key, required: true, schema: { $ref: './schemas/reference-codes.yaml#/LocalKey' } }
+    ReferenceCodeKey: { in: path, name: code, required: true, schema: { $ref: './schemas/reference-codes.yaml#/LocalKey' } }
+    ReferenceCodeIfNoneMatch: { in: header, name: If-None-Match, required: true, schema: { type: string, const: '*' } }
+    ReferenceCodeIfMatch: { in: header, name: If-Match, required: true, schema: { $ref: './schemas/reference-codes.yaml#/StrongReferenceCodeEtag' } }
+    SettingModuleKey:
+      in: path
+      name: module_key
+      required: true
+      schema:
+        type: string
+        minLength: 3
+        maxLength: 96
+        pattern: '^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*$'
+    SettingKey:
+      in: path
+      name: setting_key
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+        pattern: '^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$'
+  requestBodies:
+    ModuleConfigWrite:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [config]
+            properties:
+              config: { type: object, additionalProperties: true }
+    DataPolicyWrite:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: './schemas/authorization.yaml#/ReplaceDataPolicyRequest' }
+  responses:
+    Problem:
+      description: RFC 9457 problem response
+      headers:
+        X-Request-Id: { schema: { type: string } }
+        Cache-Control: { schema: { type: string, const: no-store } }
+      content:
+        application/problem+json:
+          schema: { $ref: './schemas/common.yaml#/$defs/Problem' }
+    RateLimitedProblem:
+      description: RFC 9457 rate limit problem response
+      headers:
+        X-Request-Id: { schema: { type: string } }
+        Cache-Control: { schema: { type: string, const: no-store } }
+        Retry-After: { schema: { type: integer, minimum: 1 } }
+      content:
+        application/problem+json:
+          schema: { $ref: './schemas/common.yaml#/$defs/Problem' }

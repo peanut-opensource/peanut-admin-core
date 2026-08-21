@@ -1,0 +1,364 @@
+{
+  "schema_version": 1,
+  "baselines": {
+    "historical_review_commit": "2444e904007a4584d90ffe5c39810eafb13b427a",
+    "historical_d04_commit": "f351a21bff55b4d8a82ef39c12d8bf4d058a3e5c",
+    "runtime_remediation_start_commit": "b927290",
+    "candidate_branch": "codex/p0-d05-remediation",
+    "downstream_consumption_status": "approved-for-pinned-internal-alpha-validation"
+  },
+  "test_owners": {
+    "RUNTIME-CONTRACT-001": {
+      "description": "OpenAPI route, handler signature, response schema, and generated artifact conformance",
+      "evidence": [
+        "backend/tests/Contract/OpenApiArtifactTest.php",
+        "scripts/check-openapi"
+      ]
+    },
+    "RUNTIME-TENANT-AUTH-001": {
+      "description": "Tenant login, selection, refresh, context, switch, logout, audience, and real HTTP behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Auth/TenantAuthServiceIntegrationTest.php",
+        "backend/tests/Http/HttpRuntimeTest.php",
+        "frontend/tests/e2e/full-stack.e2e.ts"
+      ]
+    },
+    "RUNTIME-TENANT-WORKSPACE-001": {
+      "description": "Tenant context, catalog, menu, module, audit, and configuration query behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Tenancy/TenantWorkspaceQueryServiceTest.php",
+        "frontend/tests/e2e/tenant-workspace.e2e.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-TENANT-ADMIN-001": {
+      "description": "Member, department, role, permission, optimistic-lock, and tenant-bound administration behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Membership/AdminAccessServiceTest.php",
+        "packages/php/kernel/tests/Integration/Authorization/FunctionalAuthorizationTest.php",
+        "frontend/tests/e2e/tenant-workspace.e2e.ts"
+      ]
+    },
+    "RUNTIME-DATA-AUTHORIZATION-001": {
+      "description": "Role data policy and typed target candidate behavior with fail-closed query authorization",
+      "evidence": [
+        "packages/php/data-permission/tests/Integration/Application/DataPolicyAdminServiceTest.php",
+        "packages/php/data-permission/tests/Security/AuthorizationPathParityTest.php",
+        "frontend/tests/e2e/target-scopes.e2e.ts"
+      ]
+    },
+    "RUNTIME-EXAMPLE-MODULE-001": {
+      "description": "Authorized fictional Module HTTP flow, typed targets, shared master, and operation cardinality",
+      "evidence": [
+        "backend/tests/Integration/ExampleModuleHttpIntegrationTest.php",
+        "backend/tests/Integration/ExampleModuleQueryIntegrationTest.php",
+        "frontend/tests/e2e/full-stack.e2e.ts"
+      ]
+    },
+    "RUNTIME-PLATFORM-AUTH-001": {
+      "description": "Platform login, refresh, context, logout, audience separation, and real HTTP behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Auth/PlatformAuthServiceIntegrationTest.php",
+        "frontend/tests/e2e/full-stack.e2e.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-PLATFORM-WORKSPACE-001": {
+      "description": "Platform tenant, operator, role, permission, audit, and menu query behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Platform/PlatformWorkspaceQueryServiceTest.php",
+        "frontend/tests/e2e/platform-and-resilience.e2e.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-PLATFORM-TENANT-001": {
+      "description": "Platform tenant lifecycle and TenantModule governance behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Platform/PlatformTenantAdminServiceTest.php",
+        "packages/php/kernel/tests/Integration/Module/TenantModuleConfigurationServiceTest.php",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-PLATFORM-ACCESS-001": {
+      "description": "Platform operator and role lifecycle, assignment, and permission behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Platform/PlatformAccessAdminServiceTest.php",
+        "packages/php/kernel/tests/Integration/Authorization/FunctionalAuthorizationTest.php",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-TENANT-OWNER-001": {
+      "description": "Platform-provisioned tenant owner candidate and two-step activation behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Membership/AdminAccessServiceTest.php",
+        "packages/php/kernel/tests/Integration/Platform/PlatformTenantAdminServiceTest.php",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-ACCOUNT-SELF-SERVICE-001": {
+      "description": "Authenticated self-scoped account profile and password security behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Integration/Identity/AccountSelfServiceIntegrationTest.php",
+        "backend/tests/Integration/AccountSelfServiceHttpIntegrationTest.php",
+        "frontend/tests/account-page.spec.ts",
+        "frontend/tests/e2e/full-stack.e2e.ts"
+      ]
+    },
+    "RUNTIME-EFFECTIVE-ACCESS-PREVIEW-001": {
+      "description": "Tenant-admin current effective RBAC and redacted data-policy input inspection",
+      "evidence": [
+        "packages/php/data-permission/tests/Integration/Application/EffectiveAccessPreviewServiceTest.php",
+        "backend/tests/Integration/EffectiveAccessPreviewHttpIntegrationTest.php",
+        "frontend/tests/effective-access-preview-page.spec.ts",
+        "frontend/tests/e2e/full-stack.e2e.ts"
+      ]
+    },
+    "RUNTIME-SETTINGS-001": {
+      "description": "Module-owned setting definition, effective resolution, atomic HTTP, security, and Tenant Web behavior",
+      "evidence": [
+        "packages/php/settings/tests/Integration/Application/SettingResolverTest.php",
+        "packages/php/settings/tests/Security/SettingsIsolationTest.php",
+        "backend/tests/Http/SettingsApiTest.php",
+        "backend/tests/Integration/SettingsModuleIntegrationTest.php",
+        "backend/tests/Upgrade/SettingsUpgradeTest.php",
+        "packages/web/settings/tests/page.spec.ts",
+        "frontend/tests/e2e/settings.e2e.ts"
+      ]
+    },
+    "RUNTIME-REFERENCE-CODES-001": {
+      "description": "Tenant-owned versioned reference-code definitions, entries, isolation, Host API, and Admin Web behavior",
+      "evidence": [
+        "packages/php/reference-codes/tests/Integration/Application/ReferenceCodeAdminServiceTest.php",
+        "packages/php/reference-codes/tests/Integration/Application/ReferenceCodeQueryTest.php",
+        "packages/php/reference-codes/tests/Security/ReferenceCodesIsolationTest.php",
+        "backend/tests/Integration/ReferenceCodeModuleIntegrationTest.php",
+        "backend/tests/Http/ReferenceCodeApiTest.php",
+        "backend/tests/Security/ReferenceCodeSecurityTest.php",
+        "packages/web/reference-codes/tests/page.spec.ts",
+        "frontend/tests/e2e/reference-codes.e2e.ts"
+      ]
+    },
+    "RUNTIME-FILE-MEDIA-001": {
+      "description": "Tenant-private file metadata, local provider, isolation, Host API, and Admin Web behavior",
+      "evidence": [
+        "packages/php/file-media/tests/Unit/Application/UploadPolicyTest.php",
+        "packages/php/file-media/tests/Integration/FileServiceTest.php",
+        "backend/tests/Unit/FileMediaLocalStorageTest.php",
+        "backend/tests/Integration/FileMediaModuleIntegrationTest.php",
+        "backend/tests/Http/FileMediaApiTest.php",
+        "backend/tests/Security/FileMediaSecurityTest.php",
+        "packages/php/file-media/tests/Unit/Delivery/DeliverySecurityTest.php",
+        "packages/php/file-media/tests/Unit/Media/ImageMetadataTest.php",
+        "packages/web/file-media/tests/asset-selector.spec.ts",
+        "packages/web/file-media/tests/page.spec.ts",
+        "frontend/tests/file-media-page.spec.ts"
+      ]
+    },
+    "RUNTIME-TASK-JOB-001": {
+      "description": "Tenant task ledger, transactional management, lease and retry safety, trusted worker, and Admin Web behavior",
+      "evidence": [
+        "packages/php/task-job/tests/feature-harness.php",
+        "packages/web/task-job/tests/contracts.spec.ts",
+        "packages/web/task-job/tests/runtime.spec.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-NOTIFICATION-SMS-001": {
+      "description": "Tenant inbox, template snapshots, transactional outbox-to-task dispatch, fail-closed SMS provider, and Admin Web behavior",
+      "evidence": [
+        "packages/php/notification-sms/tests/feature-harness.php",
+        "packages/php/notification-sms/tests/mysql-harness.php",
+        "packages/web/notification-sms/tests/contracts.spec.ts",
+        "packages/web/notification-sms/tests/runtime.spec.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-GOVERNANCE-001": {
+      "description": "Tenant and platform governance menu diagnostics plus redacted audit detail behavior",
+      "evidence": [
+        "packages/php/kernel/tests/Unit/Governance/GovernanceWorkbenchTest.php",
+        "backend/tests/Unit/MenuDiagnosticRuntimeTest.php",
+        "frontend/tests/stage-a-integration.spec.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-UPGRADE-001": {
+      "description": "Read-only platform upgrade readiness projection backed by operator-controlled preflight evidence",
+      "evidence": [
+        "backend/tests/Upgrade/UpgradeStatusServiceTest.php",
+        "backend/tests/Contract/OpenApiArtifactTest.php",
+        "frontend/tests/stage-a-integration.spec.ts"
+      ]
+    },
+    "RUNTIME-IMPORT-EXPORT-001": {
+      "description": "Tenant CSV import/export orchestration, File/Media and Task/Job adapters, optimistic cancellation, and Admin Web behavior",
+      "evidence": [
+        "packages/php/import-export/tests/feature-harness.php",
+        "packages/web/import-export/tests/contracts.spec.ts",
+        "packages/web/import-export/tests/runtime.spec.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-INTEGRATION-SECURITY-001": {
+      "description": "Tenant machine credentials, Webhook delivery security, own-session revocation, one-time replay redaction, and Admin Web behavior",
+      "evidence": [
+        "packages/php/integration-security/tests/feature-harness.php",
+        "packages/php/integration-security/tests/mysql-harness.php",
+        "packages/web/integration-security/tests/contracts.spec.ts",
+        "packages/web/integration-security/tests/runtime.spec.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    },
+    "RUNTIME-OPS-CONSOLE-001": {
+      "description": "Platform health/version/migration evidence, maintenance concurrency, trusted backup and restore tasks, and redacted runtime logs",
+      "evidence": [
+        "packages/php/ops-console/tests/feature-harness.php",
+        "packages/web/ops-console/tests/contracts.spec.ts",
+        "packages/web/ops-console/tests/runtime.spec.ts",
+        "packages/web/ops-console/tests/transport.spec.ts",
+        "backend/tests/Contract/OpenApiArtifactTest.php"
+      ]
+    }
+  },
+  "operations": [
+    {"operation_id":"disablePlatformTenantModule","scope":"p0","route":"DELETE /api/platform/v1/tenants/{tenant_id}/modules/{module_key}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformTenantController::disableModule","response_schema":"#/components/schemas/TenantModuleResponse","test_owner":"RUNTIME-PLATFORM-TENANT-001"},
+    {"operation_id":"getPlatformAuditEvent","scope":"p1","route":"GET /api/platform/v1/audit-events/{event_id}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::auditEvent","response_schema":"#/components/schemas/PlatformAuditEventResponse","test_owner":"RUNTIME-GOVERNANCE-001"},
+    {"operation_id":"listPlatformMenuDiagnostics","scope":"p1","route":"GET /api/platform/v1/menu-diagnostics","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::menuDiagnostics","response_schema":"#/components/schemas/MenuDiagnosticListResponse","test_owner":"RUNTIME-GOVERNANCE-001"},
+    {"operation_id":"getPlatformUpgradeStatus","scope":"p1","route":"GET /api/platform/v1/upgrade","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\UpgradeStatusController::show","response_schema":"#/components/schemas/UpgradeStatusResponse","test_owner":"RUNTIME-UPGRADE-001"},
+    {"operation_id":"getTenantAuditEvent","scope":"p1","route":"GET /api/v1/audit-events/{event_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantWorkspaceController::auditEvent","response_schema":"#/components/schemas/TenantAuditEventResponse","test_owner":"RUNTIME-GOVERNANCE-001"},
+    {"operation_id":"listTenantMenuDiagnostics","scope":"p1","route":"GET /api/v1/menu-diagnostics","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantWorkspaceController::menuDiagnostics","response_schema":"#/components/schemas/MenuDiagnosticListResponse","test_owner":"RUNTIME-GOVERNANCE-001"},
+    {"operation_id":"listPlatformAuditEvents","scope":"p0","route":"GET /api/platform/v1/audit-events","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::auditEvents","response_schema":"#/components/schemas/PlatformAuditListResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"getPlatformContext","scope":"p0","route":"GET /api/platform/v1/auth/context","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAuthController::context","response_schema":"#/components/schemas/PlatformContextResponse","test_owner":"RUNTIME-PLATFORM-AUTH-001"},
+    {"operation_id":"getPlatformMenus","scope":"p0","route":"GET /api/platform/v1/menus","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::menus","response_schema":"#/components/schemas/MenuListResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"listPlatformOperators","scope":"p0","route":"GET /api/platform/v1/operators","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::operators","response_schema":"#/components/schemas/PlatformOperatorListResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"getPlatformOperator","scope":"p0","route":"GET /api/platform/v1/operators/{operator_id}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::operator","response_schema":"#/components/schemas/PlatformOperatorResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"listPlatformPermissions","scope":"p0","route":"GET /api/platform/v1/permissions","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::permissions","response_schema":"#/components/schemas/PermissionListResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"listPlatformRoles","scope":"p0","route":"GET /api/platform/v1/roles","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::roles","response_schema":"#/components/schemas/PlatformRoleListResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"getPlatformRole","scope":"p0","route":"GET /api/platform/v1/roles/{role_id}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::role","response_schema":"#/components/schemas/PlatformRoleResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"listPlatformTenants","scope":"p0","route":"GET /api/platform/v1/tenants","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::tenants","response_schema":"#/components/schemas/TenantListResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"getPlatformTenant","scope":"p0","route":"GET /api/platform/v1/tenants/{tenant_id}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformWorkspaceController::tenant","response_schema":"#/components/schemas/TenantResponse","test_owner":"RUNTIME-PLATFORM-WORKSPACE-001"},
+    {"operation_id":"listTenantAuditEvents","scope":"p0","route":"GET /api/v1/audit-events","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantWorkspaceController::auditEvents","response_schema":"#/components/schemas/TenantAuditListResponse","test_owner":"RUNTIME-TENANT-WORKSPACE-001"},
+    {"operation_id":"getTenantContext","scope":"p0","route":"GET /api/v1/auth/context","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantAuthController::context","response_schema":"#/components/schemas/TenantContextResponse","test_owner":"RUNTIME-TENANT-AUTH-001"},
+    {"operation_id":"listTargetCandidates","scope":"p0","route":"GET /api/v1/authorization/target-candidates","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DataAuthorizationController::targetCandidates","response_schema":"#/components/schemas/TargetCandidateListResponse","test_owner":"RUNTIME-DATA-AUTHORIZATION-001"},
+    {"operation_id":"listDepartments","scope":"p0","route":"GET /api/v1/departments","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DepartmentController::index","response_schema":"#/components/schemas/DepartmentListResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"getDepartment","scope":"p0","route":"GET /api/v1/departments/{department_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DepartmentController::show","response_schema":"#/components/schemas/DepartmentResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"listExampleReferenceCandidates","scope":"p0","route":"GET /api/v1/example/reference-items/candidates","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ExampleController::referenceCandidates","response_schema":"#/components/schemas/ReferenceCandidateListResponse","test_owner":"RUNTIME-EXAMPLE-MODULE-001"},
+    {"operation_id":"listExampleWorkItems","scope":"p0","route":"GET /api/v1/example/work-items","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ExampleController::listWorkItems","response_schema":"#/components/schemas/WorkItemListResponse","test_owner":"RUNTIME-EXAMPLE-MODULE-001"},
+    {"operation_id":"aggregateExampleWorkItems","scope":"p0","route":"GET /api/v1/example/work-items/aggregate","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ExampleController::aggregateWorkItems","response_schema":"#/components/schemas/WorkItemAggregateResponse","test_owner":"RUNTIME-EXAMPLE-MODULE-001"},
+    {"operation_id":"getExampleWorkItem","scope":"p0","route":"GET /api/v1/example/work-items/{work_item_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ExampleController::getWorkItem","response_schema":"#/components/schemas/WorkItemResponse","test_owner":"RUNTIME-EXAMPLE-MODULE-001"},
+    {"operation_id":"listMembers","scope":"p0","route":"GET /api/v1/members","handler":"PeanutAdmin\\App\\controller\\api\\v1\\MemberController::index","response_schema":"#/components/schemas/MemberListResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"getMember","scope":"p0","route":"GET /api/v1/members/{member_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\MemberController::show","response_schema":"#/components/schemas/MemberResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"getTenantMenus","scope":"p0","route":"GET /api/v1/menus","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantWorkspaceController::menus","response_schema":"#/components/schemas/MenuListResponse","test_owner":"RUNTIME-TENANT-WORKSPACE-001"},
+    {"operation_id":"listTenantModules","scope":"p0","route":"GET /api/v1/modules","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantWorkspaceController::modules","response_schema":"#/components/schemas/TenantModuleListResponse","test_owner":"RUNTIME-TENANT-WORKSPACE-001"},
+    {"operation_id":"listPermissions","scope":"p0","route":"GET /api/v1/permissions","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantWorkspaceController::permissions","response_schema":"#/components/schemas/PermissionListResponse","test_owner":"RUNTIME-TENANT-WORKSPACE-001"},
+    {"operation_id":"listRoles","scope":"p0","route":"GET /api/v1/roles","handler":"PeanutAdmin\\App\\controller\\api\\v1\\RoleController::index","response_schema":"#/components/schemas/RoleListResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"getRole","scope":"p0","route":"GET /api/v1/roles/{role_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\RoleController::show","response_schema":"#/components/schemas/RoleResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"getRoleDataPolicy","scope":"p0","route":"GET /api/v1/roles/{role_id}/data-policies/{resource_key}/{operation}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DataAuthorizationController::getRolePolicy","response_schema":"#/components/schemas/DataPolicyResponse","test_owner":"RUNTIME-DATA-AUTHORIZATION-001"},
+    {"operation_id":"getTenant","scope":"p0","route":"GET /api/v1/tenant","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantWorkspaceController::show","response_schema":"#/components/schemas/TenantResponse","test_owner":"RUNTIME-TENANT-WORKSPACE-001"},
+    {"operation_id":"updatePlatformOperator","scope":"p0","route":"PATCH /api/platform/v1/operators/{operator_id}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::updateOperator","response_schema":"#/components/schemas/PlatformOperatorResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"updatePlatformRole","scope":"p0","route":"PATCH /api/platform/v1/roles/{role_id}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::updateRole","response_schema":"#/components/schemas/PlatformRoleResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"updatePlatformTenant","scope":"p0","route":"PATCH /api/platform/v1/tenants/{tenant_id}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformTenantController::update","response_schema":"#/components/schemas/TenantResponse","test_owner":"RUNTIME-PLATFORM-TENANT-001"},
+    {"operation_id":"updateDepartment","scope":"p0","route":"PATCH /api/v1/departments/{department_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DepartmentController::update","response_schema":"#/components/schemas/DepartmentResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"updateExampleWorkItem","scope":"p0","route":"PATCH /api/v1/example/work-items/{work_item_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ExampleController::updateWorkItem","response_schema":"#/components/schemas/WorkItemCommandResponse","test_owner":"RUNTIME-EXAMPLE-MODULE-001"},
+    {"operation_id":"updateMember","scope":"p0","route":"PATCH /api/v1/members/{member_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\MemberController::update","response_schema":"#/components/schemas/MemberResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"updateTenantModuleConfig","scope":"p0","route":"PATCH /api/v1/modules/{module_key}/config","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantWorkspaceController::updateModuleConfig","response_schema":"#/components/schemas/TenantModuleResponse","test_owner":"RUNTIME-TENANT-WORKSPACE-001"},
+    {"operation_id":"updateRole","scope":"p0","route":"PATCH /api/v1/roles/{role_id}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\RoleController::update","response_schema":"#/components/schemas/RoleResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"platformLogin","scope":"p0","route":"POST /api/platform/v1/auth/login","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAuthController::login","response_schema":"#/components/schemas/PlatformAuthenticationResponse","test_owner":"RUNTIME-PLATFORM-AUTH-001"},
+    {"operation_id":"logoutPlatformSession","scope":"p0","route":"POST /api/platform/v1/auth/logout","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAuthController::logout","response_schema":null,"test_owner":"RUNTIME-PLATFORM-AUTH-001"},
+    {"operation_id":"refreshPlatformSession","scope":"p0","route":"POST /api/platform/v1/auth/refresh","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAuthController::refresh","response_schema":"#/components/schemas/PlatformAuthenticationResponse","test_owner":"RUNTIME-PLATFORM-AUTH-001"},
+    {"operation_id":"createPlatformOperator","scope":"p0","route":"POST /api/platform/v1/operators","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::createOperator","response_schema":"#/components/schemas/PlatformOperatorResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"activatePlatformOperator","scope":"p0","route":"POST /api/platform/v1/operators/{operator_id}/activate","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::activateOperator","response_schema":"#/components/schemas/PlatformOperatorResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"closePlatformOperator","scope":"p0","route":"POST /api/platform/v1/operators/{operator_id}/close","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::closeOperator","response_schema":"#/components/schemas/PlatformOperatorResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"suspendPlatformOperator","scope":"p0","route":"POST /api/platform/v1/operators/{operator_id}/suspend","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::suspendOperator","response_schema":"#/components/schemas/PlatformOperatorResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"createPlatformRole","scope":"p0","route":"POST /api/platform/v1/roles","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::createRole","response_schema":"#/components/schemas/PlatformRoleResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"archivePlatformRole","scope":"p0","route":"POST /api/platform/v1/roles/{role_id}/archive","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::archiveRole","response_schema":"#/components/schemas/PlatformRoleResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"createPlatformTenant","scope":"p0","route":"POST /api/platform/v1/tenants","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformTenantController::create","response_schema":"#/components/schemas/TenantResponse","test_owner":"RUNTIME-PLATFORM-TENANT-001"},
+    {"operation_id":"activatePlatformTenant","scope":"p0","route":"POST /api/platform/v1/tenants/{tenant_id}/activate","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformTenantController::activate","response_schema":"#/components/schemas/TenantResponse","test_owner":"RUNTIME-PLATFORM-TENANT-001"},
+    {"operation_id":"closePlatformTenant","scope":"p0","route":"POST /api/platform/v1/tenants/{tenant_id}/close","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformTenantController::close","response_schema":"#/components/schemas/TenantResponse","test_owner":"RUNTIME-PLATFORM-TENANT-001"},
+    {"operation_id":"createTenantOwnerCandidate","scope":"p0","route":"POST /api/platform/v1/tenants/{tenant_id}/owner-candidates","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\TenantOwnerController::create","response_schema":"#/components/schemas/TenantOwnerCandidateResponse","test_owner":"RUNTIME-TENANT-OWNER-001"},
+    {"operation_id":"activateTenantOwnerCandidate","scope":"p0","route":"POST /api/platform/v1/tenants/{tenant_id}/owner-candidates/{member_id}/activate","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\TenantOwnerController::activate","response_schema":"#/components/schemas/TenantOwnerCandidateResponse","test_owner":"RUNTIME-TENANT-OWNER-001"},
+    {"operation_id":"suspendPlatformTenant","scope":"p0","route":"POST /api/platform/v1/tenants/{tenant_id}/suspend","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformTenantController::suspend","response_schema":"#/components/schemas/TenantResponse","test_owner":"RUNTIME-PLATFORM-TENANT-001"},
+    {"operation_id":"tenantLogin","scope":"p0","route":"POST /api/v1/auth/login","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantAuthController::login","response_schema":"#/components/schemas/TenantLoginResponse","test_owner":"RUNTIME-TENANT-AUTH-001"},
+    {"operation_id":"logoutTenantSession","scope":"p0","route":"POST /api/v1/auth/logout","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantAuthController::logout","response_schema":null,"test_owner":"RUNTIME-TENANT-AUTH-001"},
+    {"operation_id":"logoutAllTenantSessions","scope":"p0","route":"POST /api/v1/auth/logout-all","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantAuthController::logoutAll","response_schema":null,"test_owner":"RUNTIME-TENANT-AUTH-001"},
+    {"operation_id":"refreshTenantSession","scope":"p0","route":"POST /api/v1/auth/refresh","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantAuthController::refresh","response_schema":"#/components/schemas/TenantAuthenticationResponse","test_owner":"RUNTIME-TENANT-AUTH-001"},
+    {"operation_id":"createTenantSwitchChallenge","scope":"p0","route":"POST /api/v1/auth/tenant-switch/challenge","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantAuthController::switchChallenge","response_schema":"#/components/schemas/TenantSelectionResponse","test_owner":"RUNTIME-TENANT-AUTH-001"},
+    {"operation_id":"selectTenant","scope":"p0","route":"POST /api/v1/auth/tenants/select","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TenantAuthController::selectTenant","response_schema":"#/components/schemas/TenantAuthenticationResponse","test_owner":"RUNTIME-TENANT-AUTH-001"},
+    {"operation_id":"createDepartment","scope":"p0","route":"POST /api/v1/departments","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DepartmentController::create","response_schema":"#/components/schemas/DepartmentResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"archiveDepartment","scope":"p0","route":"POST /api/v1/departments/{department_id}/archive","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DepartmentController::archive","response_schema":"#/components/schemas/DepartmentResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"moveDepartment","scope":"p0","route":"POST /api/v1/departments/{department_id}/move","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DepartmentController::move","response_schema":"#/components/schemas/DepartmentResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"publishExampleWorkItemPolicy","scope":"p0","route":"POST /api/v1/example/work-item-view-policies","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ExampleController::publishWorkItemPolicy","response_schema":"#/components/schemas/WorkItemPolicyPublicationResponse","test_owner":"RUNTIME-EXAMPLE-MODULE-001"},
+    {"operation_id":"createExampleWorkItem","scope":"p0","route":"POST /api/v1/example/work-items","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ExampleController::createWorkItem","response_schema":"#/components/schemas/WorkItemCommandResponse","test_owner":"RUNTIME-EXAMPLE-MODULE-001"},
+    {"operation_id":"createPendingMember","scope":"p0","route":"POST /api/v1/members","handler":"PeanutAdmin\\App\\controller\\api\\v1\\MemberController::create","response_schema":"#/components/schemas/MemberResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"activateMember","scope":"p0","route":"POST /api/v1/members/{member_id}/activate","handler":"PeanutAdmin\\App\\controller\\api\\v1\\MemberController::activate","response_schema":"#/components/schemas/MemberResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"leaveMember","scope":"p0","route":"POST /api/v1/members/{member_id}/leave","handler":"PeanutAdmin\\App\\controller\\api\\v1\\MemberController::leave","response_schema":"#/components/schemas/MemberResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"suspendMember","scope":"p0","route":"POST /api/v1/members/{member_id}/suspend","handler":"PeanutAdmin\\App\\controller\\api\\v1\\MemberController::suspend","response_schema":"#/components/schemas/MemberResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"createRole","scope":"p0","route":"POST /api/v1/roles","handler":"PeanutAdmin\\App\\controller\\api\\v1\\RoleController::create","response_schema":"#/components/schemas/RoleResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"archiveRole","scope":"p0","route":"POST /api/v1/roles/{role_id}/archive","handler":"PeanutAdmin\\App\\controller\\api\\v1\\RoleController::archive","response_schema":"#/components/schemas/RoleResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"replacePlatformOperatorRoles","scope":"p0","route":"PUT /api/platform/v1/operators/{operator_id}/roles","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::replaceOperatorRoles","response_schema":"#/components/schemas/PlatformOperatorResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"replacePlatformRolePermissions","scope":"p0","route":"PUT /api/platform/v1/roles/{role_id}/permissions","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformAccessController::replaceRolePermissions","response_schema":"#/components/schemas/PlatformRoleResponse","test_owner":"RUNTIME-PLATFORM-ACCESS-001"},
+    {"operation_id":"enablePlatformTenantModule","scope":"p0","route":"PUT /api/platform/v1/tenants/{tenant_id}/modules/{module_key}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformTenantController::enableModule","response_schema":"#/components/schemas/TenantModuleResponse","test_owner":"RUNTIME-PLATFORM-TENANT-001"},
+    {"operation_id":"replaceMemberRoles","scope":"p0","route":"PUT /api/v1/members/{member_id}/roles","handler":"PeanutAdmin\\App\\controller\\api\\v1\\MemberController::replaceRoles","response_schema":"#/components/schemas/MemberResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"replaceRoleDataPolicy","scope":"p0","route":"PUT /api/v1/roles/{role_id}/data-policies/{resource_key}/{operation}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DataAuthorizationController::replaceRolePolicy","response_schema":"#/components/schemas/DataPolicyResponse","test_owner":"RUNTIME-DATA-AUTHORIZATION-001"},
+    {"operation_id":"replaceRolePermissions","scope":"p0","route":"PUT /api/v1/roles/{role_id}/permissions","handler":"PeanutAdmin\\App\\controller\\api\\v1\\RoleController::replacePermissions","response_schema":"#/components/schemas/RoleResponse","test_owner":"RUNTIME-TENANT-ADMIN-001"},
+    {"operation_id":"getMyAccount","scope":"p1","route":"GET /api/v1/account","handler":"PeanutAdmin\\App\\controller\\api\\v1\\AccountController::show","response_schema":"#/components/schemas/AccountProfileResponse","test_owner":"RUNTIME-ACCOUNT-SELF-SERVICE-001"},
+    {"operation_id":"updateMyAccount","scope":"p1","route":"PATCH /api/v1/account","handler":"PeanutAdmin\\App\\controller\\api\\v1\\AccountController::update","response_schema":"#/components/schemas/AccountProfileResponse","test_owner":"RUNTIME-ACCOUNT-SELF-SERVICE-001"},
+    {"operation_id":"changeMyPassword","scope":"p1","route":"POST /api/v1/account/password","handler":"PeanutAdmin\\App\\controller\\api\\v1\\AccountController::changePassword","response_schema":null,"test_owner":"RUNTIME-ACCOUNT-SELF-SERVICE-001"},
+    {"operation_id":"getMemberEffectiveAccess","scope":"p1","route":"GET /api/v1/members/{member_id}/effective-access","handler":"PeanutAdmin\\App\\controller\\api\\v1\\DataAuthorizationController::effectiveAccess","response_schema":"#/components/schemas/MemberEffectiveAccessResponse","test_owner":"RUNTIME-EFFECTIVE-ACCESS-PREVIEW-001"},
+    {"operation_id":"listDeploymentSettings","scope":"p1","route":"GET /api/platform/v1/settings","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformSettingsController::listDeploymentSettings","response_schema":"#/components/schemas/SettingListResponse","test_owner":"RUNTIME-SETTINGS-001"},
+    {"operation_id":"replaceDeploymentSetting","scope":"p1","route":"PUT /api/platform/v1/settings/{module_key}/{setting_key}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformSettingsController::replaceDeploymentSetting","response_schema":"#/components/schemas/SettingResponse","test_owner":"RUNTIME-SETTINGS-001"},
+    {"operation_id":"unsetDeploymentSetting","scope":"p1","route":"DELETE /api/platform/v1/settings/{module_key}/{setting_key}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\PlatformSettingsController::unsetDeploymentSetting","response_schema":"#/components/schemas/SettingResponse","test_owner":"RUNTIME-SETTINGS-001"},
+    {"operation_id":"listTenantSettings","scope":"p1","route":"GET /api/v1/settings","handler":"PeanutAdmin\\App\\controller\\api\\v1\\SettingsController::listTenantSettings","response_schema":"#/components/schemas/SettingListResponse","test_owner":"RUNTIME-SETTINGS-001"},
+    {"operation_id":"replaceTenantSetting","scope":"p1","route":"PUT /api/v1/settings/{module_key}/{setting_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\SettingsController::replaceTenantSetting","response_schema":"#/components/schemas/SettingResponse","test_owner":"RUNTIME-SETTINGS-001"},
+    {"operation_id":"unsetTenantSetting","scope":"p1","route":"DELETE /api/v1/settings/{module_key}/{setting_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\SettingsController::unsetTenantSetting","response_schema":"#/components/schemas/SettingResponse","test_owner":"RUNTIME-SETTINGS-001"},
+    {"operation_id":"listReferenceCodeSets","scope":"p1","route":"GET /api/v1/reference-code-sets","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ReferenceCodeController::listReferenceCodeSets","response_schema":"#/components/schemas/ReferenceCodeSetListResponse","test_owner":"RUNTIME-REFERENCE-CODES-001"},
+    {"operation_id":"listReferenceCodes","scope":"p1","route":"GET /api/v1/reference-code-sets/{module_key}/{set_key}/codes","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ReferenceCodeController::listReferenceCodes","response_schema":"#/components/schemas/ReferenceCodeListResponse","test_owner":"RUNTIME-REFERENCE-CODES-001"},
+    {"operation_id":"getReferenceCode","scope":"p1","route":"GET /api/v1/reference-code-sets/{module_key}/{set_key}/codes/{code}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ReferenceCodeController::getReferenceCode","response_schema":"#/components/schemas/ReferenceCodeEntryResponse","test_owner":"RUNTIME-REFERENCE-CODES-001"},
+    {"operation_id":"createReferenceCode","scope":"p1","route":"POST /api/v1/reference-code-sets/{module_key}/{set_key}/codes","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ReferenceCodeController::createReferenceCode","response_schema":"#/components/schemas/ReferenceCodeEntryResponse","test_owner":"RUNTIME-REFERENCE-CODES-001"},
+    {"operation_id":"replaceReferenceCode","scope":"p1","route":"PUT /api/v1/reference-code-sets/{module_key}/{set_key}/codes/{code}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ReferenceCodeController::replaceReferenceCode","response_schema":"#/components/schemas/ReferenceCodeEntryResponse","test_owner":"RUNTIME-REFERENCE-CODES-001"},
+    {"operation_id":"retireReferenceCode","scope":"p1","route":"DELETE /api/v1/reference-code-sets/{module_key}/{set_key}/codes/{code}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ReferenceCodeController::retireReferenceCode","response_schema":"#/components/schemas/ReferenceCodeEntryResponse","test_owner":"RUNTIME-REFERENCE-CODES-001"},
+    {"operation_id":"listFiles","scope":"p1","route":"GET /api/v1/files","handler":"PeanutAdmin\\App\\controller\\api\\v1\\FileController::index","response_schema":"#/components/schemas/FileListResponse","test_owner":"RUNTIME-FILE-MEDIA-001"},
+    {"operation_id":"createFile","scope":"p1","route":"POST /api/v1/files","handler":"PeanutAdmin\\App\\controller\\api\\v1\\FileController::create","response_schema":"#/components/schemas/FileResponse","test_owner":"RUNTIME-FILE-MEDIA-001"},
+    {"operation_id":"getFile","scope":"p1","route":"GET /api/v1/files/{file_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\FileController::show","response_schema":"#/components/schemas/FileResponse","test_owner":"RUNTIME-FILE-MEDIA-001"},
+    {"operation_id":"downloadFile","scope":"p1","route":"GET /api/v1/files/{file_key}/content","handler":"PeanutAdmin\\App\\controller\\api\\v1\\FileController::content","response_schema":"#/components/schemas/FileContent","test_owner":"RUNTIME-FILE-MEDIA-001"},
+    {"operation_id":"archiveFile","scope":"p1","route":"DELETE /api/v1/files/{file_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\FileController::archive","response_schema":"#/components/schemas/FileResponse","test_owner":"RUNTIME-FILE-MEDIA-001"},
+    {"operation_id":"listFileAssets","scope":"p1","route":"GET /api/v1/file-assets","handler":"PeanutAdmin\\App\\controller\\api\\v1\\FileController::assets","response_schema":"#/components/schemas/FileAssetListResponse","test_owner":"RUNTIME-FILE-MEDIA-001"},
+    {"operation_id":"createFileDeliveryGrant","scope":"p1","route":"POST /api/v1/files/{file_key}/delivery-grants","handler":"PeanutAdmin\\App\\controller\\api\\v1\\FileController::grant","response_schema":"#/components/schemas/FileDeliveryGrantResponse","test_owner":"RUNTIME-FILE-MEDIA-001"},
+    {"operation_id":"downloadFileDelivery","scope":"p1","route":"GET /api/v1/file-deliveries/{file_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\FileController::deliver","response_schema":"#/components/schemas/FileContent","test_owner":"RUNTIME-FILE-MEDIA-001"},
+    {"operation_id":"listTasks","scope":"p1","route":"GET /api/v1/tasks","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TaskController::index","response_schema":"#/components/schemas/TaskListResponse","test_owner":"RUNTIME-TASK-JOB-001"},
+    {"operation_id":"getTask","scope":"p1","route":"GET /api/v1/tasks/{job_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TaskController::show","response_schema":"#/components/schemas/TaskResponse","test_owner":"RUNTIME-TASK-JOB-001"},
+    {"operation_id":"cancelTask","scope":"p1","route":"POST /api/v1/tasks/{job_key}/cancel","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TaskController::cancel","response_schema":"#/components/schemas/TaskResponse","test_owner":"RUNTIME-TASK-JOB-001"},
+    {"operation_id":"retryTask","scope":"p1","route":"POST /api/v1/tasks/{job_key}/retry","handler":"PeanutAdmin\\App\\controller\\api\\v1\\TaskController::retry","response_schema":"#/components/schemas/TaskResponse","test_owner":"RUNTIME-TASK-JOB-001"},
+    {"operation_id":"listNotifications","scope":"p1","route":"GET /api/v1/notifications","handler":"PeanutAdmin\\App\\controller\\api\\v1\\NotificationController::index","response_schema":"#/components/schemas/NotificationListResponse","test_owner":"RUNTIME-NOTIFICATION-SMS-001"},
+    {"operation_id":"markNotificationRead","scope":"p1","route":"POST /api/v1/notifications/{message_key}/read","handler":"PeanutAdmin\\App\\controller\\api\\v1\\NotificationController::markRead","response_schema":"#/components/schemas/NotificationResponse","test_owner":"RUNTIME-NOTIFICATION-SMS-001"},
+    {"operation_id":"bulkUpdateNotifications","scope":"p1","route":"POST /api/v1/notifications/bulk","handler":"PeanutAdmin\\App\\controller\\api\\v1\\NotificationController::bulk","response_schema":"#/components/schemas/NotificationBulkResponse","test_owner":"RUNTIME-NOTIFICATION-SMS-001"},
+    {"operation_id":"putNotificationTemplate","scope":"p1","route":"PUT /api/v1/notification-templates/{template_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\NotificationController::putTemplate","response_schema":"#/components/schemas/NotificationTemplateResponse","test_owner":"RUNTIME-NOTIFICATION-SMS-001"},
+    {"operation_id":"createNotification","scope":"p1","route":"POST /api/v1/notifications","handler":"PeanutAdmin\\App\\controller\\api\\v1\\NotificationController::publish","response_schema":"#/components/schemas/NotificationPublishResponse","test_owner":"RUNTIME-NOTIFICATION-SMS-001"},
+    {"operation_id":"dispatchNotificationOutbox","scope":"p1","route":"POST /api/v1/notification-outbox/{outbox_key}/dispatch","handler":"PeanutAdmin\\App\\controller\\api\\v1\\NotificationController::dispatch","response_schema":"#/components/schemas/TaskResponse","test_owner":"RUNTIME-NOTIFICATION-SMS-001"},
+    {"operation_id":"listImportExportOperations","scope":"p1","route":"GET /api/v1/import-export/operations","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ImportExportController::index","response_schema":"#/components/schemas/OperationListResponse","test_owner":"RUNTIME-IMPORT-EXPORT-001"},
+    {"operation_id":"getImportExportOperation","scope":"p1","route":"GET /api/v1/import-export/operations/{operation_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ImportExportController::show","response_schema":"#/components/schemas/OperationResponse","test_owner":"RUNTIME-IMPORT-EXPORT-001"},
+    {"operation_id":"submitImport","scope":"p1","route":"POST /api/v1/import-export/imports","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ImportExportController::submitImport","response_schema":"#/components/schemas/OperationResponse","test_owner":"RUNTIME-IMPORT-EXPORT-001"},
+    {"operation_id":"submitExport","scope":"p1","route":"POST /api/v1/import-export/exports","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ImportExportController::submitExport","response_schema":"#/components/schemas/OperationResponse","test_owner":"RUNTIME-IMPORT-EXPORT-001"},
+    {"operation_id":"cancelImportExportOperation","scope":"p1","route":"POST /api/v1/import-export/operations/{operation_key}/cancel","handler":"PeanutAdmin\\App\\controller\\api\\v1\\ImportExportController::cancel","response_schema":"#/components/schemas/OperationResponse","test_owner":"RUNTIME-IMPORT-EXPORT-001"},
+    {"operation_id":"listMachineIdentities","scope":"p1","route":"GET /api/v1/integration-security/machine-identities","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::machines","response_schema":"#/components/schemas/ListResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"createMachineIdentity","scope":"p1","route":"POST /api/v1/integration-security/machine-identities","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::createMachine","response_schema":"#/components/schemas/ObjectResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"revokeMachineIdentity","scope":"p1","route":"DELETE /api/v1/integration-security/machine-identities/{identity_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::revokeMachine","response_schema":"#/components/schemas/ObjectResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"rotateMachineIdentity","scope":"p1","route":"POST /api/v1/integration-security/machine-identities/{identity_key}/rotate","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::rotateMachine","response_schema":"#/components/schemas/ObjectResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"listWebhookEndpoints","scope":"p1","route":"GET /api/v1/integration-security/webhooks","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::webhooks","response_schema":"#/components/schemas/ListResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"createWebhookEndpoint","scope":"p1","route":"POST /api/v1/integration-security/webhooks","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::createWebhook","response_schema":"#/components/schemas/ObjectResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"disableWebhookEndpoint","scope":"p1","route":"DELETE /api/v1/integration-security/webhooks/{endpoint_key}","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::disableWebhook","response_schema":"#/components/schemas/ObjectResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"rotateWebhookSecret","scope":"p1","route":"POST /api/v1/integration-security/webhooks/{endpoint_key}/rotate-secret","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::rotateWebhook","response_schema":"#/components/schemas/ObjectResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"listWebhookDeliveries","scope":"p1","route":"GET /api/v1/integration-security/deliveries","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::deliveries","response_schema":"#/components/schemas/PageResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"listWebhookDeliveryAttempts","scope":"p1","route":"GET /api/v1/integration-security/deliveries/{delivery_key}/attempts","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::attempts","response_schema":"#/components/schemas/PageResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"listIntegrationSessions","scope":"p1","route":"GET /api/v1/integration-security/sessions","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::sessions","response_schema":"#/components/schemas/ListResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"revokeIntegrationSession","scope":"p1","route":"POST /api/v1/integration-security/sessions/{session_key}/revoke","handler":"PeanutAdmin\\App\\controller\\api\\v1\\IntegrationSecurityController::revokeSession","response_schema":"#/components/schemas/ObjectResponse","test_owner":"RUNTIME-INTEGRATION-SECURITY-001"},
+    {"operation_id":"getOpsStatus","scope":"p1","route":"GET /api/platform/v1/ops/status","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\OpsConsoleController::status","response_schema":"#/components/schemas/ObjectResponse-2","test_owner":"RUNTIME-OPS-CONSOLE-001"},
+    {"operation_id":"getOpsMaintenance","scope":"p1","route":"GET /api/platform/v1/ops/maintenance","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\OpsConsoleController::maintenance","response_schema":"#/components/schemas/ObjectResponse-2","test_owner":"RUNTIME-OPS-CONSOLE-001"},
+    {"operation_id":"scheduleOpsMaintenance","scope":"p1","route":"PUT /api/platform/v1/ops/maintenance","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\OpsConsoleController::scheduleMaintenance","response_schema":"#/components/schemas/ObjectResponse-2","test_owner":"RUNTIME-OPS-CONSOLE-001"},
+    {"operation_id":"closeOpsMaintenance","scope":"p1","route":"POST /api/platform/v1/ops/maintenance/{maintenance_key}/close","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\OpsConsoleController::closeMaintenance","response_schema":"#/components/schemas/ObjectResponse-2","test_owner":"RUNTIME-OPS-CONSOLE-001"},
+    {"operation_id":"submitOpsBackup","scope":"p1","route":"POST /api/platform/v1/ops/tasks/backup","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\OpsConsoleController::backup","response_schema":"#/components/schemas/ObjectResponse-2","test_owner":"RUNTIME-OPS-CONSOLE-001"},
+    {"operation_id":"submitOpsRestore","scope":"p1","route":"POST /api/platform/v1/ops/tasks/restore","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\OpsConsoleController::restore","response_schema":"#/components/schemas/ObjectResponse-2","test_owner":"RUNTIME-OPS-CONSOLE-001"},
+    {"operation_id":"getOpsTask","scope":"p1","route":"GET /api/platform/v1/ops/tasks/{task_key}","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\OpsConsoleController::task","response_schema":"#/components/schemas/ObjectResponse-2","test_owner":"RUNTIME-OPS-CONSOLE-001"},
+    {"operation_id":"listOpsLogs","scope":"p1","route":"GET /api/platform/v1/ops/logs","handler":"PeanutAdmin\\App\\controller\\api\\platform\\v1\\OpsConsoleController::logs","response_schema":"#/components/schemas/ObjectResponse-2","test_owner":"RUNTIME-OPS-CONSOLE-001"}
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  {"key":"peanut.integration-security.access","type":"menu","name":"Access integration security","risk_level":"normal"},
+  {"key":"peanut.integration-security.machine.read","type":"api","name":"Read machine identities","risk_level":"sensitive"},
+  {"key":"peanut.integration-security.machine.manage","type":"action","name":"Manage machine identities","risk_level":"critical"},
+  {"key":"peanut.integration-security.webhook.read","type":"api","name":"Read Webhook endpoints","risk_level":"sensitive"},
+  {"key":"peanut.integration-security.webhook.manage","type":"action","name":"Manage Webhook endpoints","risk_level":"critical"},
+  {"key":"peanut.integration-security.delivery.read","type":"api","name":"Read Webhook delivery evidence","risk_level":"sensitive"},
+  {"key":"peanut.integration-security.session.read","type":"api","name":"Read own session devices","risk_level":"sensitive"},
+  {"key":"peanut.integration-security.session.revoke","type":"action","name":"Revoke own sessions","risk_level":"critical"}
+]

@@ -1,0 +1,211 @@
+Tenant:
+  type: object
+  additionalProperties: false
+  required: [id, code, name, display_name, status, locale, timezone, security_revision, authorization_revision, revision, created_at, updated_at]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    code: { type: string }
+    name: { type: string }
+    display_name: { type: [string, 'null'] }
+    status: { enum: [provisioning, active, suspended, closed] }
+    locale: { type: string }
+    timezone: { type: string }
+    security_revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    authorization_revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    activated_at: { type: [string, 'null'] }
+    suspended_at: { type: [string, 'null'] }
+    closed_at: { type: [string, 'null'] }
+    created_at: { type: string }
+    updated_at: { type: string }
+
+Permission:
+  type: object
+  additionalProperties: false
+  required: [id, key, module_key, type, name, description, risk_level]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    key: { type: string }
+    module_key: { type: string }
+    type: { type: string }
+    name: { type: string }
+    description: { type: [string, 'null'] }
+    risk_level: { type: string }
+
+TenantModule:
+  type: object
+  additionalProperties: false
+  required: [module_key, status]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    tenant_id: { $ref: './common.yaml#/$defs/BigIntString' }
+    module_key: { type: string }
+    name: { type: string }
+    version: { type: string }
+    deployment_status: { type: string }
+    status: { enum: [enabled, disabled] }
+    source: { type: [string, 'null'] }
+    config: { type: object, additionalProperties: true }
+    revision:
+      anyOf:
+        - { $ref: './common.yaml#/$defs/BigIntString' }
+        - { type: 'null' }
+    config_revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    authorization_revision: { $ref: './common.yaml#/$defs/BigIntString' }
+    effective_at: { type: [string, 'null'] }
+    expires_at: { type: [string, 'null'] }
+    enabled_at: { type: [string, 'null'] }
+    disabled_at: { type: [string, 'null'] }
+    disabled_reason: { type: [string, 'null'] }
+    created_at: { type: string }
+    updated_at: { type: string }
+
+TenantAuditEvent:
+  type: object
+  additionalProperties: false
+  required: [id, event_type, action, outcome, actor_type, target_count, request_id, created_at]
+  properties:
+    id: { $ref: './common.yaml#/$defs/BigIntString' }
+    event_type: { type: string }
+    action: { type: string }
+    outcome: { type: string }
+    reason_code: { type: [string, 'null'] }
+    actor_type: { type: string }
+    actor_tenant_member_id: { type: [string, 'null'] }
+    actor_platform_operator_id: { type: [string, 'null'] }
+    actor_id: { type: [string, 'null'] }
+    actor_label: { type: string }
+    target_resource_type: { type: [string, 'null'] }
+    target_resource_id: { type: [string, 'null'] }
+    boundary_target_type: { type: [string, 'null'] }
+    boundary_target_id: { type: [string, 'null'] }
+    target_count: { type: integer, minimum: 0 }
+    target_set_digest: { type: [string, 'null'] }
+    request_id: { type: string }
+    operation_id: { type: [string, 'null'] }
+    metadata:
+      type: object
+      additionalProperties:
+        type: [boolean, integer, string, 'null']
+    created_at: { type: string }
+
+TenantAuditEventDetail:
+  allOf:
+    - { $ref: '#/TenantAuditEvent' }
+    - type: object
+      required: [metadata]
+
+MenuItem:
+  type: object
+  additionalProperties: false
+  required: [key, module_key, type, name, route_name, route_path, component_key, required_permission, client_keys, icon, children]
+  properties:
+    key: { type: string }
+    module_key: { type: string }
+    type: { type: string }
+    name: { type: string }
+    route_name: { type: [string, 'null'] }
+    route_path: { type: [string, 'null'] }
+    component_key: { type: [string, 'null'] }
+    required_permission: { type: [string, 'null'] }
+    client_keys: { type: array, uniqueItems: true, items: { type: string } }
+    icon: { type: [string, 'null'] }
+    children:
+      type: array
+      items: { $ref: '#/MenuItem' }
+
+TenantResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/Tenant' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+TenantListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/Tenant' } }
+    meta: { $ref: './common.yaml#/$defs/PageMeta' }
+
+PermissionListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/Permission' } }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+TenantModuleResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/TenantModule' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+TenantModuleListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/TenantModule' } }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+TenantAuditListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/TenantAuditEvent' } }
+    meta: { $ref: './common.yaml#/$defs/PageMeta' }
+
+TenantAuditEventResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/TenantAuditEventDetail' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+MenuListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/MenuItem' } }
+    meta:
+      allOf:
+        - { $ref: './common.yaml#/$defs/RequestMeta' }
+        - type: object
+          properties:
+            authorization_revision: { $ref: './common.yaml#/$defs/BigIntString' }
+
+MenuDiagnosticItem:
+  type: object
+  additionalProperties: false
+  required: [key, module_key, type, name, route_name, route_path, component_key, required_permission, client_keys, icon, visible, reason, trusted_route_path]
+  properties:
+    key: { type: string }
+    module_key: { type: string }
+    type: { type: string }
+    name: { type: string }
+    route_name: { type: [string, 'null'] }
+    route_path: { type: [string, 'null'] }
+    component_key: { type: [string, 'null'] }
+    required_permission: { type: [string, 'null'] }
+    client_keys: { type: array, uniqueItems: true, items: { type: string } }
+    icon: { type: [string, 'null'] }
+    visible: { type: boolean }
+    reason: { type: string, enum: [visible, audience_mismatch, client_unavailable, deployment_module_unavailable, tenant_module_disabled, permission_not_granted, parent_hidden, empty_group] }
+    trusted_route_path: { type: [string, 'null'] }
+
+MenuDiagnosticListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { type: array, items: { $ref: '#/MenuDiagnosticItem' } }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }

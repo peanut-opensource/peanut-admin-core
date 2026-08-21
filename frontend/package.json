@@ -1,0 +1,26 @@
+{
+  "name": "@peanut-admin/reference-admin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "vue-tsc --noEmit && vite build",
+    "dev": "vite",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@peanut-admin/admin": "workspace:^",
+    "element-plus": "2.14.3",
+    "pinia": "4.0.2",
+    "vue": "3.5.39",
+    "vue-router": "5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@vitejs/plugin-vue": "6.0.8",
+    "typescript": "5.9.3",
+    "vite": "8.1.4",
+    "vue-tsc": "3.3.7"
+  }
+}
