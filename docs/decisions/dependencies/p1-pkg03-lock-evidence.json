@@ -30,8 +30,8 @@
       "delta": "peanut-admin/core first-party version and path reference only"
     },
     "starter/pnpm-lock.yaml": {
-      "sha256": "7d70dd25a469c3d3ea1d6cf3a012d9e22a9999acf0695538c080b28408dea68e",
-      "delta": "@peanut-admin/admin workspace specifier only"
+      "sha256": "28aa78a8ca78119705cbe8aebcfc07ef610154ccee6e29bf37fe543ece10d42c",
+      "delta": "@peanut-admin/admin workspace specifier updated for alpha.6"
     }
   },
   "verification": {
