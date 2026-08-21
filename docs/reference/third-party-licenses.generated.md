@@ -455,7 +455,7 @@ Packages recorded: **561**.
 | pnpm | `mlly` | `1.8.2` | `MIT` |
 | pnpm | `ms` | `2.1.3` | `MIT` |
 | pnpm | `muggle-string` | `0.4.1` | `MIT` |
-| pnpm | `nanoid` | `3.3.17` | `MIT` |
+| pnpm | `nanoid` | `3.3.18` | `MIT` |
 | pnpm | `natural-compare` | `1.4.0` | `MIT` |
 | pnpm | `nopt` | `7.2.1` | `ISC` |
 | pnpm | `normalize-wheel-es` | `1.2.0` | `BSD-3-Clause` |
