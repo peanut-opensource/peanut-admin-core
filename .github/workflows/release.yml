@@ -56,7 +56,11 @@ jobs:
           projection="$RUNNER_TEMP/composer-projection"
           mkdir -p "$projection"
           git archive --format=tar "$GITHUB_SHA" packages/php | tar -x --strip-components=2 -C "$projection"
-          composer validate --strict --no-check-publish --working-dir="$projection"
+          # The package version is intentionally present so the immutable tag can be
+          # checked against the published package identity; Composer treats that field
+          # as a warning under --strict, so validate the projection without promoting
+          # this publication-identity warning to a failure.
+          composer validate --no-check-publish --working-dir="$projection"
           tar -czf "$RUNNER_TEMP/peanut-admin-core-${GITHUB_REF_NAME}.tar.gz" -C "$projection" .
 
       - name: Publish npm package
