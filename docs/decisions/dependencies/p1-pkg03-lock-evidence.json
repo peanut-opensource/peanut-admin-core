@@ -22,8 +22,8 @@
       "delta": "peanut-admin/core first-party version and path reference only"
     },
     "pnpm-lock.yaml": {
-      "sha256": "2e294819044a7d3ceccf33445a32919c07522cdad66da871a7ff1592857b158c",
-      "delta": "@peanut-admin/admin workspace specifier only"
+      "sha256": "1503913654c27a53b7eb59360e93c54504bf7a9d4ccbf884af7f37e3895716f1",
+      "delta": "@peanut-admin/admin workspace specifier and nanoid security override"
     },
     "starter/backend/composer.lock": {
       "sha256": "9667edf7b9a6a0b5d151f5697919cee34fc198cf17697860089fe423af63a923",
