@@ -1,0 +1,5 @@
+[
+  {"key":"peanut.import-export.read","type":"api","name":"Read Tenant import and export operations","risk_level":"normal"},
+  {"key":"peanut.import-export.create","type":"action","name":"Create Tenant import and export operations","risk_level":"sensitive"},
+  {"key":"peanut.import-export.cancel","type":"action","name":"Cancel Tenant import and export operations","risk_level":"sensitive"}
+]

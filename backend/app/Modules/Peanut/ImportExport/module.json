@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "key": "peanut.import-export",
+  "name": "Peanut Import And Export",
+  "description": "Tenant CSV import and export operations",
+  "version": "0.1.0",
+  "kernel_constraint": "^1.0",
+  "license": "Apache-2.0",
+  "php_package": "peanut-admin/core",
+  "web_package": "@peanut-admin/admin/import-export",
+  "dependencies": [{"module_key":"peanut.file-media","version":"^0.1"},{"module_key":"peanut.task-job","version":"^0.1"}],
+  "backend": {"provider": "PeanutAdmin\\App\\Modules\\Peanut\\ImportExport\\ModuleProvider", "migrations": "Database/Migrations", "menus": "Resources/menus.json", "permissions": "Resources/permissions.json", "protected_resources": "Resources/protected-resources.json"},
+  "frontend": {"entry": "frontend/src/modules/peanut-import-export/index.ts", "routes": "frontend/src/modules/peanut-import-export/routes.ts"},
+  "database": {"owned_tables": ["pa_import_export_operation", "pa_import_export_row_error"]},
+  "contracts": {"exports": [], "events": []},
+  "tenant": {"enableable": true, "disable_behavior": "reject_new_operations", "requires": ["peanut.file-media", "peanut.task-job"]}
+}

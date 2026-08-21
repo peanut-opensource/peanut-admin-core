@@ -1,0 +1,98 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$database = getenv('DB_DATABASE') ?: 'peanut_admin';
+if (preg_match('/^[a-z][a-z0-9_]{0,63}$/D', $database) !== 1) {
+    fwrite(STDERR, "ERROR: BACKUP_DATABASE_NAME_INVALID\n");
+    exit(1);
+}
+
+$pdo = new PDO(
+    sprintf(
+        'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
+        getenv('DB_HOST') ?: '127.0.0.1',
+        (int) (getenv('DB_PORT') ?: 3306),
+        $database,
+    ),
+    getenv('DB_USERNAME') ?: 'root',
+    getenv('DB_PASSWORD') ?: (getenv('MYSQL_ROOT_PASSWORD') ?: 'peanut_admin_root_dev'),
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ],
+);
+
+$tableStatement = $pdo->query(<<<'SQL'
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE'
+ORDER BY table_name
+SQL);
+if ($tableStatement === false) {
+    fwrite(STDERR, "ERROR: BACKUP_TABLE_INVENTORY_FAILED\n");
+    exit(1);
+}
+
+$tables = [];
+foreach ($tableStatement->fetchAll(PDO::FETCH_COLUMN) as $table) {
+    if (!is_string($table) || preg_match('/^[a-z0-9_]+$/D', $table) !== 1) {
+        fwrite(STDERR, "ERROR: BACKUP_TABLE_NAME_INVALID\n");
+        exit(1);
+    }
+    $countStatement = $pdo->query("SELECT COUNT(*) FROM `{$table}`");
+    $checksumStatement = $pdo->query("CHECKSUM TABLE `{$table}`");
+    if ($countStatement === false || $checksumStatement === false) {
+        fwrite(STDERR, "ERROR: BACKUP_TABLE_INVENTORY_FAILED: {$table}\n");
+        exit(1);
+    }
+    $checksumRow = $checksumStatement->fetch();
+    $checksum = is_array($checksumRow) ? ($checksumRow['Checksum'] ?? null) : null;
+    if (!is_int($checksum) && !is_string($checksum)) {
+        fwrite(STDERR, "ERROR: BACKUP_TABLE_CHECKSUM_UNAVAILABLE: {$table}\n");
+        exit(1);
+    }
+    $tables[$table] = [
+        'rows' => (int) $countStatement->fetchColumn(),
+        'checksum' => (string) $checksum,
+    ];
+}
+
+$migrations = [];
+foreach ([
+    'kernel' => ['pa_kernel_migration', 'version'],
+    'data_permission' => ['pa_data_permission_migration', 'version'],
+] as $key => [$table, $column]) {
+    if (!isset($tables[$table])) {
+        $migrations[$key] = [];
+        continue;
+    }
+    $statement = $pdo->query("SELECT `{$column}` FROM `{$table}` ORDER BY `{$column}`");
+    if ($statement === false) {
+        fwrite(STDERR, "ERROR: BACKUP_MIGRATION_INVENTORY_FAILED: {$key}\n");
+        exit(1);
+    }
+    $migrations[$key] = array_map('strval', $statement->fetchAll(PDO::FETCH_COLUMN));
+}
+
+$moduleMigrations = [];
+if (isset($tables['pa_module_migration'])) {
+    $statement = $pdo->query(<<<'SQL'
+SELECT module_key, migration_key, checksum, status
+FROM pa_module_migration
+ORDER BY module_key, migration_key
+SQL);
+    if ($statement === false) {
+        fwrite(STDERR, "ERROR: BACKUP_MIGRATION_INVENTORY_FAILED: module\n");
+        exit(1);
+    }
+    $moduleMigrations = $statement->fetchAll();
+}
+$migrations['modules'] = $moduleMigrations;
+
+fwrite(STDOUT, json_encode([
+    'database' => $database,
+    'tables' => $tables,
+    'migrations' => $migrations,
+], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");

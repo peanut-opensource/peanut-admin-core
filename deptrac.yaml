@@ -1,0 +1,169 @@
+deptrac:
+  paths:
+    - backend/app
+    - packages/php/artifact-revision/src
+    - packages/php/entitlement-quota/src
+    - packages/php/kernel/src
+    - packages/php/data-permission/src
+    - packages/php/reference-codes/src
+    - packages/php/file-media/src
+    - packages/php/settings/src
+    - packages/php/testing/src
+    - packages/php/task-job/src
+    - packages/php/notification-sms/src
+    - packages/php/import-export/src
+    - packages/php/ops-console/src
+    - packages/php/integration-security/src
+    - packages/php/workflow/src
+  exclude_files:
+    - '#.*tests.*#'
+  layers:
+    - name: Framework
+      collectors:
+        - type: classNameRegex
+          value: '#^think\\#'
+    - name: RuntimeLibraries
+      collectors:
+        - type: classNameRegex
+          value: '#^(Opis\\JsonSchema|Composer\\(Semver|InstalledVersions)|Phinx\\)#'
+    - name: Kernel
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\Kernel\\#'
+    - name: ArtifactRevision
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\ArtifactRevision\\#'
+    - name: EntitlementQuota
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\EntitlementQuota\\#'
+    - name: DataPermission
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\DataPermission\\#'
+    - name: Settings
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\Settings\\#'
+    - name: ReferenceCodes
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\ReferenceCodes\\#'
+    - name: FileMedia
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\FileMedia\\#'
+    - name: Testing
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\Testing\\#'
+    - name: TaskJob
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\TaskJob\\#'
+    - name: NotificationSms
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\NotificationSms\\#'
+    - name: ImportExport
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\ImportExport\\#'
+    - name: OpsConsole
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\OpsConsole\\#'
+    - name: IntegrationSecurity
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\IntegrationSecurity\\#'
+    - name: Workflow
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\Workflow\\#'
+    - name: Backend
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\App\\(?!Modules\\|module\\TenantWideModuleProvider$)#'
+    - name: ModuleProviderSupport
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\App\\module\\TenantWideModuleProvider$#'
+    - name: ModuleContracts
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\App\\Modules\\.+\\Contracts\\#'
+    - name: ModuleInternals
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\App\\Modules\\(?!.*\\Contracts\\)#'
+  ruleset:
+    Kernel: []
+    ArtifactRevision:
+      - Kernel
+      - Workflow
+    EntitlementQuota:
+      - Kernel
+    DataPermission:
+      - Kernel
+    Settings:
+      - RuntimeLibraries
+      - Kernel
+    ReferenceCodes:
+      - RuntimeLibraries
+      - Kernel
+    FileMedia:
+      - Kernel
+    Testing:
+      - Kernel
+      - DataPermission
+    TaskJob:
+      - Kernel
+    NotificationSms:
+      - Kernel
+      - TaskJob
+    ImportExport:
+      - Kernel
+      - FileMedia
+      - TaskJob
+    OpsConsole:
+      - Kernel
+      - TaskJob
+    IntegrationSecurity:
+      - Kernel
+    Workflow:
+      - Kernel
+    Backend:
+      - Framework
+      - RuntimeLibraries
+      - Kernel
+      - DataPermission
+      - ReferenceCodes
+      - FileMedia
+      - Settings
+      - ModuleContracts
+      - TaskJob
+      - NotificationSms
+      - ImportExport
+      - OpsConsole
+      - IntegrationSecurity
+    ModuleProviderSupport:
+      - Kernel
+      - DataPermission
+    ModuleContracts:
+      - Kernel
+      - DataPermission
+    ModuleInternals:
+      - Framework
+      - Kernel
+      - DataPermission
+      - ReferenceCodes
+      - FileMedia
+      - Settings
+      - ModuleContracts
+      - ModuleProviderSupport
+      - TaskJob
+      - NotificationSms
+      - ImportExport
+      - IntegrationSecurity

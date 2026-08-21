@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-16T13:27:03+08:00",
+  "tools": {
+    "php": "8.3.24",
+    "composer": "2.10.2",
+    "node": "24.13.0",
+    "pnpm": "11.13.0"
+  },
+  "locks": {
+    "composer.lock": {
+      "sha256": "066005bb9d58b059f433e90bb752755e4cc01c92729c05cdb2f465ccc1b44264",
+      "audit": "no-security-vulnerability-advisories"
+    },
+    "pnpm-lock.yaml": {
+      "sha256": "0c895209bf3cf54a3e9a55a9dff4ad2691ec3c28eca652b64b56e2f05d5aa5bf",
+      "audit": "no-known-vulnerabilities",
+      "peer_dependencies": "no-issues"
+    }
+  },
+  "resolved_baseline": {
+    "topthink/framework": "8.1.4",
+    "topthink/think-orm": "4.0.51",
+    "topthink/think-migration": "3.1.1",
+    "opis/json-schema": "2.6.0",
+    "vue": "3.5.39",
+    "vite-admin": "8.1.4",
+    "vite-docs": "6.4.3",
+    "typescript": "5.9.3",
+    "element-plus": "2.14.3",
+    "pinia": "4.0.2",
+    "vue-router": "5.2.0",
+    "vitest": "4.1.10"
+  },
+  "notes": [
+    "Composer path repositories and pnpm workspace links prove local package consumption.",
+    "The documentation Vite 6 compatibility pin remains separate from the Admin Web Vite 8 toolchain.",
+    "The Node runtime satisfied the accepted >=24.13.0 <25 constraint; CI pins Node 24.18.0."
+  ]
+}

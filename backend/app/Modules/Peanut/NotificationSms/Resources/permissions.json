@@ -1,0 +1,4 @@
+[
+  {"key":"peanut.notification-sms.read","type":"api","name":"Read own Tenant notifications","risk_level":"normal"},
+  {"key":"peanut.notification-sms.manage","type":"action","name":"Manage Tenant notifications","risk_level":"sensitive"}
+]

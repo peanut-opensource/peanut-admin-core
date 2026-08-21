@@ -1,0 +1,262 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+required=(
+  composer.json
+  composer.lock
+  backend/composer.json
+  frontend/package.json
+  packages/php/composer.json
+  packages/php/LICENSE
+  packages/web/package.json
+  packages/web/LICENSE
+  starter/backend/composer.json
+  starter/backend/composer.lock
+  starter/frontend/package.json
+  starter/pnpm-lock.yaml
+  compose.yaml
+  docs/decisions/dependencies/p1-pkg03-lock-evidence.json
+)
+
+for path in "${required[@]}"; do
+  if [[ ! -f "$path" ]]; then
+    echo "ERROR: workspace file is missing: $path" >&2
+    exit 1
+  fi
+done
+
+if find packages/php -mindepth 2 -maxdepth 2 -name composer.json -print -quit | grep -q .; then
+  echo 'ERROR: a child Composer package manifest remains below packages/php' >&2
+  exit 1
+fi
+if find packages/web -mindepth 2 -maxdepth 2 -name package.json -print -quit | grep -q .; then
+  echo 'ERROR: a child npm package manifest remains below packages/web' >&2
+  exit 1
+fi
+
+composer_bin="${PEANUT_COMPOSER:-composer}"
+composer_version="$("$composer_bin" --version --no-ansi | sed -E 's/^Composer version ([0-9.]+).*/\1/')"
+pnpm_version="$(pnpm --version)"
+if [[ "$composer_version" != '2.10.2' ]]; then
+  echo "ERROR: Composer 2.10.2 is required, found $composer_version" >&2
+  exit 1
+fi
+if [[ "$pnpm_version" != '11.13.0' ]]; then
+  echo "ERROR: pnpm 11.13.0 is required, found $pnpm_version" >&2
+  exit 1
+fi
+
+php -r '
+$decode = static fn(string $path): array => json_decode(
+    (string) file_get_contents($path),
+    true,
+    512,
+    JSON_THROW_ON_ERROR,
+);
+$fail = static function (string $message): never {
+    fwrite(STDERR, "ERROR: {$message}\n");
+    exit(1);
+};
+
+$evidence = $decode("docs/decisions/dependencies/p1-pkg03-lock-evidence.json");
+foreach ([
+    "composer.lock",
+    "pnpm-lock.yaml",
+    "starter/backend/composer.lock",
+    "starter/pnpm-lock.yaml",
+] as $path) {
+    $expected = $evidence["locks"][$path]["sha256"] ?? null;
+    if (!is_string($expected) || hash_file("sha256", $path) !== $expected) {
+        $fail("dependency lock evidence is stale for {$path}");
+    }
+}
+
+$rootLock = $decode("composer.lock");
+$starterLock = $decode("starter/backend/composer.lock");
+$index = static function (array $lock): array {
+    $packages = [];
+    foreach ([...($lock["packages"] ?? []), ...($lock["packages-dev"] ?? [])] as $package) {
+        $packages[$package["name"]] = $package;
+    }
+    return $packages;
+};
+$rootPackages = $index($rootLock);
+$starterPackages = $index($starterLock);
+foreach (["composer.lock" => $rootLock, "starter/backend/composer.lock" => $starterLock] as $path => $lock) {
+    if (($lock["plugin-api-version"] ?? null) !== "2.9.0") {
+        $fail("{$path} was not generated with the Composer 2.10.2 plugin API");
+    }
+}
+foreach ($starterPackages as $name => $package) {
+    if (!isset($rootPackages[$name])) {
+        $fail("starter Composer lock package is missing from the root lock: {$name}");
+    }
+    if (($rootPackages[$name]["version"] ?? null) !== ($package["version"] ?? null)) {
+        $fail("root and starter Composer lock versions differ for {$name}");
+    }
+}
+foreach (["root" => $rootPackages, "starter" => $starterPackages] as $label => $packages) {
+    $package = $packages["peanut-admin/core"] ?? null;
+    $expectedSymlink = $label === "root";
+    if (!is_array($package) || ($package["version"] ?? null) !== "0.1.0-alpha.2") {
+        $fail("{$label} Composer lock is missing peanut-admin/core@0.1.0-alpha.2");
+    }
+    if (($package["dist"]["type"] ?? null) !== "path"
+        || ($package["transport-options"]["symlink"] ?? null) !== $expectedSymlink
+        || ($package["transport-options"]["relative"] ?? null) !== true) {
+        $fail("{$label} Composer lock has invalid path transport for peanut-admin/core");
+    }
+}
+
+$php = $decode("packages/php/composer.json");
+$expectedAutoload = [
+    "PeanutAdmin\\ArtifactRevision\\" => "artifact-revision/src/",
+    "PeanutAdmin\\DataPermission\\" => "data-permission/src/",
+    "PeanutAdmin\\EntitlementQuota\\" => "entitlement-quota/src/",
+    "PeanutAdmin\\FileMedia\\" => "file-media/src/",
+    "PeanutAdmin\\ImportExport\\" => "import-export/src/",
+    "PeanutAdmin\\IntegrationSecurity\\" => "integration-security/src/",
+    "PeanutAdmin\\Kernel\\" => "kernel/src/",
+    "PeanutAdmin\\NotificationSms\\" => "notification-sms/src/",
+    "PeanutAdmin\\OpsConsole\\" => "ops-console/src/",
+    "PeanutAdmin\\ReferenceCodes\\" => "reference-codes/src/",
+    "PeanutAdmin\\Settings\\" => "settings/src/",
+    "PeanutAdmin\\TaskJob\\" => "task-job/src/",
+    "PeanutAdmin\\Workflow\\" => "workflow/src/",
+];
+if (($php["name"] ?? null) !== "peanut-admin/core"
+    || ($php["version"] ?? null) !== "0.1.0-alpha.6"
+    || ($php["license"] ?? null) !== "Apache-2.0"
+    || ($php["autoload"]["psr-4"] ?? null) !== $expectedAutoload
+    || ($php["autoload-dev"]["psr-4"]["PeanutAdmin\\Testing\\"] ?? null) !== "testing/src/") {
+    $fail("packages/php/composer.json does not define the consolidated core boundary");
+}
+foreach (["replace", "provide"] as $compatibilityKey) {
+    if (isset($php[$compatibilityKey])) {
+        $fail("peanut-admin/core must not declare Composer {$compatibilityKey} compatibility");
+    }
+}
+
+$assertComposerConsumer = static function (
+    string $path,
+    string $repositoryPath,
+    bool $symlink,
+) use ($decode, $fail): void {
+    $manifest = $decode($path);
+    $firstParty = array_filter(
+        $manifest["require"] ?? [],
+        static fn(string $name): bool => str_starts_with($name, "peanut-admin/"),
+        ARRAY_FILTER_USE_KEY,
+    );
+    if ($firstParty !== ["peanut-admin/core" => "0.1.0-alpha.2"]) {
+        $fail("{$path} must require only peanut-admin/core@0.1.0-alpha.2");
+    }
+    $repositories = $manifest["repositories"] ?? [];
+    if (count($repositories) !== 1
+        || ($repositories[0]["type"] ?? null) !== "path"
+        || ($repositories[0]["url"] ?? null) !== $repositoryPath
+        || (($repositories[0]["options"]["symlink"] ?? $symlink) !== $symlink)) {
+        $fail("{$path} has an invalid consolidated path repository");
+    }
+};
+$assertComposerConsumer("composer.json", "packages/php", true);
+$assertComposerConsumer("backend/composer.json", "../packages/php", true);
+$assertComposerConsumer("starter/backend/composer.json", "../packages/php", false);
+
+$web = $decode("packages/web/package.json");
+$expectedExports = [
+    "./core", "./shell", "./settings", "./reference-codes", "./file-media",
+    "./task-job", "./notification-sms", "./import-export", "./ops-console",
+    "./integration-security", "./testing", "./client", "./client/nuxt",
+    "./client/uniapp",
+];
+$actualExports = array_keys($web["exports"] ?? []);
+sort($expectedExports);
+sort($actualExports);
+if (($web["name"] ?? null) !== "@peanut-admin/admin"
+    || ($web["version"] ?? null) !== "0.1.0-alpha.6"
+    || ($web["dependencies"] ?? null) !== ["openapi-fetch" => "0.17.0"]
+    || ($web["peerDependencies"]["element-plus"] ?? null) !== "^2.14.3"
+    || ($web["peerDependencies"]["pinia"] ?? null) !== ">=2.0.23 <5"
+    || ($web["peerDependencies"]["vue"] ?? null) !== "^3.4.21"
+    || ($web["peerDependencies"]["vue-router"] ?? null) !== ">=4.0.0 <6"
+    || ($web["peerDependenciesMeta"]["element-plus"]["optional"] ?? null) !== true
+    || ($web["peerDependenciesMeta"]["pinia"]["optional"] ?? null) !== true
+    || ($web["license"] ?? null) !== "Apache-2.0"
+    || $actualExports !== $expectedExports
+    || !isset($web["exports"]["./testing"]["development"])) {
+    $fail("packages/web/package.json does not define the consolidated Admin boundary");
+}
+foreach (array_keys($web["dependencies"] ?? []) as $dependency) {
+    if (str_starts_with($dependency, "@peanut-admin/")) {
+        $fail("@peanut-admin/admin contains an internal package dependency: {$dependency}");
+    }
+}
+
+$assertWebConsumer = static function (string $path, string $version) use ($decode, $fail): void {
+    $manifest = $decode($path);
+    $firstParty = array_filter(
+        $manifest["dependencies"] ?? [],
+        static fn(string $name): bool => str_starts_with($name, "@peanut-admin/"),
+        ARRAY_FILTER_USE_KEY,
+    );
+    if ($firstParty !== ["@peanut-admin/admin" => $version]) {
+        $fail("{$path} must depend only on @peanut-admin/admin@{$version}");
+    }
+};
+$assertWebConsumer("frontend/package.json", "workspace:^");
+$assertWebConsumer("starter/frontend/package.json", "workspace:0.1.0-alpha.6");
+'
+
+if ! grep -q '^  - packages/web$' pnpm-workspace.yaml \
+  || ! grep -q '^  - packages/web$' starter/pnpm-workspace.yaml; then
+  echo 'ERROR: pnpm workspaces must expose only the packages/web root' >&2
+  exit 1
+fi
+
+approved_license_hash="cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+for package_license in packages/php/LICENSE packages/web/LICENSE; do
+  actual="$(php -r 'echo hash_file("sha256", $argv[1]);' "$package_license")"
+  if [[ "$actual" != "$approved_license_hash" ]]; then
+    echo "ERROR: package license does not match Apache-2.0 baseline: $package_license" >&2
+    exit 1
+  fi
+done
+
+"$composer_bin" validate --strict --no-check-publish
+"$composer_bin" validate --working-dir starter/backend --no-check-publish
+
+if [[ -n "${PNPM_STORE_DIR:-}" ]]; then
+  pnpm_store="$(pnpm --store-dir "$PNPM_STORE_DIR" store path)"
+else
+  pnpm_store="$(pnpm store path)"
+fi
+pnpm --store-dir "$pnpm_store" install --lockfile-only --frozen-lockfile --offline
+
+lock_check_dir="$(mktemp -d "${TMPDIR:-/tmp}/peanut-admin-workspace-locks.XXXXXX")"
+cleanup_workspace_lock_check() {
+  rm -rf -- "$lock_check_dir"
+}
+trap cleanup_workspace_lock_check EXIT
+./scripts/create-internal-starter "$lock_check_dir/starter"
+pnpm --dir "$lock_check_dir/starter" \
+  --store-dir "$pnpm_store" \
+  install --lockfile-only --frozen-lockfile --offline
+cmp starter/pnpm-lock.yaml "$lock_check_dir/starter/pnpm-lock.yaml"
+
+php vendor/bin/phpunit
+php vendor/bin/phpstan analyse --no-progress --memory-limit=512M
+php vendor/bin/deptrac analyse --no-progress --fail-on-uncovered --cache-file=.cache/deptrac.cache
+php vendor/bin/php-cs-fixer check --diff --config=scripts/php-cs-fixer.php
+
+pnpm lint
+pnpm typecheck
+pnpm test:unit
+pnpm build
+
+docker compose config --quiet
+
+echo 'Workspace skeleton: OK'

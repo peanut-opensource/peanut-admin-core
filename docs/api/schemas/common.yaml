@@ -1,0 +1,81 @@
+$defs:
+  BigIntString:
+    type: string
+    pattern: '^[1-9][0-9]*$'
+  RequestMeta:
+    type: object
+    additionalProperties: false
+    required: [request_id]
+    properties:
+      request_id: { type: string }
+  PageMeta:
+    type: object
+    additionalProperties: false
+    required: [request_id, page, page_size, total, total_pages]
+    properties:
+      request_id: { type: string }
+      page: { type: integer, minimum: 1 }
+      page_size: { type: integer, minimum: 1, maximum: 100 }
+      total: { type: integer, minimum: 0 }
+      total_pages: { type: integer, minimum: 0 }
+      target_scope:
+        $ref: '#/$defs/TargetScope'
+  Target:
+    type: object
+    additionalProperties: false
+    required: [target_resource_key, target_role, target_id]
+    properties:
+      target_resource_key: { type: string, minLength: 1, maxLength: 160 }
+      target_role: { type: string, minLength: 1, maxLength: 64, default: primary }
+      target_id: { type: string, minLength: 1, maxLength: 128 }
+  TargetSet:
+    type: object
+    additionalProperties: false
+    required: [target_resource_key, target_role, target_ids]
+    properties:
+      target_resource_key: { type: string, minLength: 1, maxLength: 160 }
+      target_role: { type: string, minLength: 1, maxLength: 64, default: primary }
+      target_ids:
+        type: array
+        minItems: 1
+        maxItems: 500
+        uniqueItems: true
+        items: { type: string, minLength: 1, maxLength: 128 }
+  TargetScope:
+    type: object
+    additionalProperties: false
+    required: [mode, target_count, digest]
+    properties:
+      mode: { enum: [none, single, multiple, aggregate] }
+      target_count: { type: integer, minimum: 0 }
+      digest: { type: string, pattern: '^[a-f0-9]{64}$' }
+  BoundaryTarget:
+    type: object
+    additionalProperties: false
+    required: [target_resource_key, target_role, target_id, label]
+    properties:
+      target_resource_key: { type: string }
+      target_role: { type: string }
+      target_id: { type: string }
+      label: { type: string }
+  Problem:
+    type: object
+    additionalProperties: false
+    required: [type, title, status, detail, instance, code, request_id]
+    properties:
+      type: { type: string }
+      title: { type: string }
+      status: { type: integer, minimum: 400, maximum: 599 }
+      detail: { type: string }
+      instance: { type: string, pattern: '^urn:request:' }
+      code: { type: string }
+      request_id: { type: string }
+      errors:
+        type: array
+        items:
+          type: object
+          required: [pointer, code, message]
+          properties:
+            pointer: { type: string }
+            code: { type: string }
+            message: { type: string }

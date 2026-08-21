@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "key": "peanut.integration-security",
+  "name": "Peanut Integration Security",
+  "description": "Tenant machine credentials, Webhooks, delivery evidence, and session controls",
+  "version": "0.1.0",
+  "kernel_constraint": "^1.0",
+  "license": "Apache-2.0",
+  "php_package": "peanut-admin/core",
+  "web_package": "@peanut-admin/admin/integration-security",
+  "dependencies": [],
+  "backend": {"provider": "PeanutAdmin\\App\\Modules\\Peanut\\IntegrationSecurity\\ModuleProvider", "migrations": "Database/Migrations", "menus": "Resources/menus.json", "permissions": "Resources/permissions.json", "protected_resources": "Resources/protected-resources.json"},
+  "frontend": {"entry": "frontend/src/modules/peanut-integration-security/index.ts", "routes": "frontend/src/modules/peanut-integration-security/routes.ts"},
+  "database": {"owned_tables": ["pa_integration_machine_identity", "pa_integration_webhook_endpoint", "pa_integration_webhook_delivery", "pa_integration_webhook_attempt", "pa_integration_security_event"]},
+  "contracts": {"exports": [], "events": []},
+  "tenant": {"enableable": true, "disable_behavior": "reject_new_operations", "requires": []}
+}

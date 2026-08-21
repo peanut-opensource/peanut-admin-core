@@ -1,0 +1,6 @@
+[
+  {"key": "platform.settings.read", "type": "api", "name": "Read deployment settings", "risk_level": "sensitive"},
+  {"key": "platform.settings.manage", "type": "action", "name": "Manage deployment settings", "risk_level": "critical"},
+  {"key": "peanut.settings.read", "type": "api", "name": "Read Tenant settings", "risk_level": "normal"},
+  {"key": "peanut.settings.manage", "type": "action", "name": "Manage Tenant settings", "risk_level": "sensitive"}
+]

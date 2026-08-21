@@ -1,0 +1,73 @@
+UpgradeIdentity:
+  type: object
+  additionalProperties: false
+  required: [commit, tree, clean]
+  properties:
+    commit: { type: string, pattern: '^[a-f0-9]{40}$' }
+    tree: { type: string, pattern: '^[a-f0-9]{40}$' }
+    clean: { type: boolean }
+
+UpgradeTargetIdentity:
+  type: object
+  additionalProperties: false
+  required: [release_id, commit, tree]
+  properties:
+    release_id: { type: string, maxLength: 128 }
+    commit: { type: string, pattern: '^[a-f0-9]{40}$' }
+    tree: { type: string, pattern: '^[a-f0-9]{40}$' }
+
+UpgradePreflightStatus:
+  type: object
+  additionalProperties: false
+  required: [ready, code, repository_clean, source_identity_matches, target_identity_matches]
+  properties:
+    ready: { type: boolean }
+    code: { type: string, pattern: '^UPGRADE_[A-Z0-9_]+$' }
+    repository_clean: { type: boolean }
+    source_identity_matches: { type: boolean }
+    target_identity_matches: { type: boolean }
+
+UpgradeBackupStatus:
+  type: object
+  additionalProperties: false
+  required: [required, configured, valid, source_identity_matches]
+  properties:
+    required: { type: boolean, const: true }
+    configured: { type: boolean }
+    valid: { type: boolean }
+    source_identity_matches: { type: boolean }
+
+UpgradeExecutionHandoff:
+  type: object
+  additionalProperties: false
+  required: [mode, remote_execution, command]
+  properties:
+    mode: { type: string, const: operator_cli }
+    remote_execution: { type: boolean, const: false }
+    command: { type: string, const: './scripts/upgrade --release-manifest <release-manifest> --backup-manifest <backup-manifest> --environment <environment>' }
+
+UpgradeStatus:
+  type: object
+  additionalProperties: false
+  required: [state, current, target, preflight, backup, execution]
+  properties:
+    state: { type: string, enum: [configuration_required, ready, blocked] }
+    current:
+      oneOf:
+        - { $ref: '#/UpgradeIdentity' }
+        - { type: 'null' }
+    target:
+      oneOf:
+        - { $ref: '#/UpgradeTargetIdentity' }
+        - { type: 'null' }
+    preflight: { $ref: '#/UpgradePreflightStatus' }
+    backup: { $ref: '#/UpgradeBackupStatus' }
+    execution: { $ref: '#/UpgradeExecutionHandoff' }
+
+UpgradeStatusResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/UpgradeStatus' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }

@@ -1,0 +1,726 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "path": "docs/README.md",
+      "title": "Peanut Admin Documentation",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/index.md",
+      "title": "Peanut Admin Developer Documentation",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/core-concepts/index.md",
+      "title": "Core Concepts",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/architecture/index.md",
+      "title": "Architecture",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/standards/index.md",
+      "title": "Engineering Standards",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/api/index.md",
+      "title": "API Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/api/problems/validation-failed.md",
+      "title": "Validation Failed",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/api/problems/authz-data-denied.md",
+      "title": "Data Authorization Denied",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/api/problems/idempotency-key-reused.md",
+      "title": "Idempotency Key Reused",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/api/problems/module-installation-failed.md",
+      "title": "Module Unavailable",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/api/problems/precondition-required.md",
+      "title": "Precondition Required",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/index.md",
+      "title": "P0 Status",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-execution-baseline.md",
+      "title": "P1 Execution Baseline",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-wf01-configurable-workflow-runtime-contract.md",
+      "title": "P1-WF01 Configurable Workflow Runtime Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cap01-r01-quality-process-termination-contract.md",
+      "title": "P1-CAP01-R01 Quality Process Termination Remediation Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cap01-r02-hidden-phpunit-findings-contract.md",
+      "title": "P1-CAP01-R02 Hidden PHPUnit Findings Remediation Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cap01-r03-final-pr-gates-remediation-contract.md",
+      "title": "P1-CAP01-R03 Final PR Gates Remediation Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cap01-r04-quality-formatting-contract.md",
+      "title": "P1-CAP01-R04 Quality Formatting Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cap02-artifact-revision-contract.md",
+      "title": "P1-CAP02 Artifact Revision Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cap03-entitlement-quota-contract.md",
+      "title": "P1-CAP03 Entitlement Quota Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cap04-collaboration-contract.md",
+      "title": "P1-CAP04 Collaboration Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cap06-private-downstream-adoption-contract.md",
+      "title": "P1-CAP06 Private Downstream Adoption Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg01-public-package-boundary-contract.md",
+      "title": "P1-PKG01 Public Package Boundary Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-alpha-publication-contract.md",
+      "title": "P1-PKG02 Alpha Publication Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-downstream-module-readiness-plan.md",
+      "title": "P1 Downstream Module Readiness Plan",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-r02-external-operation-host-kit-contract.md",
+      "title": "P1-R02 External Operation Host Kit Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-b03-minimal-settings-contract.md",
+      "title": "P1-B03 Minimal Settings Module Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-b04-minimal-reference-codes-contract.md",
+      "title": "P1-B04 Minimal Reference Codes Module Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-c03-ops-console-contract.md",
+      "title": "P1-C03 Ops Console Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/starter-v1-c02-file-media-contract.md",
+      "title": "Starter v1 C02 File And Media Core Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-w03-workspace-shell-contract.md",
+      "title": "P1-W03 Workspace Shell Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-execution-and-post-q01-roadmap.md",
+      "title": "P1 Execution Reality And Post-Q01 Roadmap",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-post-q01-cross-product-capability-plan.md",
+      "title": "P1 Post-Q01 Cross-Product Capability Plan",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/starter-v1-c02-file-media-delivery-handoff.md",
+      "title": "Starter v1 Stage B File And Media Delivery Handoff",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-w01-protected-transport-origin-contract.md",
+      "title": "P1-W01 Protected Transport Origin Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reviews/p0-runtime-qualification.md",
+      "title": "P0 Runtime Qualification Review",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reviews/external-host-consumption-qualification.md",
+      "title": "External Host Consumption Qualification",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/releases/p0-candidate.md",
+      "title": "P0 Candidate",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/decisions/dependencies/index.md",
+      "title": "P0 Dependency Decisions",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/decisions/dependencies/p1-cap04-collaboration.md",
+      "title": "P1-CAP04 Collaboration Dependency Decision",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/standards/dependency-policy.md",
+      "title": "Dependency Policy",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reference/packages/data-permission.md",
+      "title": "Data Permission Package",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reference/packages/settings.md",
+      "title": "Settings Package",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reference/packages/reference-codes.md",
+      "title": "Reference Codes Package",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reference/packages/file-media.md",
+      "title": "File And Media Package",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/index.md",
+      "title": "Developer Guide",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/installation.md",
+      "title": "Installation",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/authentication.md",
+      "title": "Authentication And Trusted Context",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/authorization.md",
+      "title": "Functional And Data Authorization",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/module-development.md",
+      "title": "Module Development",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/admin-web.md",
+      "title": "Admin Web Composition",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/file-media.md",
+      "title": "Tenant-Private Files",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/testing.md",
+      "title": "Testing",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/upgrade.md",
+      "title": "Upgrade",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/troubleshooting.md",
+      "title": "Troubleshooting",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/internal-starter.md",
+      "title": "Internal Starter",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reference/kernel-schema.md",
+      "title": "Kernel Schema And States",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reference/typed-targets.md",
+      "title": "Typed Targets And Operation Cardinality",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reference/shared-master.md",
+      "title": "Shared Master Scope",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/security/p0-baseline.md",
+      "title": "P0 Security Baseline",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/operations/backup-and-recovery.md",
+      "title": "Backup And Recovery",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/security/asvs-p0-map.md",
+      "title": "OWASP ASVS 5.0 P0 Map",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/performance/p0-baseline.md",
+      "title": "P0 Performance Baseline",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reference/third-party-licenses.generated.md",
+      "title": "Third-Party License Inventory",
+      "status": "generated",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r37-reference-retired-checkbox-contract.md",
+      "title": "P1-PKG02-R37 Reference Codes Retired Checkbox Interaction Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r38-reference-retired-checkbox-stacking-contract.md",
+      "title": "P1-PKG02-R38 Reference Codes Retired Checkbox Stacking Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r39-recovery-module-count-contract.md",
+      "title": "P1-PKG02-R39 Recovery Module Count Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r40-performance-pdo-injection-contract.md",
+      "title": "P1-PKG02-R40 Performance PDO Injection Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r41-current-lock-evidence-contract.md",
+      "title": "P1-PKG02-R41 Current Lock Evidence Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r42-upgrade-format-resume-contract.md",
+      "title": "P1-PKG02-R42 Upgrade Format Resume Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r43-reference-create-snapshot-test-contract.md",
+      "title": "P1-PKG02-R43 Reference Create Snapshot Test Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r44-product-neutral-status-content-contract.md",
+      "title": "P1-PKG02-R44 Product-Neutral Status Content Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r45-qualification-closure-contract.md",
+      "title": "P1-PKG02-R45 Qualification Closure Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r46-package-content-probe-contract.md",
+      "title": "P1-PKG02-R46 Package Content Probe Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r47-pnpm-pack-toolchain-contract.md",
+      "title": "P1-PKG02-R47 pnpm Pack Toolchain Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r48-qualification-evidence-registration-contract.md",
+      "title": "P1-PKG02-R48 Qualification Evidence Registration Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r49-prior-contract-registration-contract.md",
+      "title": "P1-PKG02-R49 Prior Contract Registration Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reviews/p1-pkg02-alpha-publication-qualification.md",
+      "title": "P1-PKG02 Alpha Publication Qualification",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reviews/p1-pkg03-alpha2-publication-qualification.md",
+      "title": "P1-PKG03 Alpha.2 Publication Qualification",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg02-r50-publication-approval-record-contract.md",
+      "title": "P1-PKG02-R50 Publication Approval Record Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/decisions/releases/p1-pkg02-publication-approval.md",
+      "title": "P1-PKG02 Alpha Publication Approval",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/decisions/releases/p1-pkg03-alpha2-publication-approval.md",
+      "title": "P1-PKG03 Alpha.2 Publication Approval",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-ovr01-admin-web-override-registry-contract.md",
+      "title": "P1-OVR01 Admin Web Override Registry Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-ovr02-php-service-override-contract.md",
+      "title": "P1-OVR02 PHP Service Override Registry Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-ovr03-sms-provider-host-consumption-contract.md",
+      "title": "P1-OVR03 SMS Provider Host Consumption Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-ovr04-admin-shell-host-consumption-contract.md",
+      "title": "P1-OVR04 Admin Shell Host Consumption Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-ovr05-override-host-qualification-contract.md",
+      "title": "P1-OVR05 Override Host Consumption Qualification Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-ovr05-r01-web-type-narrowing-remediation-contract.md",
+      "title": "P1-OVR05-R01 Web Override Type Narrowing Remediation Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/reviews/p1-override-host-consumption-qualification.md",
+      "title": "P1 Override Host Consumption Qualification",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-cl01-ui-neutral-client-transport-contract.md",
+      "title": "P1-CL01 UI-Neutral Client Transport Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/guide/client-apps.md",
+      "title": "Client Applications",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg03-alpha2-candidate-contract.md",
+      "title": "P1-PKG03 Alpha.2 Candidate Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg03-alpha2-qualification-contract.md",
+      "title": "P1-PKG03 Alpha.2 Qualification Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg03-alpha2-publication-approval-record-contract.md",
+      "title": "P1-PKG03 Alpha.2 Publication Approval Record Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg04-alpha2-projection-workflow-contract.md",
+      "title": "P1-PKG04 Alpha.2 Projection Workflow Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg05-alpha3-classic-types-resolution-contract.md",
+      "title": "P1-PKG05 Admin Web Alpha.3 Classic Type Resolution Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg06-release-merge-gate-remediation-contract.md",
+      "title": "P1-PKG06 Release Merge Gate Remediation Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg07-ci-fixed-runtime-follow-up-contract.md",
+      "title": "P1-PKG07 CI Fixed Runtime Follow-up Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg08-cross-platform-merge-gate-follow-up-contract.md",
+      "title": "P1-PKG08 Cross-Platform Merge Gate Follow-up Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg09-ci-environment-wiring-contract.md",
+      "title": "P1-PKG09 CI Environment Wiring Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg10-final-qualification-wiring-contract.md",
+      "title": "P1-PKG10 Final Qualification Wiring Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg11-tenant-refresh-sampling-follow-up-contract.md",
+      "title": "P1-PKG11 Tenant Refresh Sampling Follow-up Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "path": "docs/status/p1-pkg12-application-infrastructure-extraction-contract.md",
+      "title": "P1-PKG12 Application Infrastructure Extraction Contract",
+      "status": "canonical",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    }
+  ]
+}

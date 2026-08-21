@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+if [[ ! -f package.json ]]; then
+  echo 'ERROR: package.json is required for the documentation site' >&2
+  exit 1
+fi
+
+php -r '
+$package = json_decode((string) file_get_contents("package.json"), true, 512, JSON_THROW_ON_ERROR);
+if (($package["packageManager"] ?? null) !== "pnpm@11.13.0") {
+    fwrite(STDERR, "ERROR: packageManager must be pnpm@11.13.0\n");
+    exit(1);
+}
+if (($package["devDependencies"]["vitepress"] ?? null) !== "1.6.4") {
+    fwrite(STDERR, "ERROR: VitePress must match the accepted dependency decision\n");
+    exit(1);
+}
+foreach (["docs:dev", "docs:build", "docs:preview"] as $script) {
+    if (!isset($package["scripts"][$script])) {
+        fwrite(STDERR, "ERROR: missing package script {$script}\n");
+        exit(1);
+    }
+}
+'
+
+./scripts/check-doc-content-status
+./scripts/verify-doc-examples
+
+php -r '
+$root = getcwd();
+$manifest = json_decode((string) file_get_contents("docs/content-status.json"), true, 512, JSON_THROW_ON_ERROR);
+$config = (string) file_get_contents("docs/.vitepress/config.ts");
+foreach ($manifest["documents"] as $document) {
+    if ($document["status"] !== "superseded") {
+        continue;
+    }
+    $relative = substr($document["path"], strlen("docs/"));
+    $route = "/" . preg_replace("#(?:/index)?\\.md$#", "/", $relative);
+    if (str_contains($config, chr(39) . $route . chr(39)) || str_contains($config, chr(34) . $route . chr(34))) {
+        fwrite(STDERR, "ERROR: superseded page is present in documentation navigation: {$document["path"]}\n");
+        exit(1);
+    }
+}
+'
+
+pnpm docs:build
+
+if [[ ! -f docs/.vitepress/dist/index.html ]]; then
+  echo 'ERROR: documentation build did not produce index.html' >&2
+  exit 1
+fi
+
+echo 'Documentation site: OK'

@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+php_command=(php)
+phpunit_cache=''
+performance_php_image="${PEANUT_PERFORMANCE_PHP_IMAGE-}"
+if [[ -n "$performance_php_image" ]]; then
+  if [[ ! "$performance_php_image" =~ ^[a-z0-9][a-z0-9._/-]*(:[A-Za-z0-9._-]+)?$ ]]; then
+    echo 'ERROR: PEANUT_PERFORMANCE_PHP_IMAGE must be a valid local image reference' >&2
+    exit 1
+  fi
+  phpunit_cache="$(mktemp -d "${TMPDIR:-/tmp}/peanut-admin-phpunit-cache.XXXXXX")"
+fi
+
+docker compose up -d mysql
+mysql_container="$(docker compose ps -q mysql)"
+if [[ -z "$mysql_container" ]]; then
+  echo 'ERROR: Compose MySQL container is unavailable for performance tests' >&2
+  exit 1
+fi
+if [[ -n "$performance_php_image" ]]; then
+  php_command=(
+    docker run --rm --network "container:${mysql_container}"
+    --user "$(id -u):$(id -g)"
+    --env 'DB_HOST=127.0.0.1'
+    --env 'DB_PORT=3306'
+    --env 'MYSQL_HOST=127.0.0.1'
+    --env 'MYSQL_PORT=3306'
+    --env "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}"
+    --volume "$ROOT:/workspace:ro"
+    --volume "$phpunit_cache:/tmp/peanut-admin-phpunit-cache"
+    --workdir /workspace
+    "$performance_php_image"
+    php
+  )
+fi
+for attempt in $(seq 1 60); do
+  mysql_health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}unavailable{{end}}' "$mysql_container")"
+  if [[ "$mysql_health" == 'healthy' ]]; then
+    break
+  fi
+  if [[ "$attempt" -eq 60 ]]; then
+    echo "ERROR: MySQL 8 health status is $mysql_health after performance readiness timeout" >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+if [[ -n "$performance_php_image" ]]; then
+  report="$phpunit_cache/performance-report.json"
+  report_argument='/tmp/peanut-admin-phpunit-cache/performance-report.json'
+  phpunit_cache_argument='/tmp/peanut-admin-phpunit-cache/phpunit'
+else
+  report="$(mktemp "${TMPDIR:-/tmp}/peanut-admin-performance.XXXXXX")"
+  report_argument="$report"
+  phpunit_cache_argument='.cache/phpunit'
+fi
+cleanup() {
+  rm -f "$report"
+  if [[ -n "$phpunit_cache" ]]; then
+    rm -rf "$phpunit_cache"
+  fi
+}
+trap cleanup EXIT
+"${php_command[@]}" tests/performance/run.php > "$report"
+"${php_command[@]}" -r '
+$baseline = json_decode((string) file_get_contents("tests/performance/p0-baseline.json"), true, 512, JSON_THROW_ON_ERROR);
+$report = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$environment = $baseline["environment"] ?? null;
+if (($baseline["schema_version"] ?? null) !== 3
+    || ($report["schema_version"] ?? null) !== 3
+    || !is_array($environment)
+    || ($environment["operation_shape"] ?? null) !== "authorized-structured-target-query-v2"
+    || ($report["environment"]["database_version"] ?? null) !== "8.4.10"
+    || ($report["environment"]["php_version"] ?? null) !== ($environment["php"] ?? null)
+    || !in_array($report["environment"]["os"] ?? null, $environment["allowed_operating_systems"] ?? [], true)
+    || !in_array($report["environment"]["architecture"] ?? null, $environment["allowed_architectures"] ?? [], true)
+) {
+    fwrite(STDERR, "ERROR: performance runner does not match the versioned baseline environment\n");
+    exit(1);
+}
+$ratio = $baseline["maximum_regression_ratio"] ?? null;
+if (!is_float($ratio) || $ratio !== 1.2) {
+    fwrite(STDERR, "ERROR: performance baseline must block regressions over 20%\n");
+    exit(1);
+}
+foreach (($baseline["scenarios"] ?? []) as $name => $expected) {
+    $actual = $report["scenarios"][$name]["p95_ms"] ?? null;
+    $reference = $expected["p95_ms"] ?? null;
+    if (!is_numeric($actual) || !is_numeric($reference) || $reference <= 0) {
+        fwrite(STDERR, "ERROR: performance scenario {$name} has incomplete evidence\n");
+        exit(1);
+    }
+    $limit = $reference * $ratio;
+    printf("%-24s p95=%8.3f ms baseline=%8.3f ms limit=%8.3f ms\n", $name, $actual, $reference, $limit);
+    if ($actual > $limit) {
+        fwrite(STDERR, "ERROR: {$name} p95 regressed by more than 20%\n");
+        exit(1);
+    }
+    if (str_starts_with($name, "typed-targets-")) {
+        foreach (["operations_per_sample", "sql_parameters_per_query", "page_size"] as $field) {
+            if (($report["scenarios"][$name][$field] ?? null) !== ($expected[$field] ?? null)) {
+                fwrite(STDERR, "ERROR: {$name} changed its authorized query shape: {$field}\n");
+                exit(1);
+            }
+        }
+    }
+}
+' "$report_argument"
+"${php_command[@]}" vendor/bin/phpunit --cache-directory "$phpunit_cache_argument" tests/performance
+
+echo 'Performance qualification: OK'

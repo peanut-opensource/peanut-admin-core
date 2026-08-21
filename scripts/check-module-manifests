@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use PeanutAdmin\App\module\ModuleRegistryFactory;
+
+$root = dirname(__DIR__);
+require $root . '/vendor/autoload.php';
+$config = require $root . '/backend/config/modules.php';
+
+$registry = (new ModuleRegistryFactory(
+    array_map(
+        static fn(string $path): string => $root . '/' . ltrim($path, '/'),
+        $config['roots'],
+    ),
+    $config['frontend_components'],
+    $config['kernel_version'],
+    $root . '/packages/php/kernel/resources/schemas/module-manifest.schema.json',
+))->compileAndCheckBoundaries();
+
+fwrite(STDOUT, sprintf(
+    "Module manifests: OK (%d modules, revision %s)\n",
+    count($registry->modules),
+    $registry->revision,
+));

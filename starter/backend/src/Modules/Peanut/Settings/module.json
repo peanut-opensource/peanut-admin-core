@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "key": "peanut.settings",
+  "name": "Peanut Settings",
+  "description": "Reusable typed settings infrastructure consumed by the starter host",
+  "version": "0.1.0",
+  "kernel_constraint": "^1.0",
+  "license": "Apache-2.0",
+  "php_package": "peanut-admin/core",
+  "web_package": "@peanut-admin/admin/settings",
+  "dependencies": [],
+  "backend": {
+    "provider": "ExampleHost\\App\\Modules\\Peanut\\Settings\\ModuleProvider",
+    "migrations": "Database/Migrations",
+    "menus": "Resources/menus.json",
+    "permissions": "Resources/permissions.json",
+    "protected_resources": "Resources/protected-resources.json",
+    "setting_definitions": "Resources/setting-definitions.json"
+  },
+  "frontend": {
+    "entry": "frontend/src/modules/peanut-settings.ts",
+    "routes": "frontend/src/modules/peanut-settings.ts"
+  },
+  "database": {
+    "owned_tables": [
+      "pa_setting_definition",
+      "pa_setting_deployment_value",
+      "pa_setting_tenant_value",
+      "pa_setting_target_value"
+    ]
+  },
+  "contracts": {
+    "exports": [],
+    "events": []
+  },
+  "tenant": {
+    "enableable": true,
+    "disable_behavior": "reject_new_operations",
+    "requires": []
+  }
+}

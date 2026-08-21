@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+for required_port in MYSQL_PORT DB_PORT CACHE_PORT; do
+  value="${!required_port-}"
+  if [[ -z "$value" ]]; then
+    echo "ERROR: $required_port is required for integration tests" >&2
+    exit 1
+  fi
+  if [[ ! "$value" =~ ^[0-9]+$ ]] || (( 10#$value < 1 || 10#$value > 65535 )); then
+    echo "ERROR: $required_port must be an integer between 1 and 65535" >&2
+    exit 1
+  fi
+done
+
+export DB_HOST=127.0.0.1
+
+docker compose up -d mysql cache
+
+for attempt in $(seq 1 60); do
+  if php -r '
+    try {
+        new PDO(
+            "mysql:host=127.0.0.1;port=" . getenv("MYSQL_PORT"),
+            "root",
+            getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+        );
+    } catch (Throwable) {
+        exit(1);
+    }
+  ' 2>/dev/null; then
+    break
+  fi
+
+  if [[ "$attempt" -eq 60 ]]; then
+    echo 'ERROR: MySQL 8 did not become ready for integration tests' >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+for attempt in $(seq 1 60); do
+  if php -r '
+    $socket = @stream_socket_client(
+        "tcp://127.0.0.1:" . getenv("CACHE_PORT"),
+        $errorCode,
+        $errorMessage,
+        0.5,
+    );
+    if (!is_resource($socket)) {
+        exit(1);
+    }
+    fwrite($socket, "*1\r\n\x244\r\nPING\r\n");
+    $reply = fgets($socket);
+    fclose($socket);
+    exit($reply === "+PONG\r\n" ? 0 : 1);
+  ' 2>/dev/null; then
+    break
+  fi
+
+  if [[ "$attempt" -eq 60 ]]; then
+    echo 'ERROR: Valkey did not become ready for integration tests' >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+PEANUT_INTEGRATION=1 php vendor/bin/phpunit \
+  packages/php/kernel/tests/Integration \
+  packages/php/data-permission/tests/Integration \
+  packages/php/settings/tests/Integration \
+  backend/tests/Integration \
+  backend/tests/Install \
+  backend/tests/Upgrade \
+  backend/tests/Health

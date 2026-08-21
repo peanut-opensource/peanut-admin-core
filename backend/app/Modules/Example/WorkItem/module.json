@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "key": "example.work-item",
+  "name": "Example Work Item",
+  "description": "Fictional target-owned work item used for authorization contract validation",
+  "version": "1.0.0",
+  "kernel_constraint": "^1.0",
+  "license": "Apache-2.0",
+  "php_package": null,
+  "web_package": null,
+  "dependencies": [
+    {"module_key": "example.target", "version": "^1.0"},
+    {"module_key": "example.reference", "version": "^1.0"}
+  ],
+  "backend": {
+    "provider": "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\ModuleProvider",
+    "migrations": "Database/Migrations",
+    "menus": "Resources/menus.json",
+    "permissions": "Resources/permissions.json",
+    "protected_resources": "Resources/protected-resources.json"
+  },
+  "frontend": {
+    "entry": "frontend/src/modules/example-work-item/index.ts",
+    "routes": "frontend/src/modules/example-work-item/routes.ts",
+    "locales": "frontend/src/modules/example-work-item/locales"
+  },
+  "database": {
+    "owned_tables": [
+      "pa_example_work_item",
+      "pa_example_work_item_view_policy",
+      "pa_example_work_item_policy_publication"
+    ]
+  },
+  "contracts": {
+    "exports": [
+      "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\Contracts\\WorkItemQuery",
+      "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\Contracts\\WorkItemPage",
+      "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\Contracts\\CreateWorkItem",
+      "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\Contracts\\WorkItemCommands",
+      "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\Contracts\\WorkItemPolicyPublication",
+      "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\Contracts\\WorkItemRuntimeProvider"
+    ],
+    "events": ["example.work-item.changed.v1"]
+  },
+  "tenant": {
+    "enableable": true,
+    "disable_behavior": "reject_new_operations",
+    "requires": ["example.target", "example.reference"]
+  }
+}

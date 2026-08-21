@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-07T11:37:15+08:00",
+  "task": "P1-PKG02-QUALIFICATION",
+  "input_commit": "0ed843aad95497f162815a472ea9005d5bc1a5c6",
+  "qualified_candidate_commit": "b84b8876cf24e7b749f0e79ab95053e772c922e7",
+  "advisory_remediation_commit": "cd6207f28532dec305214b38c662a3e891f7692a",
+  "slice_status": "fixed-package-alpha-candidate",
+  "third_party_dependency_change": true,
+  "public_runtime_packages": [
+    "peanut-admin/core@0.1.0-alpha.1",
+    "@peanut-admin/admin@0.1.0-alpha.1"
+  ],
+  "locks": {
+    "composer.lock": {
+      "sha256": "034d604658dc9b5bf4d44180f5f94bee229bbda7f38109e2a47d673cc43d2add",
+      "delta": "unchanged-from-p1-pkg01"
+    },
+    "pnpm-lock.yaml": {
+      "sha256": "e6ce6b2bbf5f70283158eba276919bec699d8956430fbd227c44d236e5a6fe86",
+      "delta": "transitive-development-advisory-remediation"
+    },
+    "starter/backend/composer.lock": {
+      "sha256": "9165575c6e7de0efa92a7463c5ed3ae6b10e780295e99aac558a496ece2157a3",
+      "delta": "unchanged-from-p1-pkg01"
+    },
+    "starter/pnpm-lock.yaml": {
+      "sha256": "ca803b334c016040cdebc3ba7747b9a68b3ec379ce4d63b751b9a778a2f3b07d",
+      "delta": "unchanged-from-p1-pkg01"
+    }
+  },
+  "remediated_resolutions": {
+    "js-yaml@4": "4.3.1",
+    "brace-expansion@2": "2.1.4",
+    "brace-expansion@5": "5.0.9"
+  },
+  "verification": {
+    "lock_sha256_consistency": "checked",
+    "manifest_lock_consistency": "passed",
+    "security_audit": "passed-no-high-or-critical-advisories",
+    "phpunit": "passed: 562 tests, 3516 assertions, 253 skipped",
+    "phpstan": "passed: 0 errors",
+    "deptrac": "passed: 0 violations, 0 uncovered",
+    "php_cs_fixer": "passed: 802 files after R42",
+    "web_lint": "passed",
+    "web_typecheck": "passed",
+    "web_unit": "passed: 51 files, 209 tests after R43",
+    "web_build": "passed",
+    "compose_config": "passed",
+    "root_license": "passed",
+    "product_neutral_content": "passed after R44",
+    "required_deferred_directories": "passed",
+    "fixed_candidate_qualification": "passed-by-authorized-resume"
+  },
+  "notes": [
+    "The historical P1-PKG01 evidence remains unchanged and continues to describe its first-party-only consolidation state.",
+    "Only the root pnpm lock changed after P1-PKG01, through the bounded R15 transitive advisory remediation.",
+    "R41 through R44 completed the fixed-candidate groups through explicit no-repeat resume contracts.",
+    "This evidence does not publish a package, create a tag or Release, or approve downstream consumption."
+  ]
+}

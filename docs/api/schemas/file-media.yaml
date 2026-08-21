@@ -1,0 +1,125 @@
+FileKey:
+  type: string
+  pattern: '^file_[0-9a-f]{32}$'
+
+StrongFileEtag:
+  type: string
+  pattern: '^"rev-[1-9][0-9]*"$'
+
+FileContent:
+  type: string
+  format: binary
+
+FileObject:
+  type: object
+  additionalProperties: false
+  required: [file_key, original_name, media_type, size_bytes, sha256, status, revision, created_at, updated_at, archived_at]
+  properties:
+    file_key: { $ref: '#/FileKey' }
+    original_name: { type: string, minLength: 1, maxLength: 255 }
+    media_type: { type: string, minLength: 1, maxLength: 127 }
+    size_bytes: { type: integer, minimum: 1, maximum: 10485760 }
+    sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+    status: { enum: [ready, archived] }
+    revision: { type: integer, minimum: 1 }
+    created_at: { type: string, format: date-time }
+    updated_at: { type: string, format: date-time }
+    archived_at:
+      anyOf:
+        - { type: string, format: date-time }
+        - { type: 'null' }
+
+FileResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/FileObject' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+FileListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/FileObject' }
+    meta:
+      allOf:
+        - { $ref: './common.yaml#/$defs/RequestMeta' }
+        - type: object
+          required: [page, page_size, total]
+          properties:
+            page: { type: integer, minimum: 1 }
+            page_size: { type: integer, minimum: 1, maximum: 100 }
+            total: { type: integer, minimum: 0 }
+
+FileDeliveryGrant:
+  type: object
+  additionalProperties: false
+  required: [file_key, delivery_uri, visibility, replay_mode, expires_at]
+  properties:
+    file_key: { $ref: '#/FileKey' }
+    delivery_uri: { type: string, format: uri, maxLength: 2048 }
+    visibility: { enum: [private] }
+    replay_mode: { enum: [single_use] }
+    expires_at: { type: string, format: date-time }
+
+FileDeliveryGrantResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/FileDeliveryGrant' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+ImageVariant:
+  type: object
+  additionalProperties: false
+  required: [variant_key, width, height, media_type, delivery_uri]
+  properties:
+    variant_key: { type: string, pattern: '^[a-z][a-z0-9-]{0,31}$' }
+    width: { type: integer, minimum: 1, maximum: 4096 }
+    height: { type: integer, minimum: 1, maximum: 4096 }
+    media_type: { enum: [image/jpeg, image/png] }
+    delivery_uri: { anyOf: [{ type: string, format: uri, maxLength: 2048 }, { type: 'null' }] }
+
+FileAsset:
+  type: object
+  additionalProperties: false
+  required: [file_key, original_name, media_type, width, height, preview_uri, variants]
+  properties:
+    file_key: { $ref: '#/FileKey' }
+    original_name: { type: string, minLength: 1, maxLength: 255 }
+    media_type: { enum: [image/jpeg, image/png] }
+    width: { type: integer, minimum: 1, maximum: 50000 }
+    height: { type: integer, minimum: 1, maximum: 50000 }
+    preview_uri: { anyOf: [{ type: string, format: uri, maxLength: 2048 }, { type: 'null' }] }
+    variants: { type: array, maxItems: 16, items: { $ref: '#/ImageVariant' } }
+
+FileAssetListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/FileAsset' } }
+    meta:
+      allOf:
+        - { $ref: './common.yaml#/$defs/RequestMeta' }
+        - type: object
+          required: [page, page_size, total]
+          properties:
+            page: { type: integer, minimum: 1 }
+            page_size: { type: integer, minimum: 1, maximum: 100 }
+            total: { type: integer, minimum: 0 }

@@ -1,0 +1,236 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$ROOT"
+
+marker="$ROOT/node_modules/.peanut-admin-worktree-bootstrap"
+node_version="$(node --version)"
+pnpm_version="$(pnpm --version)"
+os_name="$(uname -s)"
+architecture="$(uname -m)"
+
+layout_candidates=(
+  "$ROOT/node_modules"
+  "$ROOT/frontend/node_modules"
+  "$ROOT/packages/web/node_modules"
+)
+
+resolve_store_path() {
+  if [[ -n "${PNPM_STORE_DIR:-}" ]]; then
+    pnpm --store-dir "$PNPM_STORE_DIR" store path
+    return
+  fi
+  local configured_store
+  configured_store="$(pnpm config get store-dir)"
+  if [[ -n "$configured_store" && "$configured_store" != 'undefined' && "$configured_store" != 'null' ]]; then
+    pnpm --store-dir "$configured_store" store path
+    return
+  fi
+  pnpm store path
+}
+
+assert_store_is_external() {
+  local store_path="$1"
+  local existing_ancestor suffix='' segment canonical_store containing_git_root canonical_git_root
+  existing_ancestor="$store_path"
+  while [[ ! -d "$existing_ancestor" ]]; do
+    segment="$(basename "$existing_ancestor")"
+    suffix="/$segment$suffix"
+    existing_ancestor="$(dirname "$existing_ancestor")"
+  done
+  canonical_store="$(cd "$existing_ancestor" && pwd -P)$suffix"
+  containing_git_root="$(git -C "$existing_ancestor" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -z "$containing_git_root" ]]; then
+    return
+  fi
+  canonical_git_root="$(cd "$containing_git_root" && pwd -P)"
+  if [[ "$canonical_store" == "$canonical_git_root" || "$canonical_store" == "$canonical_git_root/"* ]]; then
+    echo "ERROR: refusing pnpm content store inside a repository/worktree tree: $store_path" >&2
+    echo 'Configure store-dir or set PNPM_STORE_DIR to a persistent path outside any Git worktree.' >&2
+    exit 1
+  fi
+}
+
+broken_links=()
+external_links=()
+scan_dependency_links() {
+  broken_links=()
+  external_links=()
+  local layout link target relative raw_target
+  for layout in "${layout_candidates[@]}"; do
+    if [[ ! -e "$layout" && ! -L "$layout" ]]; then
+      continue
+    fi
+    while IFS= read -r link; do
+      relative="${link#"$ROOT"/}"
+      if [[ ! -e "$link" ]]; then
+        raw_target="$(readlink "$link" 2>/dev/null || true)"
+        broken_links+=("$relative -> ${raw_target:-<unreadable>}")
+        continue
+      fi
+      target="$(realpath "$link")"
+      if [[ "$target" != "$ROOT" && "$target" != "$ROOT/"* ]]; then
+        external_links+=("$relative -> $target")
+      fi
+    done < <(find "$layout" -type l -print 2>/dev/null)
+  done
+}
+
+report_limited() {
+  local prefix="$1"
+  shift
+  local entries=("$@")
+  local limit=20 index
+  for ((index = 0; index < ${#entries[@]} && index < limit; index++)); do
+    echo "$prefix${entries[$index]}" >&2
+  done
+  if [[ "${#entries[@]}" -gt "$limit" ]]; then
+    echo "$prefix... $(( ${#entries[@]} - limit )) more" >&2
+  fi
+}
+
+cleanup_layouts() {
+  local existing=()
+  local layout relative tracked
+  for layout in "${layout_candidates[@]}"; do
+    if [[ -e "$layout" || -L "$layout" ]]; then
+      existing+=("$layout")
+    fi
+  done
+  if [[ "${#existing[@]}" -eq 0 ]]; then
+    return
+  fi
+
+  for layout in "${existing[@]}"; do
+    relative="${layout#"$ROOT"/}"
+    if [[ "$layout" != "$ROOT/"* || "${layout##*/}" != 'node_modules' ]]; then
+      echo "ERROR: refusing to remove an unsafe dependency layout path: $layout" >&2
+      exit 1
+    fi
+    if ! git check-ignore -q -- "$relative"; then
+      echo "ERROR: refusing to remove non-ignored dependency layout: $relative" >&2
+      exit 1
+    fi
+    tracked="$(git ls-files -- "$relative")"
+    if [[ -n "$tracked" ]]; then
+      echo "ERROR: refusing to remove dependency layout containing tracked files: $relative" >&2
+      exit 1
+    fi
+  done
+
+  for layout in "${existing[@]}"; do
+    relative="${layout#"$ROOT"/}"
+    echo "Removing ignored dependency layout: $relative"
+  done
+  for layout in "${existing[@]}"; do
+    rm -rf -- "$layout"
+  done
+}
+
+pre_cleanup_store="$(resolve_store_path)"
+if [[ -z "$pre_cleanup_store" ]]; then
+  echo 'ERROR: pnpm did not resolve a store path.' >&2
+  exit 1
+fi
+assert_store_is_external "$pre_cleanup_store"
+
+scan_dependency_links
+if [[ "${#broken_links[@]}" -gt 0 ]]; then
+  report_limited 'ERROR: broken dependency link: ' "${broken_links[@]}"
+  cleanup_layouts
+  echo 'ERROR: removed the broken current-worktree dependency layout; rerun bootstrap.' >&2
+  exit 1
+fi
+if [[ "${#external_links[@]}" -gt 0 ]]; then
+  report_limited 'Detected external dependency link: ' "${external_links[@]}"
+  cleanup_layouts
+  echo 'ERROR: removed the external current-worktree dependency layout; rerun bootstrap.' >&2
+  exit 1
+fi
+
+store_path="$pre_cleanup_store"
+if [[ -z "$store_path" ]]; then
+  echo 'ERROR: pnpm did not resolve a store path.' >&2
+  exit 1
+fi
+assert_store_is_external "$store_path"
+
+config_files=(
+  .npmrc
+  package.json
+  pnpm-lock.yaml
+  pnpm-workspace.yaml
+  frontend/package.json
+  packages/web/package.json
+)
+config_hash="$({
+  for path in "${config_files[@]}"; do
+    printf '%s\n' "$path"
+    git hash-object "$path"
+  done
+} | git hash-object --stdin)"
+fingerprint="$(printf '%s\n' \
+  "$config_hash" \
+  "$node_version" \
+  "$pnpm_version" \
+  "$os_name" \
+  "$architecture" \
+  "$store_path" | git hash-object --stdin)"
+
+stored_fingerprint=''
+if [[ -f "$marker" ]]; then
+  stored_fingerprint="$(sed -n 's/^fingerprint=//p' "$marker" | head -n 1)"
+fi
+layout_complete=1
+for layout in "${layout_candidates[@]}"; do
+  if [[ ! -d "$layout" || -L "$layout" ]]; then
+    echo "Dependency layout missing or not local: ${layout#"$ROOT"/}"
+    layout_complete=0
+  fi
+done
+if [[ "$stored_fingerprint" == "$fingerprint" \
+   && "$layout_complete" -eq 1 \
+   && -d "$ROOT/node_modules/.pnpm" \
+   && ! -L "$ROOT/node_modules/.pnpm" ]]; then
+  echo "Worktree dependencies already match $fingerprint; no install needed."
+  exit 0
+fi
+
+cleanup_layouts
+
+echo "Bootstrapping worktree dependencies offline from: $store_path"
+if ! pnpm --store-dir "$store_path" install --offline --frozen-lockfile; then
+  echo 'ERROR: offline dependency bootstrap could not satisfy the frozen lockfile.' >&2
+  cleanup_layouts
+  echo 'Run ./scripts/warm-worktree-dependencies with network access, then retry bootstrap.' >&2
+  exit 1
+fi
+
+scan_dependency_links
+if [[ "${#broken_links[@]}" -gt 0 ]]; then
+  report_limited 'ERROR: pnpm created a broken dependency link: ' "${broken_links[@]}"
+  cleanup_layouts
+  exit 1
+fi
+if [[ "${#external_links[@]}" -gt 0 ]]; then
+  report_limited 'ERROR: pnpm created an external dependency link: ' "${external_links[@]}"
+  cleanup_layouts
+  exit 1
+fi
+
+marker_tmp="$(mktemp "$ROOT/node_modules/.peanut-admin-worktree-bootstrap.XXXXXX")"
+trap 'rm -f "$marker_tmp"' EXIT
+{
+  printf 'fingerprint=%s\n' "$fingerprint"
+  printf 'config_hash=%s\n' "$config_hash"
+  printf 'node=%s\n' "$node_version"
+  printf 'pnpm=%s\n' "$pnpm_version"
+  printf 'os=%s\n' "$os_name"
+  printf 'arch=%s\n' "$architecture"
+  printf 'store=%s\n' "$store_path"
+} >"$marker_tmp"
+mv "$marker_tmp" "$marker"
+trap - EXIT
+
+echo "Worktree dependency bootstrap complete: $fingerprint"

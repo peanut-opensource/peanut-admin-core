@@ -1,0 +1,56 @@
+[
+  {
+    "key": "example.work-item",
+    "name": "Work Item",
+    "ownership": "business_target_owned",
+    "provider": "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\Infrastructure\\Authorization\\WorkItemPolicyProvider",
+    "operations": [
+      {"key": "list", "access_mode": "rule_filtered", "target_cardinality": "many_readable", "permission_match": "all", "audit_level": "deny", "permissions": ["example.work-item.read"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"},
+        {"target_resource_key": "example.queue", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.self", "selector_resource_key": null},
+        {"key": "core.own_department", "selector_resource_key": null},
+        {"key": "core.department_tree", "selector_resource_key": null},
+        {"key": "core.specified_departments", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"},
+        {"key": "core.specified_objects", "selector_resource_key": "example.queue"}
+      ]},
+      {"key": "create", "access_mode": "explicit_targets", "target_cardinality": "one_required", "permission_match": "all", "audit_level": "deny_and_write", "permissions": ["example.work-item.create"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"},
+        {"target_resource_key": "example.queue", "target_role": "related", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"},
+        {"key": "core.specified_objects", "selector_resource_key": "example.queue"}
+      ]},
+      {"key": "update", "access_mode": "explicit_targets", "target_cardinality": "one_required", "permission_match": "all", "audit_level": "deny_and_write", "permissions": ["example.work-item.update"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"},
+        {"target_resource_key": "example.queue", "target_role": "related", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"},
+        {"key": "core.specified_objects", "selector_resource_key": "example.queue"}
+      ]},
+      {"key": "aggregate", "access_mode": "rule_filtered", "target_cardinality": "aggregate_read", "permission_match": "all", "audit_level": "deny", "permissions": ["example.work-item.read"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"}
+      ]},
+      {"key": "policy-publish", "access_mode": "explicit_targets", "target_cardinality": "policy_publish", "permission_match": "all", "audit_level": "all", "permissions": ["example.work-item.policy-publish"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"}
+      ]},
+      {"key": "bulk-write", "access_mode": "explicit_targets", "target_cardinality": "bulk_write", "permission_match": "all", "audit_level": "all", "permissions": ["example.work-item.update"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"}
+      ]}
+    ]
+  }
+]

@@ -1,0 +1,176 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$root = dirname(__DIR__);
+$ledgerPath = $root . '/docs/status/runtime-operation-coverage.json';
+$routePath = $root . '/backend/route/openapi-generated.php';
+
+if (!is_file($ledgerPath)) {
+    fwrite(STDERR, "ERROR: runtime operation coverage ledger is missing: docs/status/runtime-operation-coverage.json\n");
+    exit(1);
+}
+if (!is_file($routePath)) {
+    fwrite(STDERR, "ERROR: generated OpenAPI route map is missing: backend/route/openapi-generated.php\n");
+    exit(1);
+}
+
+try {
+    $ledger = json_decode((string) file_get_contents($ledgerPath), true, 512, JSON_THROW_ON_ERROR);
+} catch (JsonException $exception) {
+    fwrite(STDERR, "ERROR: runtime operation coverage ledger is invalid JSON: {$exception->getMessage()}\n");
+    exit(1);
+}
+
+if (!is_array($ledger) || ($ledger['schema_version'] ?? null) !== 1) {
+    fwrite(STDERR, "ERROR: runtime operation coverage ledger must use schema_version 1\n");
+    exit(1);
+}
+
+$baselines = $ledger['baselines'] ?? null;
+$expectedBaselines = [
+    'historical_review_commit' => '2444e904007a4584d90ffe5c39810eafb13b427a',
+    'historical_d04_commit' => 'f351a21bff55b4d8a82ef39c12d8bf4d058a3e5c',
+    'runtime_remediation_start_commit' => 'b927290',
+];
+if (!is_array($baselines)) {
+    fwrite(STDERR, "ERROR: runtime operation coverage ledger has no baselines object\n");
+    exit(1);
+}
+foreach ($expectedBaselines as $field => $expected) {
+    if (($baselines[$field] ?? null) !== $expected) {
+        fwrite(STDERR, "ERROR: runtime operation coverage baseline {$field} is missing or incorrect\n");
+        exit(1);
+    }
+}
+if (($baselines['downstream_consumption_status'] ?? null) !== 'approved-for-pinned-internal-alpha-validation') {
+    fwrite(STDERR, "ERROR: runtime operation coverage must preserve the approved pinned internal-alpha status\n");
+    exit(1);
+}
+
+$testOwners = $ledger['test_owners'] ?? null;
+if (!is_array($testOwners) || $testOwners === []) {
+    fwrite(STDERR, "ERROR: runtime operation coverage ledger has no test owners\n");
+    exit(1);
+}
+foreach ($testOwners as $testId => $owner) {
+    if (!is_string($testId) || preg_match('/^RUNTIME-[A-Z0-9-]+-[0-9]{3}$/', $testId) !== 1) {
+        fwrite(STDERR, "ERROR: invalid runtime test owner ID: " . (string) $testId . "\n");
+        exit(1);
+    }
+    if (!is_array($owner) || !is_string($owner['description'] ?? null) || ($owner['description'] ?? '') === '') {
+        fwrite(STDERR, "ERROR: runtime test owner {$testId} has no description\n");
+        exit(1);
+    }
+    $evidence = $owner['evidence'] ?? null;
+    if (!is_array($evidence) || $evidence === []) {
+        fwrite(STDERR, "ERROR: runtime test owner {$testId} has no evidence files\n");
+        exit(1);
+    }
+    foreach ($evidence as $path) {
+        if (!is_string($path) || $path === '' || str_starts_with($path, '/') || str_contains($path, '..')) {
+            fwrite(STDERR, "ERROR: runtime test owner {$testId} has an invalid evidence path\n");
+            exit(1);
+        }
+        if (!is_file($root . '/' . $path)) {
+            fwrite(STDERR, "ERROR: runtime test owner {$testId} references a missing file: {$path}\n");
+            exit(1);
+        }
+    }
+}
+
+/** @var array<string, array<int, mixed>> $routes */
+$routes = require $routePath;
+$operations = $ledger['operations'] ?? null;
+if (!is_array($operations)) {
+    fwrite(STDERR, "ERROR: runtime operation coverage ledger has no operations array\n");
+    exit(1);
+}
+if (count($operations) !== count($routes)) {
+    fwrite(STDERR, sprintf(
+        "ERROR: runtime operation coverage has %d entries; OpenAPI has %d operations\n",
+        count($operations),
+        count($routes),
+    ));
+    exit(1);
+}
+
+$routesByOperation = [];
+foreach ($routes as $route => $binding) {
+    $operationId = $binding[3] ?? null;
+    if (!is_string($operationId) || isset($routesByOperation[$operationId])) {
+        fwrite(STDERR, "ERROR: generated OpenAPI route map has a missing or duplicate operation ID\n");
+        exit(1);
+    }
+    $routesByOperation[$operationId] = [
+        'route' => $route,
+        'handler' => ($binding[0] ?? '') . '::' . ($binding[1] ?? ''),
+        'response_schema' => $binding[11] ?? null,
+    ];
+}
+
+$seenOperations = [];
+$seenRoutes = [];
+foreach ($operations as $index => $operation) {
+    if (!is_array($operation)) {
+        fwrite(STDERR, "ERROR: runtime operation coverage entry {$index} is not an object\n");
+        exit(1);
+    }
+    foreach (['operation_id', 'scope', 'route', 'handler', 'test_owner'] as $field) {
+        if (!is_string($operation[$field] ?? null) || ($operation[$field] ?? '') === '') {
+            fwrite(STDERR, "ERROR: runtime operation coverage entry {$index} has no {$field}\n");
+            exit(1);
+        }
+    }
+    $operationId = $operation['operation_id'];
+    $route = $operation['route'];
+    if (isset($seenOperations[$operationId])) {
+        fwrite(STDERR, "ERROR: runtime operation is registered twice: {$operationId}\n");
+        exit(1);
+    }
+    if (isset($seenRoutes[$route])) {
+        fwrite(STDERR, "ERROR: runtime route is registered twice: {$route}\n");
+        exit(1);
+    }
+    $seenOperations[$operationId] = true;
+    $seenRoutes[$route] = true;
+
+    if (!in_array($operation['scope'], ['p0', 'p1'], true)) {
+        fwrite(STDERR, "ERROR: runtime operation {$operationId} has invalid scope {$operation['scope']}\n");
+        exit(1);
+    }
+    if (!array_key_exists($operation['test_owner'], $testOwners)) {
+        fwrite(STDERR, "ERROR: runtime operation {$operationId} has unknown test owner {$operation['test_owner']}\n");
+        exit(1);
+    }
+    if (!array_key_exists('response_schema', $operation)) {
+        fwrite(STDERR, "ERROR: runtime operation {$operationId} has no response_schema field\n");
+        exit(1);
+    }
+
+    $generated = $routesByOperation[$operationId] ?? null;
+    if ($generated === null) {
+        fwrite(STDERR, "ERROR: ledger operation is absent from OpenAPI: {$operationId}\n");
+        exit(1);
+    }
+    foreach (['route', 'handler', 'response_schema'] as $field) {
+        if ($operation[$field] !== $generated[$field]) {
+            fwrite(STDERR, "ERROR: runtime operation {$operationId} has stale {$field}\n");
+            exit(1);
+        }
+    }
+}
+
+foreach (array_keys($routesByOperation) as $operationId) {
+    if (!isset($seenOperations[$operationId])) {
+        fwrite(STDERR, "ERROR: OpenAPI operation is not classified: {$operationId}\n");
+        exit(1);
+    }
+}
+
+echo sprintf(
+    "Runtime operation coverage: OK (%d P0, %d P1)\n",
+    count(array_filter($operations, static fn(array $operation): bool => $operation['scope'] === 'p0')),
+    count(array_filter($operations, static fn(array $operation): bool => $operation['scope'] === 'p1')),
+);

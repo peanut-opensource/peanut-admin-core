@@ -1,0 +1,258 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+for required_port in MYSQL_PORT DB_PORT; do
+  value="${!required_port-}"
+  if [[ -z "$value" ]]; then
+    echo "ERROR: $required_port is required for starter verification" >&2
+    exit 1
+  fi
+  if [[ ! "$value" =~ ^[0-9]+$ ]] || (( 10#$value < 1 || 10#$value > 65535 )); then
+    echo "ERROR: $required_port must be an integer between 1 and 65535" >&2
+    exit 1
+  fi
+done
+
+workdir="$(mktemp -d "${TMPDIR:-/tmp}/peanut-admin-starter.XXXXXX")"
+first="$workdir/first"
+second="$workdir/second"
+backend_pid=''
+frontend_pid=''
+
+cleanup() {
+  if [[ -n "$frontend_pid" ]]; then
+    kill "$frontend_pid" 2>/dev/null || true
+    wait "$frontend_pid" 2>/dev/null || true
+  fi
+  if [[ -n "$backend_pid" ]]; then
+    kill "$backend_pid" 2>/dev/null || true
+    wait "$backend_pid" 2>/dev/null || true
+  fi
+  rm -rf "$workdir"
+}
+trap cleanup EXIT
+
+./scripts/create-internal-starter "$first"
+./scripts/create-internal-starter "$second"
+diff -ru --exclude='.DS_Store' "$first" "$second"
+
+settings_required=(
+  'backend/config/modules.php'
+  'backend/src/Modules/Example/Greeting/Resources/setting-definitions.json'
+  'backend/src/Modules/Peanut/Settings/module.json'
+  'backend/src/Modules/Peanut/Settings/ModuleProvider.php'
+  'backend/tests/settings.php'
+  'frontend/src/app/modules.ts'
+  'frontend/src/modules/peanut-settings.ts'
+  'frontend/tests/settings.spec.ts'
+  'packages/php/composer.json'
+  'packages/web/package.json'
+  'backend/src/Modules/Peanut/ReferenceCodes/module.json'
+  'backend/src/Modules/Peanut/ReferenceCodes/ModuleProvider.php'
+  'backend/tests/reference-codes.php'
+  'frontend/src/modules/peanut-reference-codes.ts'
+  'frontend/tests/reference-codes.spec.ts'
+  'backend/config/file-media.php'
+  'backend/src/FileMedia/FileMediaStorageFactory.php'
+  'backend/src/FileMedia/LocalPrivateStorageProvider.php'
+  'backend/src/Modules/Peanut/FileMedia/module.json'
+  'backend/src/Modules/Peanut/FileMedia/ModuleProvider.php'
+  'frontend/src/modules/peanut-file-media.ts'
+  'frontend/tests/file-media.spec.ts'
+  'backend/tests/file-media.php'
+  'backend/src/Modules/Peanut/TaskJob/module.json'
+  'backend/src/Modules/Peanut/NotificationSms/module.json'
+  'backend/config/notification-sms.php'
+  'frontend/src/modules/peanut-task-job.ts'
+  'frontend/src/modules/peanut-notification-sms.ts'
+  'frontend/tests/task-job.spec.ts'
+  'frontend/tests/notification-sms.spec.ts'
+  'backend/src/Modules/Peanut/ImportExport/module.json'
+  'backend/src/Modules/Peanut/IntegrationSecurity/module.json'
+  'backend/config/integration-security.php'
+  'backend/tests/import-export.php'
+  'backend/tests/integration-security.php'
+  'frontend/src/modules/peanut-import-export.ts'
+  'frontend/src/modules/peanut-integration-security.ts'
+  'frontend/src/modules/peanut-ops-console.ts'
+  'frontend/tests/import-export.spec.ts'
+  'frontend/tests/integration-security.spec.ts'
+  'frontend/tests/ops-console.spec.ts'
+)
+for path in "${settings_required[@]}"; do
+  if [[ ! -f "$first/$path" ]]; then
+    echo "ERROR: generated starter Settings consumption file is missing: $path" >&2
+    exit 1
+  fi
+done
+
+diff -ru "$ROOT/packages/php/kernel/database" "$first/packages/php/kernel/database"
+diff -ru "$ROOT/packages/php/kernel/resources" "$first/packages/php/kernel/resources"
+diff -ru "$ROOT/packages/php/data-permission/database" "$first/packages/php/data-permission/database"
+diff -ru "$ROOT/packages/php/settings/src" "$first/packages/php/settings/src"
+diff -ru "$ROOT/packages/web/settings/src" "$first/packages/web/settings/src"
+diff -ru "$ROOT/packages/php/reference-codes/src" "$first/packages/php/reference-codes/src"
+diff -ru "$ROOT/packages/web/reference-codes/src" "$first/packages/web/reference-codes/src"
+diff -ru "$ROOT/packages/php/file-media/src" "$first/packages/php/file-media/src"
+diff -ru "$ROOT/packages/web/file-media/src" "$first/packages/web/file-media/src"
+diff -ru "$ROOT/packages/php/task-job/src" "$first/packages/php/task-job/src"
+diff -ru "$ROOT/packages/php/notification-sms/src" "$first/packages/php/notification-sms/src"
+diff -ru "$ROOT/packages/web/task-job/src" "$first/packages/web/task-job/src"
+diff -ru "$ROOT/packages/web/notification-sms/src" "$first/packages/web/notification-sms/src"
+diff -ru "$ROOT/packages/php/import-export/src" "$first/packages/php/import-export/src"
+diff -ru "$ROOT/packages/php/ops-console/src" "$first/packages/php/ops-console/src"
+diff -ru "$ROOT/packages/php/integration-security/src" "$first/packages/php/integration-security/src"
+diff -ru "$ROOT/packages/web/import-export/src" "$first/packages/web/import-export/src"
+diff -ru "$ROOT/packages/web/ops-console/src" "$first/packages/web/ops-console/src"
+diff -ru "$ROOT/packages/web/integration-security/src" "$first/packages/web/integration-security/src"
+cmp "$ROOT/packages/php/composer.json" "$first/packages/php/composer.json"
+cmp "$ROOT/packages/php/LICENSE" "$first/packages/php/LICENSE"
+cmp "$ROOT/packages/web/package.json" "$first/packages/web/package.json"
+cmp "$ROOT/packages/web/LICENSE" "$first/packages/web/LICENSE"
+
+php tests/starter/assert-generated-starter.php "$first"
+
+if grep -R -n -E '/Users/|/home/[^/]+/|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|password[[:space:]]*=' "$first"; then
+  echo 'ERROR: generated starter contains a private path or secret-like value' >&2
+  exit 1
+fi
+if grep -R -n -i -E --exclude=LICENSE '(^|[^[:alnum:]_])DCS([^[:alnum:]_]|$)|Finance Manager|门店|仓库|商品|库存|结算|(^|[^[:alnum:]_])warehouse([^[:alnum:]_]|$)|(^|[^[:alnum:]_])inventory([^[:alnum:]_]|$)|(^|[^[:alnum:]_])trade([^[:alnum:]_]|$)|(^|[^[:alnum:]_])settlement([^[:alnum:]_]|$)' \
+  "$first"; then
+  echo 'ERROR: generated starter contains product-specific language' >&2
+  exit 1
+fi
+
+composer install \
+  --working-dir "$first/backend" \
+  --no-interaction \
+  --prefer-dist
+pnpm --dir "$first" install --frozen-lockfile
+
+composer install \
+  --working-dir "$second/backend" \
+  --no-interaction \
+  --prefer-dist
+pnpm --dir "$second" install --frozen-lockfile
+
+cmp "$first/backend/composer.lock" "$second/backend/composer.lock"
+cmp "$first/pnpm-lock.yaml" "$second/pnpm-lock.yaml"
+
+php "$first/backend/tests/smoke.php"
+docker compose up -d mysql
+for attempt in $(seq 1 60); do
+  if php -r '
+    try {
+        new PDO(
+            "mysql:host=127.0.0.1;port=" . getenv("MYSQL_PORT"),
+            "root",
+            getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+        );
+    } catch (Throwable) {
+        exit(1);
+    }
+  ' 2>/dev/null; then
+    break
+  fi
+  if [[ "$attempt" -eq 60 ]]; then
+    echo 'ERROR: MySQL 8 did not become ready for starter verification' >&2
+    exit 1
+  fi
+  sleep 2
+done
+php "$first/backend/tests/auth-clients.php"
+php "$first/backend/tests/settings.php"
+php "$first/backend/tests/reference-codes.php"
+php "$first/backend/tests/file-media.php"
+php "$first/backend/tests/import-export.php"
+php "$first/backend/tests/integration-security.php"
+pnpm --dir "$first" typecheck
+pnpm --dir "$first" test
+pnpm --dir "$first" build
+
+free_port() {
+  php -r '
+  $socket = stream_socket_server("tcp://127.0.0.1:0", $errorCode, $errorMessage);
+  if ($socket === false) {
+      fwrite(STDERR, "ERROR: {$errorMessage}\n");
+      exit(1);
+  }
+  $name = stream_socket_get_name($socket, false);
+  fclose($socket);
+  echo substr((string) strrchr((string) $name, ":"), 1);
+  '
+}
+
+backend_port="$(free_port)"
+
+php -S "127.0.0.1:$backend_port" \
+  -t "$first/backend/public" \
+  "$first/backend/public/router.php" \
+  >"$workdir/backend.log" 2>&1 &
+backend_pid="$!"
+
+NO_COLOR=1 pnpm --dir "$first" --filter @peanut-admin/internal-starter-admin preview \
+  --host 127.0.0.1 \
+  --port 0 \
+  --strictPort \
+  >"$workdir/frontend.log" 2>&1 &
+frontend_pid="$!"
+
+wait_for_url() {
+  local url="$1"
+  local log="$2"
+  for attempt in $(seq 1 60); do
+    if curl --fail --silent --show-error "$url" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+  echo "ERROR: starter service did not become ready: $url" >&2
+  sed -n '1,240p' "$log" >&2
+  return 1
+}
+
+wait_for_frontend_url() {
+  local log="$1"
+  local url=''
+  for attempt in $(seq 1 60); do
+    if ! kill -0 "$frontend_pid" 2>/dev/null; then
+      echo 'ERROR: frontend preview exited before publishing its URL' >&2
+      sed -n '1,240p' "$log" >&2
+      return 1
+    fi
+    url="$(sed -nE 's/.*(http:\/\/127\.0\.0\.1:[0-9]+\/).*/\1/p' "$log" | head -n 1)"
+    if [[ -n "$url" ]]; then
+      printf '%s\n' "$url"
+      return 0
+    fi
+    sleep 1
+  done
+  echo 'ERROR: frontend preview did not publish a loopback URL' >&2
+  sed -n '1,240p' "$log" >&2
+  return 1
+}
+
+wait_for_url "http://127.0.0.1:$backend_port/health" "$workdir/backend.log"
+frontend_url="$(wait_for_frontend_url "$workdir/frontend.log")"
+wait_for_url "$frontend_url" "$workdir/frontend.log"
+
+health="$(curl --fail --silent --show-error "http://127.0.0.1:$backend_port/health")"
+greeting="$(curl --fail --silent --show-error "http://127.0.0.1:$backend_port/api/example/greeting")"
+
+STARTER_HEALTH="$health" STARTER_GREETING="$greeting" php -r '
+$health = json_decode((string) getenv("STARTER_HEALTH"), true, 512, JSON_THROW_ON_ERROR);
+$greeting = json_decode((string) getenv("STARTER_GREETING"), true, 512, JSON_THROW_ON_ERROR);
+if (($health["status"] ?? null) !== "ok"
+    || ($health["packages"]["kernel"] ?? null) !== "0.1.0"
+    || ($health["packages"]["data_permission"] ?? null) !== "0.1.0"
+    || ($greeting["module_key"] ?? null) !== "example.greeting") {
+    fwrite(STDERR, "ERROR: starter HTTP smoke response is invalid\n");
+    exit(1);
+}
+'
+
+echo 'Internal starter: OK (reproducible create, package schema, Settings Module, definition resolution, Client auth, build, start, test)'

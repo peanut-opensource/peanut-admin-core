@@ -1,0 +1,86 @@
+name: Publish public packages
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish Composer and npm packages
+    runs-on: ubuntu-24.04
+    environment: npm-release
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - name: Checkout immutable tag
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          tools: composer:2.10.2
+          coverage: none
+
+      - name: Set up Node and pnpm
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe502f6 # v7.0.0
+        with:
+          node-version: 24.18.0
+
+      - name: Verify immutable package identities
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
+          jq -e --arg version "$version" '.version == $version' packages/php/composer.json >/dev/null
+          jq -e --arg version "$version" '.version == $version' packages/web/package.json >/dev/null
+          test -n "$NPM_TOKEN"
+          if npm view "@peanut-admin/admin@$version" version --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+            echo "npm version already exists: $version" >&2
+            exit 1
+          fi
+
+      - name: Validate Composer projection
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          projection="$RUNNER_TEMP/composer-projection"
+          mkdir -p "$projection"
+          git archive --format=tar "$GITHUB_SHA" packages/php | tar -x --strip-components=2 -C "$projection"
+          composer validate --strict --no-check-publish --working-dir="$projection"
+          tar -czf "$RUNNER_TEMP/peanut-admin-core-${GITHUB_REF_NAME}.tar.gz" -C "$projection" .
+
+      - name: Publish npm package
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          npm_config_userconfig="$RUNNER_TEMP/npmrc"
+          trap 'rm -f "$npm_config_userconfig"' EXIT
+          printf 'registry=https://registry.npmjs.org/\n//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" > "$npm_config_userconfig"
+          export NPM_CONFIG_USERCONFIG="$npm_config_userconfig"
+          npm_tarball="$(npm pack packages/web --pack-destination "$RUNNER_TEMP" --json | jq -r '.[0].filename')"
+          test -n "$npm_tarball" -a -f "$RUNNER_TEMP/$npm_tarball"
+          npm publish "$RUNNER_TEMP/$npm_tarball" --access public --provenance --tag alpha
+          mv "$RUNNER_TEMP/$npm_tarball" "$RUNNER_TEMP/peanut-admin-admin-${GITHUB_REF_NAME}.tgz"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Peanut Admin Core ${GITHUB_REF_NAME}" \
+            --generate-notes \
+            "$RUNNER_TEMP/peanut-admin-core-${GITHUB_REF_NAME}.tar.gz" \
+            "$RUNNER_TEMP/peanut-admin-admin-${GITHUB_REF_NAME}.tgz"

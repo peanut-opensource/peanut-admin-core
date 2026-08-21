@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+exec php -r '
+require "vendor/autoload.php";
+exit(PeanutAdmin\App\command\UpgradeCli::run(getcwd(), array_slice($argv, 1)));
+' -- "$@"

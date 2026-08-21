@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "key": "example.reference",
+  "name": "Example Reference",
+  "description": "Fictional unified shared master used for scope contract validation",
+  "version": "1.0.0",
+  "kernel_constraint": "^1.0",
+  "license": "Apache-2.0",
+  "php_package": null,
+  "web_package": null,
+  "dependencies": [
+    {"module_key": "example.target", "version": "^1.0"}
+  ],
+  "backend": {
+    "provider": "PeanutAdmin\\App\\Modules\\Example\\Reference\\ModuleProvider",
+    "migrations": "Database/Migrations",
+    "menus": "Resources/menus.json",
+    "permissions": "Resources/permissions.json",
+    "protected_resources": "Resources/protected-resources.json",
+    "reference_code_sets": "Resources/reference-code-sets.json"
+  },
+  "frontend": {
+    "entry": "frontend/src/modules/example-reference/index.ts",
+    "routes": "frontend/src/modules/example-reference/routes.ts",
+    "locales": "frontend/src/modules/example-reference/locales"
+  },
+  "database": {
+    "owned_tables": ["pa_example_reference_item", "pa_example_reference_scope"]
+  },
+  "contracts": {
+    "exports": [
+      "PeanutAdmin\\App\\Modules\\Example\\Reference\\Contracts\\ReferenceQuery",
+      "PeanutAdmin\\App\\Modules\\Example\\Reference\\Contracts\\ReferenceScope",
+      "PeanutAdmin\\App\\Modules\\Example\\Reference\\Contracts\\ReferenceRuntimeProvider"
+    ],
+    "events": ["example.reference.changed.v1"]
+  },
+  "tenant": {
+    "enableable": true,
+    "disable_behavior": "reject_new_operations",
+    "requires": ["example.target"]
+  }
+}

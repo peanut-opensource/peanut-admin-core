@@ -1,0 +1,4 @@
+[
+  {"key":"peanut.task-job.read","type":"api","name":"Read Tenant tasks","risk_level":"normal"},
+  {"key":"peanut.task-job.manage","type":"action","name":"Manage Tenant tasks","risk_level":"sensitive"}
+]

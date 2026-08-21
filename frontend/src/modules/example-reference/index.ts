@@ -1,0 +1,1 @@
+export { exampleReferenceModule } from './routes'

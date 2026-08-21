@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$ROOT"
+
+if [[ -n "${PNPM_STORE_DIR:-}" ]]; then
+  store_path="$(pnpm --store-dir "$PNPM_STORE_DIR" store path)"
+else
+  configured_store="$(pnpm config get store-dir)"
+  if [[ -n "$configured_store" && "$configured_store" != 'undefined' && "$configured_store" != 'null' ]]; then
+    store_path="$(pnpm --store-dir "$configured_store" store path)"
+  else
+    store_path="$(pnpm store path)"
+  fi
+fi
+if [[ -z "$store_path" ]]; then
+  echo 'ERROR: pnpm did not resolve a store path.' >&2
+  exit 1
+fi
+existing_ancestor="$store_path"
+suffix=''
+while [[ ! -d "$existing_ancestor" ]]; do
+  segment="$(basename "$existing_ancestor")"
+  suffix="/$segment$suffix"
+  existing_ancestor="$(dirname "$existing_ancestor")"
+done
+canonical_store="$(cd "$existing_ancestor" && pwd -P)$suffix"
+containing_git_root="$(git -C "$existing_ancestor" rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -n "$containing_git_root" ]]; then
+  canonical_git_root="$(cd "$containing_git_root" && pwd -P)"
+  if [[ "$canonical_store" == "$canonical_git_root" || "$canonical_store" == "$canonical_git_root/"* ]]; then
+    echo "ERROR: refusing pnpm content store inside a repository/worktree tree: $store_path" >&2
+    echo 'Configure store-dir or set PNPM_STORE_DIR to a persistent path outside any Git worktree.' >&2
+    exit 1
+  fi
+fi
+
+echo "Warming pnpm content store with network access allowed: $store_path"
+pnpm --store-dir "$store_path" fetch --frozen-lockfile
+echo 'Dependency cache warm complete; run ./scripts/bootstrap-worktree-dependencies next.'

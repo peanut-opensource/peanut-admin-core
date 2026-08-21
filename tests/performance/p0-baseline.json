@@ -1,0 +1,21 @@
+{
+  "schema_version": 3,
+  "maximum_regression_ratio": 1.2,
+  "environment": {
+    "database_image": "mysql:8.4.10",
+    "php": "8.3.24",
+    "allowed_architectures": ["arm64", "aarch64", "x86_64"],
+    "allowed_operating_systems": ["Darwin", "Linux"],
+    "measurement_runs": 4,
+    "operation_shape": "authorized-structured-target-query-v2"
+  },
+  "scenarios": {
+    "typed-targets-10": { "p95_ms": 558.467, "operations_per_sample": 30, "sql_parameters_per_query": 11, "page_size": 20 },
+    "typed-targets-500": { "p95_ms": 323.058, "operations_per_sample": 10, "sql_parameters_per_query": 501, "page_size": 20 },
+    "typed-targets-5000": { "p95_ms": 489.323, "operations_per_sample": 3, "sql_parameters_per_query": 2, "page_size": 20 },
+    "tenant-login": { "p95_ms": 314.405 },
+    "tenant-refresh": { "p95_ms": 27.282 },
+    "tenant-context": { "p95_ms": 110.394 },
+    "shared-master-scope": { "p95_ms": 97.744 }
+  }
+}

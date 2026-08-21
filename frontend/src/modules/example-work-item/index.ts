@@ -1,0 +1,1 @@
+export { exampleWorkItemModule } from './routes'

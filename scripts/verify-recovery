@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+docker compose up -d mysql cache
+for attempt in $(seq 1 60); do
+  if php -r '
+    try {
+        new PDO(
+            "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+            "root",
+            getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+        );
+    } catch (Throwable) {
+        exit(1);
+    }
+  ' 2>/dev/null; then
+    break
+  fi
+  if [[ "$attempt" -eq 60 ]]; then
+    echo 'ERROR: MySQL 8 did not become ready for recovery verification' >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+source_database='peanut_admin_recovery_source'
+target_database='peanut_admin_recovery_target'
+corrupt_database='peanut_admin_recovery_corrupt'
+workdir="$(mktemp -d)"
+backup="$workdir/backup"
+
+drop_databases() {
+  RECOVERY_DATABASES="$source_database,$target_database,$corrupt_database" php -r '
+  $databases = explode(",", (string) getenv("RECOVERY_DATABASES"));
+  $pdo = new PDO(
+      "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+      "root",
+      getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+      [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+  );
+  foreach ($databases as $database) {
+      if (preg_match("/^[a-z][a-z0-9_]+$/D", $database) !== 1) {
+          exit(1);
+      }
+      $pdo->exec("DROP DATABASE IF EXISTS `{$database}`");
+  }
+  ' >/dev/null
+}
+cleanup() {
+  drop_databases
+  rm -rf "$workdir"
+}
+trap cleanup EXIT
+drop_databases
+
+RECOVERY_SOURCE="$source_database" php -r '
+$database = getenv("RECOVERY_SOURCE");
+$pdo = new PDO(
+    "mysql:host=127.0.0.1;port=" . (getenv("MYSQL_PORT") ?: "3306"),
+    "root",
+    getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+);
+$pdo->exec("CREATE DATABASE `{$database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci");
+'
+
+fixture_password="$(php -r 'echo bin2hex(random_bytes(24));')"
+DB_DATABASE="$source_database" \
+DB_USERNAME=root \
+DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+PEANUT_BOOTSTRAP_PASSWORD="$fixture_password" \
+./scripts/install \
+  --email owner@example.test \
+  --display-name 'Recovery Owner' \
+  --tenant-code alpha \
+  --tenant-name 'Alpha Fixture' \
+  --tenant-owner-email owner@example.test \
+  --tenant-owner-name 'Alpha Owner' >/dev/null
+
+DB_DATABASE="$source_database" \
+DB_USERNAME=root \
+DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+php tests/recovery/seed-recovery-fixture.php >/dev/null
+
+backup_started="$(php -r 'echo hrtime(true);')"
+DB_DATABASE="$source_database" \
+DB_USERNAME=root \
+DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+./scripts/backup-mysql --output "$backup" >/dev/null
+backup_finished="$(php -r 'echo hrtime(true);')"
+backup_duration="$(( (backup_finished - backup_started) / 1000000 ))"
+
+if DB_DATABASE="$source_database" ./scripts/restore-mysql \
+  --backup "$backup" --target "$source_database" >"$workdir/active.out" 2>&1; then
+  echo 'ERROR: recovery accepted the active database as restore target' >&2
+  exit 1
+fi
+grep -q 'RESTORE_TARGET_IS_ACTIVE_DATABASE' "$workdir/active.out"
+
+cp -R "$backup" "$workdir/corrupt"
+printf '\n-- corruption fixture\n' >>"$workdir/corrupt/dump.sql"
+if DB_DATABASE="$source_database" ./scripts/restore-mysql \
+  --backup "$workdir/corrupt" --target "$corrupt_database" >"$workdir/corrupt.out" 2>&1; then
+  echo 'ERROR: recovery accepted a corrupted backup' >&2
+  exit 1
+fi
+grep -q 'BACKUP_CHECKSUM_MISMATCH' "$workdir/corrupt.out"
+
+restore_started="$(php -r 'echo hrtime(true);')"
+DB_DATABASE="$source_database" \
+DB_USERNAME=root \
+DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+./scripts/restore-mysql --backup "$backup" --target "$target_database" >/dev/null
+restore_finished="$(php -r 'echo hrtime(true);')"
+restore_duration="$(( (restore_finished - restore_started) / 1000000 ))"
+
+if DB_DATABASE="$source_database" ./scripts/restore-mysql \
+  --backup "$backup" --target "$target_database" >"$workdir/existing.out" 2>&1; then
+  echo 'ERROR: recovery overwrote an existing target database' >&2
+  exit 1
+fi
+grep -q 'RESTORE_TARGET_ALREADY_EXISTS' "$workdir/existing.out"
+
+PEANUT_INTEGRATION=1 \
+RECOVERY_FIXTURE_PASSWORD="$fixture_password" \
+DB_DATABASE="$target_database" \
+DB_USERNAME=root \
+DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+php vendor/bin/phpunit tests/recovery/RecoveryAcceptanceTest.php
+
+RECOVERY_BACKUP_DURATION="$backup_duration" \
+RECOVERY_RESTORE_DURATION="$restore_duration" \
+RECOVERY_REPORT='/tmp/peanut-admin-recovery-report.json' \
+php -r '
+$report = [
+    "measured_at" => gmdate("c"),
+    "environment" => "local-reference-mysql-container",
+    "fixture" => ["tenants" => ["alpha", "beta"]],
+    "backup_duration_milliseconds" => (int) getenv("RECOVERY_BACKUP_DURATION"),
+    "restore_and_verify_duration_milliseconds" => (int) getenv("RECOVERY_RESTORE_DURATION"),
+    "rpo_observation" => "consistent snapshot at backup invocation",
+    "rto_observation" => "measured restore duration only; no production promise",
+];
+file_put_contents(
+    getenv("RECOVERY_REPORT"),
+    json_encode($report, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n",
+);
+fwrite(STDOUT, json_encode($report, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES) . "\n");
+'

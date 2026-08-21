@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-24T07:33:06+08:00",
+  "task": "PA-SV1-C02-I04-stage-b-integration",
+  "input_commit": "46dd08c03bc720aed1a572fe0227af5d5d650333",
+  "input_tree": "a3ef05fef5172660f533e7803cd978f4fc447df2",
+  "contract_commit": "08a487432cec6a8b5f3ce30029b92961123fea33",
+  "accepted_feature_inputs": {
+    "task_job": "16a72ebe6fb916c9cac5be5362833db609b3fc7b",
+    "file_media_delivery": "dc209e02f2bc6a53579cf29b1437385e2da95b23",
+    "notification_sms": "658106b3a9f9010c7b23ed0e3b5cf95b79860372"
+  },
+  "qualified_downstream_lock_unchanged": "0ab02a9b735ba9f4c23509cb366b9bf04039ebf8",
+  "slice_status": "development-only",
+  "third_party_dependency_change": false,
+  "first_party_packages": [
+    "peanut-admin/file-media@0.1.0",
+    "@peanut-admin/file-media@0.1.0",
+    "peanut-admin/task-job@0.1.0",
+    "@peanut-admin/task-job@0.1.0",
+    "peanut-admin/notification-sms@0.1.0",
+    "@peanut-admin/notification-sms@0.1.0"
+  ],
+  "locks": {
+    "composer.lock": {
+      "sha256": "2271121587ca497abc007d40c29d99c7b2ea0019c82f883b2870ea88ca64977f",
+      "delta": "stage-b-first-party-task-job-and-notification-sms-only",
+      "first_party_packages": [
+        "peanut-admin/task-job@0.1.0",
+        "peanut-admin/notification-sms@0.1.0"
+      ]
+    },
+    "pnpm-lock.yaml": {
+      "sha256": "42f6db05b42a49aeafce493a3d00874a689b220b3a1b7612b8c0032845a89579",
+      "delta": "stage-b-first-party-task-job-and-notification-sms-only",
+      "first_party_packages": [
+        "@peanut-admin/task-job@0.1.0",
+        "@peanut-admin/notification-sms@0.1.0"
+      ]
+    },
+    "starter/backend/composer.lock": {
+      "sha256": "e4af3cc9f67cc964dec8ff28d856d220ace40721d229b7353a1f5c2c87cf8d37",
+      "delta": "stage-b-first-party-task-job-and-notification-sms-only",
+      "first_party_packages": [
+        "peanut-admin/task-job@0.1.0",
+        "peanut-admin/notification-sms@0.1.0"
+      ]
+    },
+    "starter/pnpm-lock.yaml": {
+      "sha256": "cffab9170d2b626d4debb87a1483629a2be430fd5129335000b9518214ae98b6",
+      "delta": "stage-b-first-party-task-job-and-notification-sms-only",
+      "first_party_packages": [
+        "@peanut-admin/task-job@0.1.0",
+        "@peanut-admin/notification-sms@0.1.0"
+      ]
+    }
+  },
+  "verification": {
+    "lock_sha256_consistency": "checked",
+    "manifest_lock_consistency": "checked",
+    "security_audit": "not-run-in-development-slice",
+    "two_independent_frozen_installs": "not-run-in-development-slice",
+    "fixed_commit_qualification": "not-run-in-development-slice"
+  },
+  "accepted_reuse": [
+    "ext-fileinfo",
+    "ext-pdo",
+    "peanut-admin/kernel@0.1.0",
+    "@peanut-admin/admin-core@0.1.0",
+    "@peanut-admin/admin-shell@0.1.0"
+  ],
+  "notes": [
+    "The Stage B lock deltas retain the first-party File And Media packages, add only Task And Job and Notification And SMS first-party packages, and preserve the accepted external dependency graph.",
+    "PHP fileinfo, hashing, PDO, filesystem, and existing HTTP primitives implement the bounded development adapters without a new third-party SDK.",
+    "Workspace checks validate both Composer locks against Composer 2.10.2, compare root and starter Composer versions and path transports, and verify root and generated-starter pnpm locks offline and frozen.",
+    "This integration does not run a dependency audit, two independent clean starter installs, or fixed-candidate qualification.",
+    "No credential, token, cookie, private path, Tenant identifier, member identifier, or product-domain value is recorded.",
+    "This evidence is not package publication, release, qualification, or downstream consumption approval."
+  ]
+}

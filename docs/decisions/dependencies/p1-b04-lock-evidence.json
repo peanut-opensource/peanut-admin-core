@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-23T12:52:54+08:00",
+  "task": "PA-SV1-C01-S02-reference-codes",
+  "input_commit": "4a874165a42d33d160cd0dd8cf167cc9b4fbab11",
+  "input_tree": "8e033c5492418f883c59fc19a1ad03a79ce5b6f4",
+  "qualified_downstream_lock_unchanged": "0ab02a9b735ba9f4c23509cb366b9bf04039ebf8",
+  "source_lineage": {
+    "contract_commit": "1c318a65e8dc3915826ad396b283b9703cc2c9e6",
+    "shared_integration_parent": "23aaa7a30bac017dc580a732c0c515fc45fbfae8",
+    "selective_source_commits": [
+      "08341d1f321e3ebeeb7cfadf96a6c92e041251d6",
+      "46ddad4624cd8dfdec7b23452b2551724663cc2f",
+      "32bef3261f45c70516d280983f918ece7d8d7bb8",
+      "e45a670f4abd71fb348c298ec7f68be9bc6fcc73",
+      "821f35466e823a839b1265d8334f5f56210741df",
+      "16ef673f7d58898fc5820bcb0f6bf03e6869116e",
+      "80ecbc9fae4f466d8bf95557900335b87eb02b76"
+    ],
+    "applied_code_commits": [
+      "ccddda1a891ff027e172b0e5209e308749da87f8",
+      "7a681c97a8b427c84c04632f20ea0c4aba2a71a9",
+      "85457f8dd3dc5f0ebdfe196910432a2d0004e14d",
+      "db745af6b1518aee90598ae2877ecba04bd512e8",
+      "a6d9fa8122e07d391ecb1c81eaa8ffb8e5598121",
+      "23aaa7a30bac017dc580a732c0c515fc45fbfae8"
+    ],
+    "inherited_guard_source": "08341d1f321e3ebeeb7cfadf96a6c92e041251d6"
+  },
+  "slice_status": "development-only",
+  "third_party_dependency_change": false,
+  "tools_observed_and_used": {
+    "php": "8.3.24",
+    "composer": "2.8.10",
+    "node": "24.13.0",
+    "pnpm": "11.13.0",
+    "vitest": "4.1.10",
+    "vite": "8.1.4",
+    "vue_tsc": "3.3.7"
+  },
+  "locks": {
+    "composer.lock": {
+      "sha256": "c0850c1420037d362cd20942e7823ce8b0575b7dacd575ad1a1f24713dcdfccf",
+      "delta": "first-party-reference-codes-only",
+      "first_party_package": "peanut-admin/reference-codes@0.1.0"
+    },
+    "pnpm-lock.yaml": {
+      "sha256": "374086bd2a75a97d8177cdb2243f1ee3cb16e0f33b5e1587db81061def2c0b6e",
+      "delta": "first-party-reference-codes-only",
+      "first_party_package": "@peanut-admin/reference-codes@0.1.0"
+    },
+    "starter/backend/composer.lock": {
+      "sha256": "de3a03571823c3163f9986cf3130828c0b4d819af4458831c36dd48828021fec",
+      "delta": "first-party-reference-codes-only",
+      "first_party_package": "peanut-admin/reference-codes@0.1.0"
+    },
+    "starter/pnpm-lock.yaml": {
+      "sha256": "9a88849f2e291536ff89d35ce2b128d544ae9f87213d5291725317f1888d1260",
+      "delta": "first-party-reference-codes-only",
+      "first_party_package": "@peanut-admin/reference-codes@0.1.0"
+    }
+  },
+  "verification": {
+    "lock_sha256_consistency": "checked",
+    "manifest_lock_consistency": "checked",
+    "security_audit": "not-run-in-development-slice",
+    "two_independent_frozen_installs": "not-run-in-development-slice",
+    "fixed_commit_qualification": "not-run-in-development-slice"
+  },
+  "accepted_reuse": [
+    "ext-json",
+    "ext-pdo",
+    "peanut-admin/kernel@0.1.0",
+    "@peanut-admin/admin-core@0.1.0",
+    "@peanut-admin/admin-shell@0.1.0"
+  ],
+  "notes": [
+    "The four lock deltas add only the first-party Reference Codes packages and preserve the already accepted Settings packages and external dependency graph.",
+    "Root Composer and pnpm locks were generated without downloading packages. Starter locks were generated from a temporary complete starter snapshot because source starter path repositories do not exist until generation.",
+    "Starter pnpm lock generation completed with downloaded 0; pnpm attempted advisory metadata requests despite offline mode, and the sandbox rejected those requests.",
+    "This development slice checks lock hashes and manifest-to-lock consistency only; it does not run an audit, two independent frozen starter installs, clean-install qualification, or fixed-candidate qualification.",
+    "No credential, token, cookie, private path, Tenant identifier, member identifier, or product-domain value is recorded.",
+    "This evidence is not package publication, release, qualification, or downstream consumption approval."
+  ]
+}

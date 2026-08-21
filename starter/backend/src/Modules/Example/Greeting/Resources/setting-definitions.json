@@ -1,0 +1,18 @@
+[
+  {
+    "key": "display-style",
+    "name": "Greeting display style",
+    "description": "Fictional scalar setting used to verify starter definition resolution",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": ["brief", "friendly"]
+    },
+    "required": false,
+    "secret": false,
+    "allowed_scopes": ["deployment", "tenant"],
+    "target_resource_key": null,
+    "target_operation": null,
+    "default": "friendly"
+  }
+]

@@ -1,0 +1,1 @@
+export { exampleTargetModule } from './routes'

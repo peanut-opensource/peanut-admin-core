@@ -1,0 +1,6 @@
+.env
+backend/vendor/
+frontend/dist/
+node_modules/
+packages/web/*/node_modules/
+*.log

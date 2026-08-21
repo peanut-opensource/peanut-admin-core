@@ -1,0 +1,30 @@
+:root {
+  color: #202124;
+  background: #f5f6f8;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.starter-shell {
+  min-height: 100vh;
+}
+
+.pa-shell-header,
+.pa-shell-sidebar,
+.pa-page-header,
+.pa-page-content {
+  padding: 16px;
+}
+
+.pa-shell-header {
+  color: #fff;
+  background: #202124;
+}
+
+.pa-shell__workspace {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+}

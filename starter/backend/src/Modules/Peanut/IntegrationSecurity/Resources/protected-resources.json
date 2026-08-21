@@ -1,0 +1,11 @@
+[
+  {"key":"peanut.integration-security","name":"Tenant integration security","ownership":"tenant_owned","provider":"ExampleHost\\App\\Modules\\Peanut\\IntegrationSecurity\\ModuleProvider","operations":[
+    {"key":"machine-read","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny","permissions":["peanut.integration-security.machine.read"],"target_types":[],"conditions":[]},
+    {"key":"machine-manage","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny_and_write","permissions":["peanut.integration-security.machine.manage"],"target_types":[],"conditions":[]},
+    {"key":"webhook-read","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny","permissions":["peanut.integration-security.webhook.read"],"target_types":[],"conditions":[]},
+    {"key":"webhook-manage","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny_and_write","permissions":["peanut.integration-security.webhook.manage"],"target_types":[],"conditions":[]},
+    {"key":"delivery-read","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny","permissions":["peanut.integration-security.delivery.read"],"target_types":[],"conditions":[]},
+    {"key":"session-read","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny","permissions":["peanut.integration-security.session.read"],"target_types":[],"conditions":[]},
+    {"key":"session-revoke","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny_and_write","permissions":["peanut.integration-security.session.revoke"],"target_types":[],"conditions":[]}
+  ]}
+]

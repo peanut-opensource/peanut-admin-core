@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+output=''
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --output)
+      output="${2:-}"
+      shift 2
+      ;;
+    *)
+      echo "ERROR: unknown backup argument: $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
+database="${DB_DATABASE:-peanut_admin}"
+if [[ ! "$database" =~ ^[a-z][a-z0-9_]{0,63}$ ]]; then
+  echo 'ERROR: BACKUP_DATABASE_NAME_INVALID' >&2
+  exit 1
+fi
+if [[ -z "$output" ]]; then
+  echo 'ERROR: --output is required' >&2
+  exit 1
+fi
+if [[ -e "$output" ]]; then
+  echo 'ERROR: BACKUP_OUTPUT_ALREADY_EXISTS' >&2
+  exit 1
+fi
+
+mkdir -p "$output"
+complete=false
+cleanup() {
+  if [[ "$complete" != true ]]; then
+    rm -rf "$output"
+  fi
+}
+trap cleanup EXIT
+
+started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+started_nanoseconds="$(php -r 'echo hrtime(true);')"
+docker compose exec -T mysql sh -c '
+  export MYSQL_PWD="$MYSQL_ROOT_PASSWORD"
+  exec mysqldump \
+    --user=root \
+    --single-transaction \
+    --quick \
+    --routines \
+    --triggers \
+    --events \
+    --hex-blob \
+    --no-tablespaces \
+    --set-gtid-purged=OFF \
+    --skip-comments \
+    "$1"
+' sh "$database" >"$output/dump.sql"
+
+dump_sha256="$(php -r 'echo hash_file("sha256", $argv[1]);' "$output/dump.sql")"
+printf '%s  %s\n' "$dump_sha256" 'dump.sql' >"$output/dump.sql.sha256"
+DB_DATABASE="$database" DB_USERNAME=root \
+  DB_PASSWORD="${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}" \
+  ./scripts/backup-mysql-metadata >"$output/inventory.json"
+
+finished_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+finished_nanoseconds="$(php -r 'echo hrtime(true);')"
+duration_milliseconds="$(( (finished_nanoseconds - started_nanoseconds) / 1000000 ))"
+BACKUP_DATABASE="$database" \
+BACKUP_STARTED_AT="$started_at" \
+BACKUP_FINISHED_AT="$finished_at" \
+BACKUP_DURATION_MILLISECONDS="$duration_milliseconds" \
+BACKUP_DUMP_SHA256="$dump_sha256" \
+BACKUP_OUTPUT="$output" \
+php -r '
+$inventory = json_decode(
+    (string) file_get_contents(getenv("BACKUP_OUTPUT") . "/inventory.json"),
+    true,
+    512,
+    JSON_THROW_ON_ERROR,
+);
+$manifest = [
+    "schema_version" => 1,
+    "database" => getenv("BACKUP_DATABASE"),
+    "created_at" => getenv("BACKUP_FINISHED_AT"),
+    "snapshot_started_at" => getenv("BACKUP_STARTED_AT"),
+    "duration_milliseconds" => (int) getenv("BACKUP_DURATION_MILLISECONDS"),
+    "dump" => [
+        "path" => "dump.sql",
+        "dump_sha256" => getenv("BACKUP_DUMP_SHA256"),
+        "size_bytes" => filesize(getenv("BACKUP_OUTPUT") . "/dump.sql"),
+    ],
+    "inventory" => $inventory,
+];
+file_put_contents(
+    getenv("BACKUP_OUTPUT") . "/manifest.json",
+    json_encode($manifest, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n",
+);
+'
+
+complete=true
+echo "Backup created: $output"

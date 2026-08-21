@@ -1,0 +1,149 @@
+MessageKey: { type: string, pattern: '^notice_[0-9a-f]{32}$' }
+OutboxKey: { type: string, pattern: '^outbox_[0-9a-f]{32}$' }
+TemplateKey: { type: string, minLength: 1, maxLength: 64, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$' }
+
+NotificationAttachment:
+  type: object
+  additionalProperties: false
+  required: [file_key, original_name, media_type, size_bytes, sha256]
+  properties:
+    file_key: { $ref: './file-media.yaml#/FileKey' }
+    original_name: { type: string, minLength: 1, maxLength: 255 }
+    media_type: { type: string, minLength: 3, maxLength: 127 }
+    size_bytes: { type: integer, minimum: 1 }
+    sha256: { type: string, pattern: '^[0-9a-f]{64}$' }
+
+NotificationMessage:
+  type: object
+  additionalProperties: false
+  required: [message_key, template_key, template_revision, subject, body, status, revision, created_at, read_at, archived_at, attachments]
+  properties:
+    message_key: { $ref: '#/MessageKey' }
+    template_key: { $ref: '#/TemplateKey' }
+    template_revision: { type: integer, minimum: 1 }
+    subject: { type: string, minLength: 1, maxLength: 255 }
+    body: { type: string, minLength: 1, maxLength: 10000 }
+    status: { enum: [unread, read, archived] }
+    revision: { type: integer, minimum: 1 }
+    created_at: { type: string, format: date-time }
+    read_at: { anyOf: [{ type: string, format: date-time }, { type: 'null' }] }
+    archived_at: { anyOf: [{ type: string, format: date-time }, { type: 'null' }] }
+    attachments: { type: array, maxItems: 10, items: { $ref: '#/NotificationAttachment' } }
+
+NotificationResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/NotificationMessage' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+NotificationListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/NotificationMessage' } }
+    meta:
+      allOf:
+        - { $ref: './common.yaml#/$defs/RequestMeta' }
+        - type: object
+          required: [page, page_size, total]
+          properties:
+            page: { type: integer, minimum: 1 }
+            page_size: { type: integer, minimum: 1, maximum: 100 }
+            total: { type: integer, minimum: 0 }
+
+NotificationBulkRequest:
+  type: object
+  additionalProperties: false
+  required: [message_keys, action]
+  properties:
+    message_keys: { type: array, minItems: 1, maxItems: 100, uniqueItems: true, items: { $ref: '#/MessageKey' } }
+    action: { enum: [read, archive] }
+
+NotificationBulkResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      additionalProperties: false
+      required: [changed]
+      properties: { changed: { type: integer, minimum: 0, maximum: 100 } }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+NotificationTemplateWrite:
+  type: object
+  additionalProperties: false
+  required: [name, subject_template, body_template, channels, variables]
+  properties:
+    name: { type: string, minLength: 1, maxLength: 160 }
+    subject_template: { type: string, minLength: 1, maxLength: 255 }
+    body_template: { type: string, minLength: 1, maxLength: 10000 }
+    channels: { type: array, minItems: 1, maxItems: 2, uniqueItems: true, items: { enum: [inbox, sms] } }
+    variables: { type: array, maxItems: 32, uniqueItems: true, items: { type: string, pattern: '^[a-z][a-z0-9_]{0,63}$' } }
+
+NotificationTemplate:
+  allOf:
+    - { $ref: '#/NotificationTemplateWrite' }
+    - type: object
+      required: [template_key, revision]
+      properties:
+        template_key: { $ref: '#/TemplateKey' }
+        revision: { type: integer, minimum: 1 }
+
+NotificationTemplateResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/NotificationTemplate' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+NotificationPublishRequest:
+  type: object
+  additionalProperties: false
+  required: [template_key, recipients, file_keys]
+  properties:
+    template_key: { $ref: '#/TemplateKey' }
+    recipients:
+      type: array
+      minItems: 1
+      maxItems: 100
+      items:
+        type: object
+        additionalProperties: false
+        required: [member_id, variables]
+        properties:
+          member_id: { type: string, pattern: '^[1-9][0-9]{0,18}$' }
+          variables:
+            type: object
+            additionalProperties:
+              anyOf:
+                - { type: string }
+                - { type: integer }
+                - { type: number }
+                - { type: boolean }
+                - { type: 'null' }
+    file_keys: { type: array, maxItems: 10, uniqueItems: true, items: { $ref: './file-media.yaml#/FileKey' } }
+
+NotificationPublishResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      additionalProperties: false
+      required: [messages, job_keys]
+      properties:
+        messages: { type: array, items: { $ref: '#/NotificationMessage' } }
+        job_keys: { type: array, items: { $ref: './task-job.yaml#/TaskKey' } }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }

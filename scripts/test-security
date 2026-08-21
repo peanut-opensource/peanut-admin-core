@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+php_only=0
+if [[ "${1:-}" == '--php-only' ]]; then
+  php_only=1
+  shift
+fi
+if [[ "$#" -ne 0 ]]; then
+  echo 'ERROR: test-security accepts only --php-only' >&2
+  exit 1
+fi
+
+for required_port in MYSQL_PORT DB_PORT; do
+  value="${!required_port-}"
+  if [[ -z "$value" ]]; then
+    echo "ERROR: $required_port is required for security tests" >&2
+    exit 1
+  fi
+  if [[ ! "$value" =~ ^[0-9]+$ ]] || (( 10#$value < 1 || 10#$value > 65535 )); then
+    echo "ERROR: $required_port must be an integer between 1 and 65535" >&2
+    exit 1
+  fi
+done
+
+docker compose up -d mysql
+
+for attempt in $(seq 1 60); do
+  if php -r '
+    try {
+        new PDO(
+            "mysql:host=127.0.0.1;port=" . getenv("MYSQL_PORT"),
+            "root",
+            getenv("MYSQL_ROOT_PASSWORD") ?: "peanut_admin_root_dev",
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+        );
+    } catch (Throwable) {
+        exit(1);
+    }
+  ' 2>/dev/null; then
+    break
+  fi
+
+  if [[ "$attempt" -eq 60 ]]; then
+    echo 'ERROR: MySQL 8 did not become ready for security tests' >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+report_dir="$(mktemp -d "${TMPDIR:-/tmp}/peanut-admin-security-junit.XXXXXX")"
+trap 'rm -rf "$report_dir"' EXIT
+
+run_suite() {
+  local name="$1"
+  shift
+  PEANUT_INTEGRATION=1 php vendor/bin/phpunit --log-junit "$report_dir/$name.xml" "$@"
+}
+
+run_suite tenant-auth \
+  packages/php/kernel/tests/Integration/Auth
+
+run_suite kernel-integration \
+  packages/php/kernel/tests/Integration/Authorization \
+  packages/php/kernel/tests/Integration/Idempotency \
+  packages/php/kernel/tests/Integration/Module \
+  packages/php/kernel/tests/Integration/Schema
+
+run_suite data-permission-integration \
+  packages/php/data-permission/tests/Integration \
+  packages/php/data-permission/tests/Security \
+  packages/php/settings/tests/Security
+
+run_suite static-security-contracts \
+  packages/php/kernel/tests/Unit/Api \
+  packages/php/kernel/tests/Unit/Authorization \
+  packages/php/kernel/tests/Unit/Context \
+  packages/php/kernel/tests/Unit/Idempotency \
+  packages/php/kernel/tests/Unit/Module \
+  packages/php/data-permission/tests/Unit \
+  backend/tests/Architecture \
+  backend/tests/Contract \
+  backend/tests/Security \
+  tests/security
+
+php -r '
+$reports = glob(rtrim($argv[1], "/") . "/*.xml");
+if (!is_array($reports) || count($reports) !== 4) {
+    fwrite(STDERR, "ERROR: security JUnit report set is incomplete\n");
+    exit(1);
+}
+$skipped = 0;
+foreach ($reports as $report) {
+    $document = new DOMDocument();
+    if (!$document->load($report)) {
+        fwrite(STDERR, "ERROR: security JUnit report cannot be parsed: {$report}\n");
+        exit(1);
+    }
+    $skipped += $document->getElementsByTagName("skipped")->length;
+}
+if ($skipped !== 0) {
+    fwrite(STDERR, "ERROR: security gate contains {$skipped} skipped test(s)\n");
+    exit(1);
+}
+' "$report_dir"
+
+if rg -n 'localStorage|sessionStorage' frontend/src packages/web; then
+  echo 'ERROR: browser storage must not contain authentication tokens' >&2
+  exit 1
+fi
+
+if [[ "$php_only" -eq 1 ]]; then
+  echo 'G-07 PHP security qualification: OK (0 skipped)'
+  exit 0
+fi
+
+./scripts/test-browser frontend/tests/e2e/full-stack.e2e.ts
+echo 'G-07 security qualification: OK (PHP and real browser, 0 skipped)'

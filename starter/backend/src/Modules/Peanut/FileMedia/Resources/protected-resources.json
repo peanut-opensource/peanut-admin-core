@@ -1,0 +1,50 @@
+[
+  {
+    "key": "peanut.file",
+    "name": "Private file",
+    "ownership": "tenant_owned",
+    "provider": "ExampleHost\\App\\Modules\\Peanut\\FileMedia\\ModuleProvider",
+    "operations": [
+      {
+        "key": "read",
+        "access_mode": "tenant_wide",
+        "target_cardinality": "none",
+        "permission_match": "all",
+        "audit_level": "deny",
+        "permissions": ["peanut.file-media.read"],
+        "target_types": [],
+        "conditions": []
+      },
+      {
+        "key": "create",
+        "access_mode": "tenant_wide",
+        "target_cardinality": "none",
+        "permission_match": "all",
+        "audit_level": "deny_and_write",
+        "permissions": ["peanut.file-media.create"],
+        "target_types": [],
+        "conditions": []
+      },
+      {
+        "key": "delete",
+        "access_mode": "tenant_wide",
+        "target_cardinality": "none",
+        "permission_match": "all",
+        "audit_level": "deny_and_write",
+        "permissions": ["peanut.file-media.delete"],
+        "target_types": [],
+        "conditions": []
+      },
+      {
+        "key": "manage",
+        "access_mode": "tenant_wide",
+        "target_cardinality": "none",
+        "permission_match": "all",
+        "audit_level": "deny_and_write",
+        "permissions": ["peanut.file-media.manage"],
+        "target_types": [],
+        "conditions": []
+      }
+    ]
+  }
+]

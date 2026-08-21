@@ -1,0 +1,16 @@
+[
+  {
+    "key": "example.project",
+    "name": "Project",
+    "resolver": "PeanutAdmin\\App\\Modules\\Example\\Target\\Infrastructure\\Authorization\\PdoTargetResolver",
+    "catalog_provider": "PeanutAdmin\\App\\Modules\\Example\\Target\\Infrastructure\\Authorization\\PdoTargetCatalogProvider",
+    "id_format": "integer-string"
+  },
+  {
+    "key": "example.queue",
+    "name": "Queue",
+    "resolver": "PeanutAdmin\\App\\Modules\\Example\\Target\\Infrastructure\\Authorization\\PdoTargetResolver",
+    "catalog_provider": "PeanutAdmin\\App\\Modules\\Example\\Target\\Infrastructure\\Authorization\\PdoTargetCatalogProvider",
+    "id_format": "integer-string"
+  }
+]

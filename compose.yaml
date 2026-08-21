@@ -1,0 +1,71 @@
+name: peanut-admin
+
+services:
+  mysql:
+    image: mysql:8.4.10
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-peanut_admin}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-peanut_admin_dev}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}
+      MYSQL_USER: ${MYSQL_USER:-peanut_admin}
+    ports:
+      - '${MYSQL_PORT:-3306}:3306'
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-uroot', '-p${MYSQL_ROOT_PASSWORD:-peanut_admin_root_dev}']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  cache:
+    image: valkey/valkey:9.1.0-alpine
+    command: ['valkey-server', '--appendonly', 'yes']
+    ports:
+      - '${CACHE_PORT:-6379}:6379'
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - cache-data:/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /workspace
+    depends_on:
+      mysql:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    environment:
+      APP_ENV: development
+      CACHE_HOST: cache
+      DB_DATABASE: ${MYSQL_DATABASE:-peanut_admin}
+      DB_HOST: mysql
+      DB_PASSWORD: ${MYSQL_PASSWORD:-peanut_admin_dev}
+      DB_USERNAME: ${MYSQL_USER:-peanut_admin}
+    ports:
+      - '${BACKEND_PORT:-8000}:8000'
+    volumes:
+      - .:/workspace
+
+  frontend:
+    image: node:24.18.0-bookworm-slim
+    working_dir: /workspace
+    command: ['corepack', 'pnpm', '--filter', '@peanut-admin/reference-admin', 'dev', '--host', '0.0.0.0']
+    environment:
+      VITE_API_BASE_URL: http://localhost:${BACKEND_PORT:-8000}
+    ports:
+      - '${FRONTEND_PORT:-5173}:5173'
+    volumes:
+      - .:/workspace
+      - node-modules:/workspace/node_modules
+
+volumes:
+  cache-data:
+  mysql-data:
+  node-modules:

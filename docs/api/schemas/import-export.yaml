@@ -1,0 +1,53 @@
+OperationKey: { type: string, pattern: '^iox_[0-9a-f]{32}$' }
+Operation:
+  type: object
+  additionalProperties: false
+  required: [operation_key, provider_key, direction, format, status, input_file_key, result_file_key, error_file_key, task_job_key, schema_revision, mapping, processed_rows, accepted_rows, rejected_rows, total_rows, revision, last_error_code, retention_until, created_at, updated_at, completed_at]
+  properties:
+    operation_key: { $ref: '#/OperationKey' }
+    provider_key: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$' }
+    direction: { enum: [import, export] }
+    format: { const: csv }
+    status: { enum: [queued, running, cancel_requested, succeeded, failed, cancelled, expired] }
+    input_file_key: { type: [string, 'null'] }
+    result_file_key: { type: [string, 'null'] }
+    error_file_key: { type: [string, 'null'] }
+    task_job_key: { type: [string, 'null'] }
+    schema_revision: { type: string }
+    mapping: { type: object, additionalProperties: { type: string } }
+    processed_rows: { type: integer, minimum: 0 }
+    accepted_rows: { type: integer, minimum: 0 }
+    rejected_rows: { type: integer, minimum: 0 }
+    total_rows: { type: integer, minimum: 0 }
+    revision: { type: integer, minimum: 1 }
+    last_error_code: { type: [string, 'null'] }
+    retention_until: { type: string, format: date-time }
+    created_at: { type: string, format: date-time }
+    updated_at: { type: string, format: date-time }
+    completed_at: { type: [string, 'null'], format: date-time }
+OperationResponse:
+  type: object
+  required: [data, meta]
+  properties: { data: { $ref: '#/Operation' }, meta: { type: object, additionalProperties: true } }
+OperationListResponse:
+  type: object
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      required: [items]
+      properties: { items: { type: array, items: { $ref: '#/Operation' } } }
+    meta: { type: object, additionalProperties: true }
+SubmitImportRequest:
+  type: object
+  additionalProperties: false
+  required: [provider_key, file_key, mapping]
+  properties:
+    provider_key: { type: string }
+    file_key: { type: string, pattern: '^file_[0-9a-f]{32}$' }
+    mapping: { type: object, minProperties: 1, additionalProperties: { type: string } }
+SubmitExportRequest:
+  type: object
+  additionalProperties: false
+  required: [provider_key]
+  properties: { provider_key: { type: string } }

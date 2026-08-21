@@ -1,0 +1,3 @@
+[
+  {"key":"peanut.integration-security.page","scope":"tenant","parent_key":null,"type":"page","name":"Integration security","route_name":"peanut.integration-security.page","route_path":"/app/integration-security","component_key":"peanut.integration-security.page","required_permission":"peanut.integration-security.access","icon":"ShieldCheck","sort_order":880,"client_keys":["admin-web"]}
+]

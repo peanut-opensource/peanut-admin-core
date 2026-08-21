@@ -1,0 +1,48 @@
+{
+  "name": "peanut-admin/internal-starter-backend",
+  "description": "Fixed internal ThinkPHP host for Peanut Admin package verification",
+  "type": "project",
+  "license": "Apache-2.0",
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../packages/php",
+      "options": {
+        "symlink": false
+      }
+    }
+  ],
+  "require": {
+    "composer/semver": "3.4.4",
+    "opis/json-schema": "2.6.0",
+    "php": "^8.3",
+    "peanut-admin/core": "0.1.0-alpha.2",
+    "topthink/framework": "8.1.4",
+    "topthink/think-migration": "3.1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "ExampleHost\\App\\Modules\\": "src/Modules/",
+      "PeanutAdmin\\InternalStarter\\": "src/"
+    },
+    "exclude-from-classmap": [
+      "src/Modules/Peanut/Settings/Database/Migrations/",
+      "src/Modules/Peanut/ReferenceCodes/Database/Migrations/",
+      "src/Modules/Peanut/FileMedia/Database/Migrations/",
+      "src/Modules/Peanut/TaskJob/Database/Migrations/",
+      "src/Modules/Peanut/NotificationSms/Database/Migrations/",
+      "src/Modules/Peanut/ImportExport/Database/Migrations/",
+      "src/Modules/Peanut/IntegrationSecurity/Database/Migrations/"
+    ]
+  },
+  "config": {
+    "allow-plugins": {},
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "8.3.24"
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "key": "reference-admin",
+  "name": "Peanut Admin Reference",
+  "modules": [
+    { "module_key": "peanut.settings", "config": {} },
+    { "module_key": "peanut.reference-codes", "config": {} },
+    { "module_key": "peanut.file-media", "config": {} },
+    { "module_key": "peanut.task-job", "config": {} },
+    { "module_key": "peanut.notification-sms", "config": {} },
+    { "module_key": "peanut.import-export", "config": {} },
+    { "module_key": "peanut.integration-security", "config": {} },
+    { "module_key": "example.target", "config": {} },
+    { "module_key": "example.reference", "config": {} },
+    { "module_key": "example.work-item", "config": {} }
+  ],
+  "role_templates": ["tenant-owner", "tenant-operator"],
+  "default_department": {
+    "code": "root",
+    "name": "Organization"
+  }
+}

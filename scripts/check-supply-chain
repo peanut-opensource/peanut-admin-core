@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+composer_report="$(mktemp "${TMPDIR:-/tmp}/peanut-admin-composer-audit.XXXXXX")"
+pnpm_report="$(mktemp "${TMPDIR:-/tmp}/peanut-admin-pnpm-audit.XXXXXX")"
+trap 'rm -f "$composer_report" "$pnpm_report"' EXIT
+
+composer audit --locked --format=json > "$composer_report"
+php -r '
+$report = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+if (($report["advisories"] ?? null) !== [] || ($report["abandoned"] ?? null) !== []) {
+    fwrite(STDERR, "ERROR: Composer audit has an unhandled advisory or abandoned package\n");
+    exit(1);
+}
+' "$composer_report"
+
+pnpm audit --audit-level high --json > "$pnpm_report"
+php -r '
+$report = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$counts = $report["metadata"]["vulnerabilities"] ?? null;
+if (!is_array($counts) || ($counts["high"] ?? 0) !== 0 || ($counts["critical"] ?? 0) !== 0) {
+    fwrite(STDERR, "ERROR: pnpm audit has an unhandled high or critical advisory\n");
+    exit(1);
+}
+' "$pnpm_report"
+
+./scripts/check-third-party-licenses
+./scripts/check-secrets
+php vendor/bin/phpunit tests/supply-chain
+
+echo 'Supply-chain qualification: OK'

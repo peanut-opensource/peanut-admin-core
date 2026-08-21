@@ -1,0 +1,24 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use PeanutAdmin\Kernel\Module\ModuleKey;
+use PeanutAdmin\Kernel\Module\ModuleHostLayout;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+$value = $argv[1] ?? '';
+$key = ModuleKey::fromString($value);
+$layout = new ModuleHostLayout(
+    getenv('PA_MODULE_BACKEND_ROOT') ?: 'backend/app/Modules',
+    getenv('PA_MODULE_NAMESPACE_ROOT') ?: 'PeanutAdmin\\App\\Modules',
+    getenv('PA_MODULE_FRONTEND_ROOT') ?: 'frontend/src/modules',
+);
+
+echo json_encode([
+    'key' => $key->value(),
+    'backend_path' => $layout->backendRelativePath($key),
+    'backend_namespace' => $layout->backendNamespace($key),
+    'frontend_path' => $layout->frontendRelativePath($key),
+], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR), PHP_EOL;

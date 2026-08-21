@@ -1,0 +1,16 @@
+[
+  {
+    "key": "example.reference.list",
+    "scope": "tenant",
+    "parent_key": null,
+    "type": "page",
+    "name": "Example References",
+    "route_name": "example-reference-list",
+    "route_path": "/app/examples/references",
+    "component_key": "example.reference.list",
+    "required_permission": "example.reference.read",
+    "icon": "BookOpen",
+    "sort_order": 110,
+    "client_keys": ["admin-web"]
+  }
+]

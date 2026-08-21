@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "key": "example.target",
+  "name": "Example Target",
+  "description": "Fictional typed target provider for Peanut Admin contract validation",
+  "version": "1.0.0",
+  "kernel_constraint": "^1.0",
+  "license": "Apache-2.0",
+  "php_package": null,
+  "web_package": null,
+  "dependencies": [],
+  "backend": {
+    "provider": "PeanutAdmin\\App\\Modules\\Example\\Target\\ModuleProvider",
+    "migrations": "Database/Migrations",
+    "menus": "Resources/menus.json",
+    "permissions": "Resources/permissions.json",
+    "protected_resources": "Resources/protected-resources.json",
+    "setting_definitions": "Resources/setting-definitions.json",
+    "target_types": "Resources/target-types.json"
+  },
+  "frontend": {
+    "entry": "frontend/src/modules/example-target/index.ts",
+    "routes": "frontend/src/modules/example-target/routes.ts",
+    "locales": "frontend/src/modules/example-target/locales"
+  },
+  "database": {
+    "owned_tables": ["pa_example_project", "pa_example_queue"]
+  },
+  "contracts": {
+    "exports": [
+      "PeanutAdmin\\App\\Modules\\Example\\Target\\Contracts\\TargetQuery",
+      "PeanutAdmin\\App\\Modules\\Example\\Target\\Contracts\\TargetIdSet",
+      "PeanutAdmin\\App\\Modules\\Example\\Target\\Contracts\\TargetRuntimeProvider"
+    ],
+    "events": []
+  },
+  "tenant": {
+    "enableable": true,
+    "disable_behavior": "reject_new_operations",
+    "requires": []
+  }
+}

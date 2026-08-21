@@ -1,0 +1,4 @@
+[
+  {"key": "example.target.read", "type": "api", "name": "Read example targets", "risk_level": "normal"},
+  {"key": "example.target.manage", "type": "action", "name": "Manage example targets", "risk_level": "sensitive"}
+]

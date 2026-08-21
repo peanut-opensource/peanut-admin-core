@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+php vendor/bin/phpunit \
+  packages/php/kernel/tests/Unit \
+  packages/php/data-permission/tests/Unit \
+  packages/php/settings/tests/Unit \
+  packages/php/testing/tests/Unit \
+  backend/tests/Architecture \
+  backend/tests/Contract \
+  backend/tests/Smoke \
+  tests/security/SecurityQualificationContractTest.php \
+  tests/performance/PerformanceQualificationContractTest.php \
+  tests/supply-chain/SupplyChainQualificationContractTest.php
+pnpm test:unit

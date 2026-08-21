@@ -1,0 +1,170 @@
+$defs:
+  WorkItem:
+    type: object
+    additionalProperties: false
+    required: [id, project_id, reference_item_id, title, status, revision]
+    properties:
+      id: { $ref: './common.yaml#/$defs/BigIntString' }
+      project_id: { $ref: './common.yaml#/$defs/BigIntString' }
+      queue_id:
+        anyOf:
+          - { $ref: './common.yaml#/$defs/BigIntString' }
+          - { type: 'null' }
+      reference_item_id: { $ref: './common.yaml#/$defs/BigIntString' }
+      title: { type: string, maxLength: 200 }
+      status: { enum: [open, active, closed] }
+      revision: { $ref: './common.yaml#/$defs/BigIntString' }
+      boundary_target: { $ref: './common.yaml#/$defs/BoundaryTarget' }
+  WorkItemListResponse:
+    type: object
+    additionalProperties: false
+    required: [data, meta]
+    properties:
+      data:
+        type: array
+        items: { $ref: '#/$defs/WorkItem' }
+      meta: { $ref: './common.yaml#/$defs/PageMeta' }
+  CreateWorkItemRequest:
+    type: object
+    additionalProperties: false
+    required: [target, reference_item_id, title]
+    properties:
+      target: { $ref: './common.yaml#/$defs/Target' }
+      related_target:
+        anyOf:
+          - { $ref: './common.yaml#/$defs/Target' }
+          - { type: 'null' }
+      reference_item_id: { $ref: './common.yaml#/$defs/BigIntString' }
+      title: { type: string, minLength: 1, maxLength: 200 }
+  UpdateWorkItemRequest:
+    type: object
+    additionalProperties: false
+    required: [target]
+    properties:
+      target: { $ref: './common.yaml#/$defs/Target' }
+      related_target:
+        anyOf:
+          - { $ref: './common.yaml#/$defs/Target' }
+          - { type: 'null' }
+      title: { type: string, minLength: 1, maxLength: 200 }
+      status: { enum: [open, active, closed] }
+  PublishWorkItemPolicyRequest:
+    type: object
+    additionalProperties: false
+    required: [name, config, targets]
+    properties:
+      name: { type: string, minLength: 1, maxLength: 160 }
+      config: { type: object, additionalProperties: true }
+      targets:
+        type: array
+        minItems: 1
+        maxItems: 1
+        items: { $ref: './common.yaml#/$defs/TargetSet' }
+  ReferenceCandidate:
+    type: object
+    additionalProperties: false
+    required: [id, code, name, owner_type, owner_tenant_id, status]
+    properties:
+      id: { $ref: './common.yaml#/$defs/BigIntString' }
+      code: { type: string }
+      name: { type: string }
+      owner_type: { enum: [deployment, tenant] }
+      owner_tenant_id:
+        anyOf:
+          - { $ref: './common.yaml#/$defs/BigIntString' }
+          - { type: 'null' }
+      status: { type: string, const: active }
+  TargetCandidate:
+    type: object
+    required: [target_resource_key, target_role, target_id, label]
+    properties:
+      target_resource_key: { type: string }
+      target_role: { type: string }
+      target_id: { type: string }
+      label: { type: string }
+  WorkItemCommand:
+    type: object
+    additionalProperties: false
+    required: [id, revision]
+    properties:
+      id: { $ref: './common.yaml#/$defs/BigIntString' }
+      status: { enum: [open, active, closed] }
+      revision: { $ref: './common.yaml#/$defs/BigIntString' }
+  WorkItemCommandResponse:
+    type: object
+    additionalProperties: false
+    required: [data, meta]
+    properties:
+      data: { $ref: '#/$defs/WorkItemCommand' }
+      meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+  WorkItemResponse:
+    type: object
+    additionalProperties: false
+    required: [data, meta]
+    properties:
+      data: { $ref: '#/$defs/WorkItem' }
+      meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+  WorkItemAggregate:
+    type: object
+    additionalProperties: false
+    required: [total, by_status]
+    properties:
+      total: { type: integer, minimum: 0 }
+      by_status:
+        type: object
+        additionalProperties: false
+        required: [open, active, closed]
+        properties:
+          open: { type: integer, minimum: 0 }
+          active: { type: integer, minimum: 0 }
+          closed: { type: integer, minimum: 0 }
+  WorkItemAggregateResponse:
+    type: object
+    additionalProperties: false
+    required: [data, meta]
+    properties:
+      data: { $ref: '#/$defs/WorkItemAggregate' }
+      meta:
+        type: object
+        additionalProperties: false
+        required: [request_id, target_scope]
+        properties:
+          request_id: { type: string }
+          target_scope: { $ref: './common.yaml#/$defs/TargetScope' }
+  ReferenceCandidateListResponse:
+    type: object
+    additionalProperties: false
+    required: [data, meta]
+    properties:
+      data: { type: array, items: { $ref: '#/$defs/ReferenceCandidate' } }
+      meta:
+        type: object
+        additionalProperties: false
+        required: [request_id, total]
+        properties:
+          request_id: { type: string }
+          total: { type: integer, minimum: 0 }
+  WorkItemPolicyPublication:
+    type: object
+    additionalProperties: false
+    required: [policy_id, target_id, target_label, status, message]
+    properties:
+      policy_id: { $ref: './common.yaml#/$defs/BigIntString' }
+      target_id: { $ref: './common.yaml#/$defs/BigIntString' }
+      target_label: { type: string }
+      status: { type: string, const: published }
+      message: { type: string }
+  WorkItemPolicyPublicationResponse:
+    type: object
+    additionalProperties: false
+    required: [data, meta]
+    properties:
+      data: { type: array, items: { $ref: '#/$defs/WorkItemPolicyPublication' } }
+      meta:
+        type: object
+        additionalProperties: false
+        required: [request_id, policy_id, revision]
+        properties:
+          request_id: { type: string }
+          policy_id: { $ref: './common.yaml#/$defs/BigIntString' }
+          revision: { $ref: './common.yaml#/$defs/BigIntString' }

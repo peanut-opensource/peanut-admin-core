@@ -1,0 +1,47 @@
+Department:
+  type: object
+  additionalProperties: false
+  required: [id, code, name, sort_order, status, revision]
+  properties:
+    id: { type: string, pattern: '^[1-9][0-9]*$' }
+    parent_id: { type: [string, 'null'], pattern: '^[1-9][0-9]*$' }
+    code: { type: string, maxLength: 64 }
+    name: { type: string, maxLength: 120 }
+    sort_order: { type: integer }
+    status: { type: string, enum: [active, disabled, archived] }
+    revision: { type: string, pattern: '^[1-9][0-9]*$' }
+
+WriteDepartmentRequest:
+  type: object
+  additionalProperties: false
+  required: [code, name]
+  properties:
+    code: { type: string, minLength: 1, maxLength: 64 }
+    name: { type: string, minLength: 1, maxLength: 120 }
+    parent_id: { type: [string, 'null'], pattern: '^[1-9][0-9]*$' }
+    sort_order: { type: integer, default: 0 }
+
+MoveDepartmentRequest:
+  type: object
+  additionalProperties: false
+  required: [parent_id]
+  properties:
+    parent_id: { type: [string, 'null'], pattern: '^[1-9][0-9]*$' }
+
+DepartmentResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/Department' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+DepartmentListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: array
+      items: { $ref: '#/Department' }
+    meta: { $ref: './common.yaml#/$defs/PageMeta' }

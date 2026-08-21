@@ -1,0 +1,7 @@
+[
+  {"key":"peanut.import-export","name":"Tenant import and export operation","ownership":"tenant_owned","provider":"PeanutAdmin\\App\\Modules\\Peanut\\ImportExport\\ModuleProvider","operations":[
+    {"key":"read","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny","permissions":["peanut.import-export.read"],"target_types":[],"conditions":[]},
+    {"key":"create","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny_and_write","permissions":["peanut.import-export.create"],"target_types":[],"conditions":[]},
+    {"key":"cancel","access_mode":"tenant_wide","target_cardinality":"none","permission_match":"all","audit_level":"deny_and_write","permissions":["peanut.import-export.cancel"],"target_types":[],"conditions":[]}
+  ]}
+]

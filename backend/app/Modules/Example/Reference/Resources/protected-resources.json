@@ -1,0 +1,35 @@
+[
+  {
+    "key": "example.reference-item",
+    "name": "Reference Item",
+    "ownership": "shared_master",
+    "provider": "PeanutAdmin\\App\\Modules\\Example\\Reference\\Infrastructure\\Authorization\\ReferencePolicyProvider",
+    "scope_provider": "PeanutAdmin\\App\\Modules\\Example\\Reference\\Infrastructure\\Authorization\\PdoReferenceScopeProvider",
+    "operations": [
+      {"key": "list", "access_mode": "rule_filtered", "target_cardinality": "many_readable", "permission_match": "all", "audit_level": "deny", "permissions": ["example.reference.read"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"},
+        {"target_resource_key": "example.queue", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"},
+        {"key": "core.specified_objects", "selector_resource_key": "example.queue"}
+      ]},
+      {"key": "use", "access_mode": "explicit_targets", "target_cardinality": "one_required", "permission_match": "all", "audit_level": "deny_and_write", "permissions": ["example.reference.use"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"},
+        {"target_resource_key": "example.queue", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"},
+        {"key": "core.specified_objects", "selector_resource_key": "example.queue"}
+      ]},
+      {"key": "maintain", "access_mode": "explicit_targets", "target_cardinality": "zero_or_one", "permission_match": "all", "audit_level": "all", "permissions": ["example.reference.maintain"], "target_types": [
+        {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"},
+        {"target_resource_key": "example.queue", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"}
+      ], "conditions": [
+        {"key": "core.tenant_all", "selector_resource_key": null},
+        {"key": "core.specified_objects", "selector_resource_key": "example.project"},
+        {"key": "core.specified_objects", "selector_resource_key": "example.queue"}
+      ]}
+    ]
+  }
+]

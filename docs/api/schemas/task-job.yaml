@@ -1,0 +1,59 @@
+TaskKey:
+  type: string
+  pattern: '^job_[0-9a-f]{32}$'
+
+StrongTaskEtag:
+  type: string
+  pattern: '^"rev-[1-9][0-9]*"$'
+
+TaskJob:
+  type: object
+  additionalProperties: false
+  required: [job_key, task_type, status, attempt_count, max_attempts, revision, last_error_code, available_at, created_at, updated_at, completed_at]
+  properties:
+    job_key: { $ref: '#/TaskKey' }
+    task_type: { type: string, pattern: '^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$' }
+    status: { enum: [queued, running, succeeded, dead, cancelled] }
+    attempt_count: { type: integer, minimum: 0, maximum: 10 }
+    max_attempts: { type: integer, minimum: 1, maximum: 10 }
+    revision: { type: integer, minimum: 1 }
+    last_error_code:
+      anyOf:
+        - { type: string, pattern: '^[A-Z][A-Z0-9_]{2,63}$' }
+        - { type: 'null' }
+    available_at: { type: string, format: date-time }
+    created_at: { type: string, format: date-time }
+    updated_at: { type: string, format: date-time }
+    completed_at:
+      anyOf:
+        - { type: string, format: date-time }
+        - { type: 'null' }
+
+TaskResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data: { $ref: '#/TaskJob' }
+    meta: { $ref: './common.yaml#/$defs/RequestMeta' }
+
+TaskListResponse:
+  type: object
+  additionalProperties: false
+  required: [data, meta]
+  properties:
+    data:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/TaskJob' } }
+    meta:
+      allOf:
+        - { $ref: './common.yaml#/$defs/RequestMeta' }
+        - type: object
+          required: [page, page_size, total]
+          properties:
+            page: { type: integer, minimum: 1 }
+            page_size: { type: integer, minimum: 1, maximum: 100 }
+            total: { type: integer, minimum: 0 }
