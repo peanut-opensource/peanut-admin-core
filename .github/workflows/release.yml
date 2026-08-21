@@ -72,7 +72,7 @@ jobs:
           trap 'rm -f "$npm_config_userconfig"' EXIT
           printf 'registry=https://registry.npmjs.org/\n//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" > "$npm_config_userconfig"
           export NPM_CONFIG_USERCONFIG="$npm_config_userconfig"
-          npm_tarball="$(npm pack packages/web --pack-destination "$RUNNER_TEMP" --json | jq -r '.[0].filename')"
+          npm_tarball="$(npm pack ./packages/web --pack-destination "$RUNNER_TEMP" --json | jq -r '.[0].filename')"
           test -n "$npm_tarball" -a -f "$RUNNER_TEMP/$npm_tarball"
           npm publish "$RUNNER_TEMP/$npm_tarball" --access public --provenance --tag alpha
           mv "$RUNNER_TEMP/$npm_tarball" "$RUNNER_TEMP/peanut-admin-admin-${GITHUB_REF_NAME}.tgz"
