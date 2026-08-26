@@ -11,7 +11,7 @@ importers:
   frontend:
     dependencies:
       '@peanut-admin/admin':
-        specifier: workspace:0.1.0-alpha.8
+        specifier: workspace:0.1.0-alpha.9
         version: link:../packages/web
       element-plus:
         specifier: 2.14.3

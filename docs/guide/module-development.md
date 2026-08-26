@@ -27,7 +27,7 @@ The compiler also receives the complete registered Client key list. Every menu c
 
 ## 2. Create `module.json`
 
-The manifest must pass the versioned JSON Schema. A minimal capability declares a provider, version, Kernel constraint, owned tables, public contracts, and tenant behavior. Dependencies refer to Module keys and SemVer constraints.
+The manifest must pass the versioned JSON Schema. A minimal capability declares a provider, version, Kernel constraint, owned tables, public contracts, and tenant behavior. Dependencies refer to Module keys and SemVer constraints. A Host may mark an always-on foundation Module with `lifecycle.protected: true`; deployment tooling then treats disable, retire, and purge as forbidden product-policy actions. This lifecycle policy is separate from both explicit business dependencies and Tenant enablement.
 
 ```json
 {
@@ -38,6 +38,7 @@ The manifest must pass the versioned JSON Schema. A minimal capability declares 
   "version": "1.0.0",
   "kernel_constraint": "^1.0",
   "license": "Apache-2.0",
+  "lifecycle": { "protected": false },
   "backend": {
     "provider": "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\ModuleProvider"
   },
