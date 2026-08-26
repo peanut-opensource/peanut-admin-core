@@ -95,7 +95,7 @@ final class UpgradeWorkflowIntegrationTest extends TestCase
         self::assertSame(0, $second['applied_module_migrations']);
         self::assertSame(10, $this->scalar("SELECT COUNT(*) FROM pa_module_installation WHERE status = 'active'"));
         self::assertSame(16, $this->scalar("SELECT COUNT(*) FROM pa_module_migration WHERE status = 'applied'"));
-        self::assertSame(82, $this->scalar("SELECT COUNT(*) FROM pa_permission WHERE status = 'active'"));
+        self::assertSame(88, $this->scalar("SELECT COUNT(*) FROM pa_permission WHERE status = 'active'"));
         self::assertSame(1, $this->scalar(<<<'SQL'
 SELECT COUNT(*) FROM pa_permission
 WHERE `key` = 'core.member.effective-access.read'
