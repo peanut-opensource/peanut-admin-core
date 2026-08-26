@@ -128,7 +128,7 @@ $expectedAutoload = [
     "PeanutAdmin\\Workflow\\" => "workflow/src/",
 ];
 if (($php["name"] ?? null) !== "peanut-admin/core"
-    || ($php["version"] ?? null) !== "0.1.0-alpha.7"
+    || ($php["version"] ?? null) !== "0.1.0-alpha.8"
     || ($php["license"] ?? null) !== "Apache-2.0"
     || ($php["autoload"]["psr-4"] ?? null) !== $expectedAutoload
     || ($php["autoload-dev"]["psr-4"]["PeanutAdmin\\Testing\\"] ?? null) !== "testing/src/") {
@@ -177,7 +177,7 @@ $actualExports = array_keys($web["exports"] ?? []);
 sort($expectedExports);
 sort($actualExports);
 if (($web["name"] ?? null) !== "@peanut-admin/admin"
-    || ($web["version"] ?? null) !== "0.1.0-alpha.7"
+    || ($web["version"] ?? null) !== "0.1.0-alpha.8"
     || ($web["dependencies"] ?? null) !== ["openapi-fetch" => "0.17.0"]
     || ($web["peerDependencies"]["element-plus"] ?? null) !== "^2.14.3"
     || ($web["peerDependencies"]["pinia"] ?? null) !== ">=2.0.23 <5"
@@ -208,7 +208,7 @@ $assertWebConsumer = static function (string $path, string $version) use ($decod
     }
 };
 $assertWebConsumer("frontend/package.json", "workspace:^");
-$assertWebConsumer("starter/frontend/package.json", "workspace:0.1.0-alpha.7");
+$assertWebConsumer("starter/frontend/package.json", "workspace:0.1.0-alpha.8");
 '
 
 if ! grep -q '^  - packages/web$' pnpm-workspace.yaml \
