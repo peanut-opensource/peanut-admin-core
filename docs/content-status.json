@@ -244,12 +244,80 @@
       "validation": "./scripts/core-docs-governance check"
     },
     {
-      "id": "core-doc-plans",
+      "id": "core-doc-status-index",
       "include": [
-        "docs/status/*plan*.md",
-        "docs/status/p1-execution-baseline.md"
+        "docs/status/index.md"
       ],
       "exclude": [],
+      "audience": [
+        "maintainer",
+        "architect",
+        "ai"
+      ],
+      "content_type": "index",
+      "canonical_sources": [
+        "docs/status/runtime-operation-coverage.json"
+      ],
+      "owner_domain": "core-delivery",
+      "scope": [
+        "core"
+      ],
+      "related": [
+        "runtime-status"
+      ],
+      "site_projections": [],
+      "validation": "./scripts/core-docs-governance check"
+    },
+    {
+      "id": "core-doc-active-plans",
+      "include": [
+        "docs/status/*.md"
+      ],
+      "exclude": [
+        "docs/status/index.md",
+        "docs/status/p1-cap01-r01-quality-process-termination-contract.md",
+        "docs/status/p1-cap01-r02-hidden-phpunit-findings-contract.md",
+        "docs/status/p1-cap01-r03-final-pr-gates-remediation-contract.md",
+        "docs/status/p1-cap01-r04-quality-formatting-contract.md",
+        "docs/status/p1-cap02-artifact-revision-contract.md",
+        "docs/status/p1-cap03-entitlement-quota-contract.md",
+        "docs/status/p1-cap06-private-downstream-adoption-contract.md",
+        "docs/status/p1-pkg01-public-package-boundary-contract.md",
+        "docs/status/p1-pkg02-alpha-publication-contract.md",
+        "docs/status/p1-pkg02-r37-reference-retired-checkbox-contract.md",
+        "docs/status/p1-pkg02-r38-reference-retired-checkbox-stacking-contract.md",
+        "docs/status/p1-pkg02-r39-recovery-module-count-contract.md",
+        "docs/status/p1-pkg02-r40-performance-pdo-injection-contract.md",
+        "docs/status/p1-pkg02-r41-current-lock-evidence-contract.md",
+        "docs/status/p1-pkg02-r42-upgrade-format-resume-contract.md",
+        "docs/status/p1-pkg02-r43-reference-create-snapshot-test-contract.md",
+        "docs/status/p1-pkg02-r44-product-neutral-status-content-contract.md",
+        "docs/status/p1-pkg02-r45-qualification-closure-contract.md",
+        "docs/status/p1-pkg02-r46-package-content-probe-contract.md",
+        "docs/status/p1-pkg02-r47-pnpm-pack-toolchain-contract.md",
+        "docs/status/p1-pkg02-r48-qualification-evidence-registration-contract.md",
+        "docs/status/p1-pkg02-r49-prior-contract-registration-contract.md",
+        "docs/status/p1-pkg02-r50-publication-approval-record-contract.md",
+        "docs/status/p1-ovr01-admin-web-override-registry-contract.md",
+        "docs/status/p1-ovr02-php-service-override-contract.md",
+        "docs/status/p1-ovr03-sms-provider-host-consumption-contract.md",
+        "docs/status/p1-ovr04-admin-shell-host-consumption-contract.md",
+        "docs/status/p1-ovr05-override-host-qualification-contract.md",
+        "docs/status/p1-ovr05-r01-web-type-narrowing-remediation-contract.md",
+        "docs/status/p1-cl01-ui-neutral-client-transport-contract.md",
+        "docs/status/p1-pkg03-alpha2-candidate-contract.md",
+        "docs/status/p1-pkg03-alpha2-qualification-contract.md",
+        "docs/status/p1-pkg03-alpha2-publication-approval-record-contract.md",
+        "docs/status/p1-pkg04-alpha2-projection-workflow-contract.md",
+        "docs/status/p1-pkg05-alpha3-classic-types-resolution-contract.md",
+        "docs/status/p1-pkg06-release-merge-gate-remediation-contract.md",
+        "docs/status/p1-pkg07-ci-fixed-runtime-follow-up-contract.md",
+        "docs/status/p1-pkg08-cross-platform-merge-gate-follow-up-contract.md",
+        "docs/status/p1-pkg09-ci-environment-wiring-contract.md",
+        "docs/status/p1-pkg10-final-qualification-wiring-contract.md",
+        "docs/status/p1-pkg11-tenant-refresh-sampling-follow-up-contract.md",
+        "docs/status/starter-v1-c02-file-media-delivery-handoff.md"
+      ],
       "audience": [
         "maintainer",
         "architect",
@@ -258,7 +326,7 @@
       "content_type": "plan",
       "canonical_sources": [
         "AGENTS.md",
-        "docs/status/index.md"
+        "docs/status/p1-execution-baseline.md"
       ],
       "owner_domain": "core-delivery",
       "scope": [
@@ -274,33 +342,38 @@
     {
       "id": "core-doc-evidence",
       "include": [
-        "docs/status/*.md",
         "docs/reviews/*.md",
-        "docs/releases/*.md"
+        "docs/releases/*.md",
+        "docs/status/p1-cap01-r01-quality-process-termination-contract.md",
+        "docs/status/p1-cap01-r02-hidden-phpunit-findings-contract.md",
+        "docs/status/p1-cap01-r03-final-pr-gates-remediation-contract.md",
+        "docs/status/p1-cap01-r04-quality-formatting-contract.md",
+        "docs/status/p1-cap02-artifact-revision-contract.md",
+        "docs/status/p1-cap03-entitlement-quota-contract.md",
+        "docs/status/p1-cap06-private-downstream-adoption-contract.md",
+        "docs/status/p1-pkg01-public-package-boundary-contract.md",
+        "docs/status/p1-pkg02-alpha-publication-contract.md",
+        "docs/status/p1-pkg02-r*.md",
+        "docs/status/p1-ovr*.md",
+        "docs/status/p1-cl01-ui-neutral-client-transport-contract.md",
+        "docs/status/p1-pkg03-alpha2-*.md",
+        "docs/status/p1-pkg04-alpha2-projection-workflow-contract.md",
+        "docs/status/p1-pkg05-alpha3-classic-types-resolution-contract.md",
+        "docs/status/p1-pkg06-release-merge-gate-remediation-contract.md",
+        "docs/status/p1-pkg07-ci-fixed-runtime-follow-up-contract.md",
+        "docs/status/p1-pkg08-cross-platform-merge-gate-follow-up-contract.md",
+        "docs/status/p1-pkg09-ci-environment-wiring-contract.md",
+        "docs/status/p1-pkg10-final-qualification-wiring-contract.md",
+        "docs/status/p1-pkg11-tenant-refresh-sampling-follow-up-contract.md",
+        "docs/status/starter-v1-c02-file-media-delivery-handoff.md"
       ],
-      "exclude": [
-        "docs/status/*plan*.md",
-        "docs/status/p1-execution-baseline.md"
-      ],
-      "audience": [
-        "maintainer",
-        "architect",
-        "ai"
-      ],
+      "exclude": [],
+      "audience": ["maintainer", "architect", "ai"],
       "content_type": "evidence",
-      "canonical_sources": [
-        "docs/status/runtime-operation-coverage.json",
-        "docs/status/index.md"
-      ],
+      "canonical_sources": ["docs/status/runtime-operation-coverage.json", "docs/status/index.md"],
       "owner_domain": "qualification",
-      "scope": [
-        "core"
-      ],
-      "related": [
-        "runtime-status",
-        "qualification",
-        "release"
-      ],
+      "scope": ["core"],
+      "related": ["runtime-status", "qualification", "release"],
       "site_projections": [],
       "validation": "./scripts/core-docs-governance check"
     },
@@ -427,7 +500,7 @@
     {
       "id": "core-doc-status-index",
       "path": "docs/status/index.md",
-      "title": "P0 Status",
+      "title": "Core Status",
       "status": "authoritative",
       "owner": "Peanut Admin maintainers",
       "replacement": null
@@ -444,7 +517,7 @@
       "id": "core-doc-status-p1-wf01-configurable-workflow-runtime-contract",
       "path": "docs/status/p1-wf01-configurable-workflow-runtime-contract.md",
       "title": "P1-WF01 Configurable Workflow Runtime Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -452,7 +525,7 @@
       "id": "core-doc-status-p1-cap01-r01-quality-process-termination-contract",
       "path": "docs/status/p1-cap01-r01-quality-process-termination-contract.md",
       "title": "P1-CAP01-R01 Quality Process Termination Remediation Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -460,7 +533,7 @@
       "id": "core-doc-status-p1-cap01-r02-hidden-phpunit-findings-contract",
       "path": "docs/status/p1-cap01-r02-hidden-phpunit-findings-contract.md",
       "title": "P1-CAP01-R02 Hidden PHPUnit Findings Remediation Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -468,7 +541,7 @@
       "id": "core-doc-status-p1-cap01-r03-final-pr-gates-remediation-contract",
       "path": "docs/status/p1-cap01-r03-final-pr-gates-remediation-contract.md",
       "title": "P1-CAP01-R03 Final PR Gates Remediation Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -476,7 +549,7 @@
       "id": "core-doc-status-p1-cap01-r04-quality-formatting-contract",
       "path": "docs/status/p1-cap01-r04-quality-formatting-contract.md",
       "title": "P1-CAP01-R04 Quality Formatting Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -484,7 +557,7 @@
       "id": "core-doc-status-p1-cap02-artifact-revision-contract",
       "path": "docs/status/p1-cap02-artifact-revision-contract.md",
       "title": "P1-CAP02 Artifact Revision Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -492,7 +565,7 @@
       "id": "core-doc-status-p1-cap03-entitlement-quota-contract",
       "path": "docs/status/p1-cap03-entitlement-quota-contract.md",
       "title": "P1-CAP03 Entitlement Quota Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -500,7 +573,7 @@
       "id": "core-doc-status-p1-cap04-collaboration-contract",
       "path": "docs/status/p1-cap04-collaboration-contract.md",
       "title": "P1-CAP04 Collaboration Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -508,7 +581,7 @@
       "id": "core-doc-status-p1-cap06-private-downstream-adoption-contract",
       "path": "docs/status/p1-cap06-private-downstream-adoption-contract.md",
       "title": "P1-CAP06 Private Downstream Adoption Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -516,7 +589,7 @@
       "id": "core-doc-status-p1-pkg01-public-package-boundary-contract",
       "path": "docs/status/p1-pkg01-public-package-boundary-contract.md",
       "title": "P1-PKG01 Public Package Boundary Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -524,7 +597,7 @@
       "id": "core-doc-status-p1-pkg02-alpha-publication-contract",
       "path": "docs/status/p1-pkg02-alpha-publication-contract.md",
       "title": "P1-PKG02 Alpha Publication Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -540,7 +613,7 @@
       "id": "core-doc-status-p1-r02-external-operation-host-kit-contract",
       "path": "docs/status/p1-r02-external-operation-host-kit-contract.md",
       "title": "P1-R02 External Operation Host Kit Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -548,7 +621,7 @@
       "id": "core-doc-status-p1-b03-minimal-settings-contract",
       "path": "docs/status/p1-b03-minimal-settings-contract.md",
       "title": "P1-B03 Minimal Settings Module Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -556,7 +629,7 @@
       "id": "core-doc-status-p1-b04-minimal-reference-codes-contract",
       "path": "docs/status/p1-b04-minimal-reference-codes-contract.md",
       "title": "P1-B04 Minimal Reference Codes Module Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -564,7 +637,7 @@
       "id": "core-doc-status-p1-c03-ops-console-contract",
       "path": "docs/status/p1-c03-ops-console-contract.md",
       "title": "P1-C03 Ops Console Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -572,7 +645,7 @@
       "id": "core-doc-status-starter-v1-c02-file-media-contract",
       "path": "docs/status/starter-v1-c02-file-media-contract.md",
       "title": "Starter v1 C02 File And Media Core Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -580,7 +653,7 @@
       "id": "core-doc-status-p1-w03-workspace-shell-contract",
       "path": "docs/status/p1-w03-workspace-shell-contract.md",
       "title": "P1-W03 Workspace Shell Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -588,7 +661,7 @@
       "id": "core-doc-status-p1-execution-and-post-q01-roadmap",
       "path": "docs/status/p1-execution-and-post-q01-roadmap.md",
       "title": "P1 Execution Reality And Post-Q01 Roadmap",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -604,7 +677,7 @@
       "id": "core-doc-status-starter-v1-c02-file-media-delivery-handoff",
       "path": "docs/status/starter-v1-c02-file-media-delivery-handoff.md",
       "title": "Starter v1 Stage B File And Media Delivery Handoff",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -612,7 +685,7 @@
       "id": "core-doc-status-p1-w01-protected-transport-origin-contract",
       "path": "docs/status/p1-w01-protected-transport-origin-contract.md",
       "title": "P1-W01 Protected Transport Origin Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -852,7 +925,7 @@
       "id": "core-doc-status-p1-pkg02-r37-reference-retired-checkbox-contract",
       "path": "docs/status/p1-pkg02-r37-reference-retired-checkbox-contract.md",
       "title": "P1-PKG02-R37 Reference Codes Retired Checkbox Interaction Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -860,7 +933,7 @@
       "id": "core-doc-status-p1-pkg02-r38-reference-retired-checkbox-stacking-contract",
       "path": "docs/status/p1-pkg02-r38-reference-retired-checkbox-stacking-contract.md",
       "title": "P1-PKG02-R38 Reference Codes Retired Checkbox Stacking Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -868,7 +941,7 @@
       "id": "core-doc-status-p1-pkg02-r39-recovery-module-count-contract",
       "path": "docs/status/p1-pkg02-r39-recovery-module-count-contract.md",
       "title": "P1-PKG02-R39 Recovery Module Count Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -876,7 +949,7 @@
       "id": "core-doc-status-p1-pkg02-r40-performance-pdo-injection-contract",
       "path": "docs/status/p1-pkg02-r40-performance-pdo-injection-contract.md",
       "title": "P1-PKG02-R40 Performance PDO Injection Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -884,7 +957,7 @@
       "id": "core-doc-status-p1-pkg02-r41-current-lock-evidence-contract",
       "path": "docs/status/p1-pkg02-r41-current-lock-evidence-contract.md",
       "title": "P1-PKG02-R41 Current Lock Evidence Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -892,7 +965,7 @@
       "id": "core-doc-status-p1-pkg02-r42-upgrade-format-resume-contract",
       "path": "docs/status/p1-pkg02-r42-upgrade-format-resume-contract.md",
       "title": "P1-PKG02-R42 Upgrade Format Resume Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -900,7 +973,7 @@
       "id": "core-doc-status-p1-pkg02-r43-reference-create-snapshot-test-contract",
       "path": "docs/status/p1-pkg02-r43-reference-create-snapshot-test-contract.md",
       "title": "P1-PKG02-R43 Reference Create Snapshot Test Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -908,7 +981,7 @@
       "id": "core-doc-status-p1-pkg02-r44-product-neutral-status-content-contract",
       "path": "docs/status/p1-pkg02-r44-product-neutral-status-content-contract.md",
       "title": "P1-PKG02-R44 Product-Neutral Status Content Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -916,7 +989,7 @@
       "id": "core-doc-status-p1-pkg02-r45-qualification-closure-contract",
       "path": "docs/status/p1-pkg02-r45-qualification-closure-contract.md",
       "title": "P1-PKG02-R45 Qualification Closure Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -924,7 +997,7 @@
       "id": "core-doc-status-p1-pkg02-r46-package-content-probe-contract",
       "path": "docs/status/p1-pkg02-r46-package-content-probe-contract.md",
       "title": "P1-PKG02-R46 Package Content Probe Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -932,7 +1005,7 @@
       "id": "core-doc-status-p1-pkg02-r47-pnpm-pack-toolchain-contract",
       "path": "docs/status/p1-pkg02-r47-pnpm-pack-toolchain-contract.md",
       "title": "P1-PKG02-R47 pnpm Pack Toolchain Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -940,7 +1013,7 @@
       "id": "core-doc-status-p1-pkg02-r48-qualification-evidence-registration-contract",
       "path": "docs/status/p1-pkg02-r48-qualification-evidence-registration-contract.md",
       "title": "P1-PKG02-R48 Qualification Evidence Registration Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -948,7 +1021,7 @@
       "id": "core-doc-status-p1-pkg02-r49-prior-contract-registration-contract",
       "path": "docs/status/p1-pkg02-r49-prior-contract-registration-contract.md",
       "title": "P1-PKG02-R49 Prior Contract Registration Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -972,7 +1045,7 @@
       "id": "core-doc-status-p1-pkg02-r50-publication-approval-record-contract",
       "path": "docs/status/p1-pkg02-r50-publication-approval-record-contract.md",
       "title": "P1-PKG02-R50 Publication Approval Record Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -996,7 +1069,7 @@
       "id": "core-doc-status-p1-ovr01-admin-web-override-registry-contract",
       "path": "docs/status/p1-ovr01-admin-web-override-registry-contract.md",
       "title": "P1-OVR01 Admin Web Override Registry Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1004,7 +1077,7 @@
       "id": "core-doc-status-p1-ovr02-php-service-override-contract",
       "path": "docs/status/p1-ovr02-php-service-override-contract.md",
       "title": "P1-OVR02 PHP Service Override Registry Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1012,7 +1085,7 @@
       "id": "core-doc-status-p1-ovr03-sms-provider-host-consumption-contract",
       "path": "docs/status/p1-ovr03-sms-provider-host-consumption-contract.md",
       "title": "P1-OVR03 SMS Provider Host Consumption Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1020,7 +1093,7 @@
       "id": "core-doc-status-p1-ovr04-admin-shell-host-consumption-contract",
       "path": "docs/status/p1-ovr04-admin-shell-host-consumption-contract.md",
       "title": "P1-OVR04 Admin Shell Host Consumption Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1028,7 +1101,7 @@
       "id": "core-doc-status-p1-ovr05-override-host-qualification-contract",
       "path": "docs/status/p1-ovr05-override-host-qualification-contract.md",
       "title": "P1-OVR05 Override Host Consumption Qualification Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1036,7 +1109,7 @@
       "id": "core-doc-status-p1-ovr05-r01-web-type-narrowing-remediation-contract",
       "path": "docs/status/p1-ovr05-r01-web-type-narrowing-remediation-contract.md",
       "title": "P1-OVR05-R01 Web Override Type Narrowing Remediation Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1052,7 +1125,7 @@
       "id": "core-doc-status-p1-cl01-ui-neutral-client-transport-contract",
       "path": "docs/status/p1-cl01-ui-neutral-client-transport-contract.md",
       "title": "P1-CL01 UI-Neutral Client Transport Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1068,7 +1141,7 @@
       "id": "core-doc-status-p1-pkg03-alpha2-candidate-contract",
       "path": "docs/status/p1-pkg03-alpha2-candidate-contract.md",
       "title": "P1-PKG03 Alpha.2 Candidate Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1076,7 +1149,7 @@
       "id": "core-doc-status-p1-pkg03-alpha2-qualification-contract",
       "path": "docs/status/p1-pkg03-alpha2-qualification-contract.md",
       "title": "P1-PKG03 Alpha.2 Qualification Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1084,7 +1157,7 @@
       "id": "core-doc-status-p1-pkg03-alpha2-publication-approval-record-contract",
       "path": "docs/status/p1-pkg03-alpha2-publication-approval-record-contract.md",
       "title": "P1-PKG03 Alpha.2 Publication Approval Record Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1092,7 +1165,7 @@
       "id": "core-doc-status-p1-pkg04-alpha2-projection-workflow-contract",
       "path": "docs/status/p1-pkg04-alpha2-projection-workflow-contract.md",
       "title": "P1-PKG04 Alpha.2 Projection Workflow Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1100,7 +1173,7 @@
       "id": "core-doc-status-p1-pkg05-alpha3-classic-types-resolution-contract",
       "path": "docs/status/p1-pkg05-alpha3-classic-types-resolution-contract.md",
       "title": "P1-PKG05 Admin Web Alpha.3 Classic Type Resolution Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1108,7 +1181,7 @@
       "id": "core-doc-status-p1-pkg06-release-merge-gate-remediation-contract",
       "path": "docs/status/p1-pkg06-release-merge-gate-remediation-contract.md",
       "title": "P1-PKG06 Release Merge Gate Remediation Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1116,7 +1189,7 @@
       "id": "core-doc-status-p1-pkg07-ci-fixed-runtime-follow-up-contract",
       "path": "docs/status/p1-pkg07-ci-fixed-runtime-follow-up-contract.md",
       "title": "P1-PKG07 CI Fixed Runtime Follow-up Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1124,7 +1197,7 @@
       "id": "core-doc-status-p1-pkg08-cross-platform-merge-gate-follow-up-contract",
       "path": "docs/status/p1-pkg08-cross-platform-merge-gate-follow-up-contract.md",
       "title": "P1-PKG08 Cross-Platform Merge Gate Follow-up Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1132,7 +1205,7 @@
       "id": "core-doc-status-p1-pkg09-ci-environment-wiring-contract",
       "path": "docs/status/p1-pkg09-ci-environment-wiring-contract.md",
       "title": "P1-PKG09 CI Environment Wiring Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1140,7 +1213,7 @@
       "id": "core-doc-status-p1-pkg10-final-qualification-wiring-contract",
       "path": "docs/status/p1-pkg10-final-qualification-wiring-contract.md",
       "title": "P1-PKG10 Final Qualification Wiring Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1148,7 +1221,7 @@
       "id": "core-doc-status-p1-pkg11-tenant-refresh-sampling-follow-up-contract",
       "path": "docs/status/p1-pkg11-tenant-refresh-sampling-follow-up-contract.md",
       "title": "P1-PKG11 Tenant Refresh Sampling Follow-up Contract",
-      "status": "current",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },
@@ -1156,7 +1229,7 @@
       "id": "core-doc-status-p1-pkg12-application-infrastructure-extraction-contract",
       "path": "docs/status/p1-pkg12-application-infrastructure-extraction-contract.md",
       "title": "P1-PKG12 Application Infrastructure Extraction Contract",
-      "status": "current",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },

@@ -37,3 +37,5 @@ pnpm docs:build
 ```
 
 The broader `./scripts/check-docs` also runs executable examples and temporary database work. It belongs to an explicitly authorized stage, not a pure static documentation change.
+
+`impact` is a closure check, not only a routing report: every required target must be changed in the same diff or named with an exact `--waive-target` and one non-empty reason. Record the classifications, closure and any waiver in the task or PR checklist.

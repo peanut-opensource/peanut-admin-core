@@ -24,11 +24,12 @@
       "upstream": ["docs/api/openapi.yaml", "route and handler"],
       "technical_docs": ["docs/api/index.md", "docs/status/runtime-operation-coverage.json"],
       "site_docs": ["docs/api/index.md", "docs/guide/module-development.md"],
-      "generated": ["backend/route/openapi-generated.php", "generated PHP and TypeScript API types"]
+      "generated": ["backend/route/openapi-generated.php", "packages/web/admin-core/src/generated/api.d.ts"]
     },
     {
       "id": "cli-command",
       "paths": ["scripts/*", "backend/think", "backend/app/**/command/**/*.php"],
+      "exclude_paths": ["scripts/core-docs-governance"],
       "classifications": ["technical", "developer-site"],
       "upstream": ["executable and --help output"],
       "technical_docs": ["docs/guide/installation.md", "docs/guide/testing.md"],
@@ -47,11 +48,11 @@
     {
       "id": "module-manifest",
       "paths": ["**/module.json", "packages/php/kernel/src/Module/**/*"],
-      "classifications": ["technical", "developer-site", "generated"],
+      "classifications": ["technical", "developer-site"],
       "upstream": ["module.json", "packages/php/kernel/resources/module-manifest.schema.json"],
       "technical_docs": ["docs/architecture/index.md", "docs/guide/module-development.md"],
       "site_docs": ["docs/guide/module-development.md"],
-      "generated": ["compiled manifest projections when present"]
+      "generated": []
     },
     {
       "id": "environment-command",
@@ -95,7 +96,7 @@
     {"id": "http-api", "path": "docs/api/openapi.yaml", "must_include": ["technical", "developer-site", "generated"], "must_not_include": ["none"]},
     {"id": "cli-command", "path": "scripts/example-command", "must_include": ["technical", "developer-site"], "must_not_include": ["architecture-decision"]},
     {"id": "schema-owner", "path": "packages/php/kernel/src/Schema/ExampleSchema.php", "must_include": ["architecture-decision", "technical", "developer-site"], "must_not_include": ["none"]},
-    {"id": "module-manifest", "path": "kernel/module.json", "must_include": ["technical", "developer-site", "generated"], "must_not_include": ["none"]},
+    {"id": "module-manifest", "path": "kernel/module.json", "must_include": ["technical", "developer-site"], "must_not_include": ["none", "generated"]},
     {"id": "environment", "path": "compose.yaml", "must_include": ["technical", "developer-site"], "must_not_include": ["none"]},
     {"id": "runtime-status", "path": "docs/status/runtime-operation-coverage.json", "must_include": ["technical"], "must_not_include": ["developer-site"]},
     {"id": "architecture-boundary", "path": "composer.json", "must_include": ["architecture-decision", "technical", "developer-site"], "must_not_include": ["none"]}
