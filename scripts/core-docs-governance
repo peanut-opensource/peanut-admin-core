@@ -1,0 +1,469 @@
+#!/usr/bin/env python3
+"""Validate Core documentation metadata, projections and impact routing."""
+
+from __future__ import annotations
+
+import argparse
+import fnmatch
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+
+ROOT = Path(__file__).resolve().parent.parent
+REGISTRY = ROOT / "docs/content-status.json"
+IMPACT = ROOT / "docs/document-impact-map.json"
+CATALOG = ROOT / "docs/reference/document-catalog.generated.md"
+NOTICE = "<!-- GENERATED: source=docs/content-status.json; command=./scripts/core-docs-governance generate -->"
+
+
+def load(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"ERROR: {path.relative_to(ROOT)}: {error}") from error
+
+
+def markdown_files() -> list[str]:
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "docs"],
+        cwd=ROOT, check=True, capture_output=True, text=True,
+    )
+    return sorted(path for path in result.stdout.splitlines() if path.endswith(".md"))
+
+
+def matches(path: str, group: dict) -> bool:
+    included = any(fnmatch.fnmatch(path, pattern) for pattern in group.get("include", []))
+    excluded = any(fnmatch.fnmatch(path, pattern) for pattern in group.get("exclude", []))
+    return included and not excluded
+
+
+def render_catalog(registry: dict) -> str:
+    groups = {group["id"]: group for group in registry["groups"]}
+    lines = [
+        NOTICE,
+        "# Document catalog",
+        "",
+        "This file is generated from `docs/content-status.json`. Edit the registry, then regenerate.",
+        "",
+        "| Stable ID | Path | Status | Type | Owner |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for doc in sorted(registry["documents"], key=lambda item: item["id"]):
+        matched = [group for group in groups.values() if matches(doc["path"], group)]
+        content_type = matched[0]["content_type"] if len(matched) == 1 else "unclassified"
+        lines.append(
+            f"| `{doc['id']}` | `{doc['path']}` | `{doc['status']}` | "
+            f"`{content_type}` | `{doc['owner']}` |"
+        )
+    lines.extend([
+        "",
+        "Plans and evidence remain discoverable here but are excluded from primary developer navigation unless explicitly promoted.",
+        "",
+    ])
+    return "\n".join(lines)
+
+
+def generate(check_only: bool) -> list[str]:
+    expected = render_catalog(load(REGISTRY))
+    actual = CATALOG.read_text(encoding="utf-8") if CATALOG.exists() else None
+    if actual == expected:
+        return []
+    if check_only:
+        return ["generated content drift: docs/reference/document-catalog.generated.md"]
+    CATALOG.parent.mkdir(parents=True, exist_ok=True)
+    CATALOG.write_text(expected, encoding="utf-8")
+    print("generated docs/reference/document-catalog.generated.md")
+    return []
+
+
+def resolve_link(source: Path, raw: str) -> bool:
+    target = raw.split("#", 1)[0].split("?", 1)[0]
+    if not target or target.startswith(("http://", "https://", "mailto:", "repo://")):
+        return True
+    candidate = (ROOT / "docs" / target.lstrip("/")) if target.startswith("/") else source.parent / target
+    candidates = [candidate]
+    if not str(candidate).endswith(".md"):
+        candidates.append(Path(f"{candidate}.md"))
+    if candidate.suffix == "":
+        candidates.append(candidate / "index.md")
+    return any(item.exists() for item in candidates)
+
+
+def links(path: Path) -> list[str]:
+    text = re.sub(r"```.*?```", "", path.read_text(encoding="utf-8"), flags=re.DOTALL)
+    return [match.group(1).strip() for match in re.finditer(r"(?<!!)\[[^\]]+\]\(([^)]+)\)", text)]
+
+
+def validate(registry: dict) -> list[str]:
+    errors: list[str] = []
+    if registry.get("schema_version") != 2:
+        errors.append("docs/content-status.json: schema_version must equal 2")
+    enums = registry.get("enums", {})
+    documents = registry.get("documents", [])
+    groups = registry.get("groups", [])
+    expected_group_status = {
+        "core-doc-status-index": "authoritative",
+        "core-doc-active-plans": "planned",
+        "core-doc-evidence": "archived",
+    }
+    required_doc = {"id", "path", "title", "status", "owner", "replacement"}
+    required_group = {
+        "id", "include", "audience", "content_type", "canonical_sources",
+        "owner_domain", "scope", "related", "site_projections", "validation",
+    }
+    ids: set[str] = set()
+    paths: set[str] = set()
+    group_ids: set[str] = set()
+    for group in groups:
+        missing = required_group - group.keys()
+        if missing:
+            errors.append(f"group {group.get('id', '<unknown>')}: missing {sorted(missing)}")
+        if not group.get("id") or group.get("id") in group_ids:
+            errors.append(f"duplicate or missing group id: {group.get('id')}")
+        group_ids.add(group.get("id"))
+        for enum_name, field in (("audience", "audience"), ("scope", "scope")):
+            invalid = set(group.get(field, [])) - set(enums.get(enum_name, []))
+            if invalid:
+                errors.append(f"group {group.get('id')}: invalid {field}: {sorted(invalid)}")
+        if group.get("content_type") not in enums.get("content_type", []):
+            errors.append(f"group {group.get('id')}: invalid content_type {group.get('content_type')}")
+        for source in group.get("canonical_sources", []):
+            if source.startswith("repo://"):
+                continue
+            if "/" in source and not (ROOT / source).exists():
+                errors.append(f"group {group.get('id')}: upstream missing: {source}")
+        for projection in group.get("site_projections", []):
+            if projection.startswith("docs/") and not (ROOT / projection).exists():
+                errors.append(f"group {group.get('id')}: projection missing: {projection}")
+    for group_id in expected_group_status:
+        if group_id not in group_ids:
+            errors.append(f"missing required metadata group: {group_id}")
+    groups_by_id = {group.get("id"): group for group in groups}
+    for doc in documents:
+        missing = required_doc - doc.keys()
+        if missing:
+            errors.append(f"document {doc.get('path', '<unknown>')}: missing {sorted(missing)}")
+            continue
+        if doc["id"] in ids:
+            errors.append(f"duplicate document id: {doc['id']}")
+        ids.add(doc["id"])
+        if doc["path"] in paths:
+            errors.append(f"duplicate document path: {doc['path']}")
+        paths.add(doc["path"])
+        if doc["status"] not in enums.get("status", []):
+            errors.append(f"{doc['id']}: invalid status {doc['status']}")
+        if doc["status"] == "deprecated" and not doc["replacement"]:
+            errors.append(f"{doc['id']}: deprecated document requires replacement")
+        if doc["status"] != "deprecated" and doc["replacement"] is not None:
+            errors.append(f"{doc['id']}: replacement is only valid for deprecated documents")
+        if not (ROOT / doc["path"]).is_file():
+            errors.append(f"registered file missing: {doc['path']}")
+        matched = [group["id"] for group in groups if matches(doc["path"], group)]
+        if len(matched) != 1:
+            errors.append(f"{doc['id']}: expected exactly one metadata group, got {matched}")
+        for group_id, expected_status in expected_group_status.items():
+            group = groups_by_id.get(group_id)
+            if group is not None and matches(doc["path"], group) and doc["status"] != expected_status:
+                errors.append(
+                    f"{doc['id']}: documents matched by {group_id} must have status "
+                    f"{expected_status}, got {doc['status']}"
+                )
+    actual = markdown_files()
+    for path in actual:
+        if path not in paths:
+            errors.append(f"orphan Markdown is not registered: {path}")
+    for path in paths:
+        if path not in actual:
+            errors.append(f"registration is not a tracked Markdown file: {path}")
+    for group in groups:
+        if not any(matches(path, group) for path in actual):
+            errors.append(f"empty metadata group: {group['id']}")
+    for doc in documents:
+        if doc.get("status") not in {"authoritative", "current", "generated"}:
+            continue
+        path = ROOT / doc["path"]
+        if path.is_file():
+            for target in links(path):
+                if not resolve_link(path, target):
+                    errors.append(f"broken link: {doc['path']} -> {target}")
+    config = (ROOT / "docs/.vitepress/config.ts").read_text(encoding="utf-8")
+    for target in re.findall(r"link:\s*['\"](/[^'\"]*)['\"]", config):
+        if not resolve_link(ROOT / "docs/index.md", target):
+            errors.append(f"invalid navigation target: {target}")
+    return errors
+
+
+IMPACT_CLASSIFICATIONS = {
+    "none",
+    "technical",
+    "developer-site",
+    "generated",
+    "architecture-decision",
+}
+
+
+def matching_rules(path: str, impact: dict) -> list[dict]:
+    normalized = path.removeprefix("./")
+    matched = []
+    for rule in impact["rules"]:
+        if not any(fnmatch.fnmatch(normalized, pattern) for pattern in rule["paths"]):
+            continue
+        excluded = rule.get("exclude_paths", [])
+        if any(fnmatch.fnmatch(normalized, pattern) for pattern in excluded):
+            continue
+        matched.append(rule)
+    return matched
+
+
+def route(paths: list[str], impact: dict) -> dict:
+    found = {rule["id"]: rule for path in paths for rule in matching_rules(path, impact)}
+    classifications = sorted({item for rule in found.values() for item in rule["classifications"]})
+    if any(item != "none" for item in classifications):
+        classifications = [item for item in classifications if item != "none"]
+    return {
+        "paths": paths,
+        "classifications": classifications or ["none"],
+        "rules": sorted(found),
+        "technical_docs": sorted({item for rule in found.values() for item in rule["technical_docs"]}),
+        "site_docs": sorted({item for rule in found.values() for item in rule["site_docs"]}),
+        "generated": sorted({item for rule in found.values() for item in rule["generated"]}),
+    }
+
+
+def repository_path(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    path = value.strip()
+    if (
+        not path
+        or path.startswith(("/", "../", "repo://", "http://", "https://"))
+        or any(character in path for character in "*?[]")
+    ):
+        return False
+    candidate = ROOT / path
+    return candidate.is_file() or candidate.is_dir()
+
+
+def split_targets(values: list[object]) -> tuple[list[str], list[str]]:
+    required: set[str] = set()
+    optional: set[str] = set()
+    for target in values:
+        explicit_optional = False
+        if isinstance(target, dict):
+            value = target.get("path", target.get("target"))
+            explicit_optional = bool(target.get("optional", False))
+        else:
+            value = target
+        if not isinstance(value, str) or not value.strip():
+            continue
+        value = value.strip().removeprefix("./")
+        if explicit_optional:
+            optional.add(value)
+        else:
+            required.add(value)
+    return sorted(required), sorted(optional)
+
+
+def impact_target_errors(impact: dict, registry: dict) -> list[str]:
+    errors: list[str] = []
+    registered = {doc["path"]: doc for doc in registry.get("documents", [])}
+    for rule in impact.get("rules", []):
+        for field in ("technical_docs", "site_docs", "generated"):
+            required, _ = split_targets(rule.get(field, []))
+            for target in required:
+                if not repository_path(target):
+                    errors.append(f"rule {rule.get('id', '<unknown>')}: required {field} target missing: {target}")
+                    continue
+                document = registered.get(target)
+                if document and document.get("status") not in {"authoritative", "current", "generated"}:
+                    errors.append(
+                        f"rule {rule.get('id', '<unknown>')}: required {field} target is not maintained: "
+                        f"{target} ({document.get('status')})"
+                    )
+    return errors
+
+
+def impact_closure(paths: list[str], impact: dict, waived_targets: list[str] | None = None) -> dict:
+    found = {rule["id"]: rule for path in paths for rule in matching_rules(path, impact)}
+    changed_paths = {path.removeprefix("./") for path in paths}
+    waived = set(waived_targets or [])
+    required: dict[str, list[str]] = {}
+    optional: dict[str, list[str]] = {}
+    updated: dict[str, list[str]] = {}
+    missing: dict[str, list[str]] = {}
+    for field in ("technical_docs", "site_docs", "generated"):
+        targets = [target for rule in found.values() for target in rule.get(field, [])]
+        required[field], optional[field] = split_targets(targets)
+        updated[field] = sorted(set(required[field]) & changed_paths)
+        missing[field] = sorted(set(required[field]) - changed_paths - waived)
+    return {
+        "required_targets": required,
+        "updated_targets": updated,
+        "optional_targets": optional,
+        "missing": missing,
+        "waived_targets": sorted(waived),
+    }
+
+
+def closure_errors(closure: dict) -> list[str]:
+    errors = []
+    for field, targets in closure["missing"].items():
+        if targets:
+            errors.append(f"missing required {field} target(s): {', '.join(targets)}")
+    return errors
+
+
+def declared_classifications(values: list[str] | None) -> list[str]:
+    result: list[str] = []
+    for value in values or []:
+        for item in value.split(","):
+            item = item.strip()
+            if item and item not in result:
+                result.append(item)
+    return result
+
+
+def scenarios(impact: dict) -> list[str]:
+    errors = []
+    for scenario in impact["scenarios"]:
+        classes = set(route([scenario["path"]], impact)["classifications"])
+        missing = set(scenario["must_include"]) - classes
+        forbidden = set(scenario["must_not_include"]) & classes
+        if missing or forbidden:
+            errors.append(f"scenario {scenario['id']}: classes={sorted(classes)}, missing={sorted(missing)}, forbidden={sorted(forbidden)}")
+    return errors
+
+
+def changed(base: str) -> list[str]:
+    try:
+        committed = subprocess.run(
+            ["git", "diff", "--name-only", f"{base}...HEAD"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        working_tree = subprocess.run(
+            ["git", "diff", "--name-only", base],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as error:
+        raise SystemExit(f"ERROR: unable to compare documentation impact base {base!r}") from error
+    return sorted({path for output in (committed.stdout, working_tree.stdout) for path in output.splitlines() if path})
+
+
+def report(errors: list[str], success: str) -> int:
+    if errors:
+        for error in errors:
+            print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+    print(success)
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    subs = parser.add_subparsers(dest="command", required=True)
+    subs.add_parser("check")
+    gen = subs.add_parser("generate")
+    gen.add_argument("--check", action="store_true", dest="check_only")
+    impact_parser = subs.add_parser("impact")
+    impact_parser.add_argument("--base")
+    impact_parser.add_argument("--paths", nargs="*")
+    impact_parser.add_argument("--classification", action="append", dest="classifications")
+    impact_parser.add_argument("--waive-target", action="append", dest="waive_targets", default=[])
+    impact_parser.add_argument("--reason")
+    subs.add_parser("scenarios")
+    args = parser.parse_args()
+    if args.command == "generate":
+        return report(generate(args.check_only), "Generated documentation is current." if args.check_only else "Documentation projections generated.")
+    impact = load(IMPACT)
+    if args.command == "scenarios":
+        return report(scenarios(impact), f"Documentation impact scenarios passed: {len(impact['scenarios'])}/8.")
+    if args.command == "impact":
+        if args.base and args.paths:
+            print("ERROR: choose either --base or --paths", file=sys.stderr)
+            return 2
+        if not args.base and not args.paths:
+            print("ERROR: use --paths or --base", file=sys.stderr)
+            return 2
+        paths = changed(args.base) if args.base else sorted({path.removeprefix("./") for path in args.paths})
+        result = route(paths, impact)
+        closure = impact_closure(paths, impact)
+        requested_waivers = sorted({target.strip().removeprefix("./") for target in args.waive_targets})
+        if requested_waivers:
+            if not (args.reason or "").strip():
+                print("ERROR: --waive-target requires a non-empty --reason", file=sys.stderr)
+                return 2
+            required_targets = {
+                target
+                for targets in closure["required_targets"].values()
+                for target in targets
+            }
+            invalid = sorted(
+                target for target in requested_waivers
+                if target not in required_targets or not repository_path(target)
+            )
+            if invalid:
+                print(
+                    "ERROR: --waive-target must name an existing required target for this route: "
+                    + ", ".join(invalid),
+                    file=sys.stderr,
+                )
+                return 2
+            closure = impact_closure(paths, impact, requested_waivers)
+        result["waived_targets"] = requested_waivers
+        result["waiver_reason"] = args.reason if requested_waivers else None
+        declared = declared_classifications(args.classifications)
+        mapped = set(result["classifications"])
+        invalid = sorted(set(declared) - IMPACT_CLASSIFICATIONS)
+        if invalid:
+            print(f"ERROR: invalid docs-impact classification(s): {', '.join(invalid)}", file=sys.stderr)
+            return 2
+        if args.reason is not None and not declared and mapped != {"none"} and not requested_waivers:
+            print("ERROR: --reason requires --classification", file=sys.stderr)
+            return 2
+        if declared:
+            if set(declared) != mapped:
+                print(
+                    "ERROR: declared docs-impact classification(s) must exactly cover "
+                    f"mapped classification(s): declared={sorted(declared)} mapped={sorted(mapped)}",
+                    file=sys.stderr,
+                )
+                return 2
+            if "none" in declared and (len(declared) != 1 or not (args.reason or "").strip()):
+                print("ERROR: docs-impact classification none requires a non-empty reason", file=sys.stderr)
+                return 2
+            result["declared_classifications"] = declared
+            result["declared_classification"] = declared[0] if len(declared) == 1 else declared
+            result["reason"] = args.reason
+        elif mapped == {"none"}:
+            if not (args.reason or "").strip():
+                print("ERROR: mapped docs-impact classification none requires a non-empty --reason", file=sys.stderr)
+                return 2
+            result["reason"] = args.reason
+        elif requested_waivers:
+            result["reason"] = args.reason
+        result["closure"] = closure
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        errors = closure_errors(closure)
+        if errors:
+            for error in errors:
+                print(f"ERROR: {error}", file=sys.stderr)
+            return 1
+        return 0
+    errors = validate(load(REGISTRY))
+    errors.extend(generate(True))
+    errors.extend(scenarios(impact))
+    errors.extend(impact_target_errors(impact, load(REGISTRY)))
+    return report(errors, "Core documentation governance check passed.")
+
+
+if __name__ == "__main__":
+    sys.exit(main())

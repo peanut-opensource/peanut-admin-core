@@ -1,30 +1,25 @@
-# Peanut Admin Developer Documentation
+# Peanut Admin Core developer documentation
 
-Peanut Admin is a reusable multi-tenant administration foundation. It combines reusable PHP and web packages, a ThinkPHP reference host, a Vue Admin Shell, module contracts, examples, and project checks in one public repository.
+Peanut Admin Core provides product-neutral PHP and Web packages, a reference Host, Module contracts, multi-tenant identity and authorization primitives, and executable examples. It is not the Peanut Admin product application and does not own product-specific Modules or deployment status.
 
-P0 is an internal alpha foundation that downstream teams can extend safely. It is not yet a finished commercial admin framework and does not contain product-specific domain logic.
+## Choose a path
 
-## Start Here
+- **First adoption:** [install the reference Runtime](./guide/installation.md), then verify the exact package identity you intend to consume.
+- **Understand the model:** read [Core concepts](./core-concepts/) and [architecture](./architecture/).
+- **Build a Module:** follow [Module development](./guide/module-development.md), including manifest, data owner, Tenant and permission boundaries.
+- **Build Admin UI:** use [Admin Web composition](./guide/admin-web.md) after the backend contract is fixed.
+- **Validate and deliver:** use [testing](./guide/testing.md), [upgrade](./guide/upgrade.md) and [troubleshooting](./guide/troubleshooting.md).
+- **Look up facts:** start at the [reference catalog](./reference/document-catalog.generated.md) and [API contract](./api/).
 
-- [Developer Guide](./guide/): install, extend, test, upgrade, and troubleshoot the current runtime.
-- [Core Concepts](./core-concepts/): understand accounts, tenants, members, platform operators, departments, and typed business targets.
-- [Architecture](./architecture/): understand package boundaries, module ownership, isolation, and composition.
-- [Engineering Standards](./standards/): follow dependency, security, documentation, and implementation rules.
-- [API Contract](./api/): track the OpenAPI 3.1 contract as it is implemented.
-- [P0 Status](./status/): see what is implemented and what remains intentionally unavailable.
+## Documentation boundary
 
-## Stable Principles
+The site is a developer-friendly projection of manifests, KernelSchema, OpenAPI, package metadata, decisions and fixed evidence. Plans and historical qualification remain discoverable through the catalog but stay out of primary navigation. If a page conflicts with its named upstream, fix the upstream relationship and smallest projection rather than adding another status summary.
 
-1. A tenant is the SaaS customer and data-isolation root. A store, warehouse, supplier, or project is a business target inside a tenant, not a tenant alias.
-2. Login identity and tenant membership are separate: `Credential -> Account -> Tenant -> TenantMember`.
-3. Platform operators use separate sessions, guards, APIs, and roles. Platform authority never implies tenant business access.
-4. Functional permission answers whether an operation may be attempted. Data permission answers which records or typed targets it may affect.
-5. Missing tenant context, module state, permission, provider, or operation declaration fails closed.
-6. A module owns its schema, rules, repositories, migrations, APIs, permissions, and public contracts. Other modules do not read or write its tables directly.
-7. Shared master data keeps one truth source and one identifier space. Ownership and scope decide who may view, use, or maintain each record.
+## Stable principles
 
-## Current Runtime Status
+1. Login identity, Tenant membership and Platform identity are separate.
+2. Functional permission and data authorization are separate fail-closed checks.
+3. A Module owns its schema, migrations, rules, APIs and public contracts.
+4. Product applications consume Core through accepted public boundaries; Core does not absorb product logic by implication.
 
-Reusable PHP and web packages, Kernel and data-permission schema, tenant and platform authentication, authorization contracts, fictional example Modules, all 75 current P0 OpenAPI handlers, the reference Admin Shell, real full-stack browser tests, local installation/upgrade workflows, and the fixed internal starter are implemented.
-
-The internal starter proves package consumption from a clean directory but is not a public generator or long-term template upgrade promise. The P0 Runtime and the subsequent external-host consumption changes have passed their fixed-commit internal qualification gates. Neither qualification is a public release or production-readiness claim.
+The [authoritative source map](./governance/authoritative-source-map.md) and [documentation impact policy](./governance/docs-impact.md) explain how these pages stay current.

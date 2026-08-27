@@ -11,6 +11,7 @@
     "build": "pnpm --filter @peanut-admin/reference-admin build && pnpm docs:build",
     "docs:dev": "vitepress docs",
     "docs:build": "vitepress build docs",
+    "docs:check": "./scripts/core-docs-governance check && vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "lint": "eslint frontend packages/web --max-warnings=0",
     "test:unit": "vitest run frontend/tests packages/web",

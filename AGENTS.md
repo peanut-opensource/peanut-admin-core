@@ -15,6 +15,8 @@ Before changing files, read in order:
 7. `docs/status/p1-execution-baseline.md` for P1 work.
 8. The task-specific files named by the controlling prompt.
 
+`docs/content-status.json` is also the unique documentation registry: it records stable document IDs and lifecycle, while its metadata groups record audience, type, upstream facts, owner domain, scope, relations, public projection and validation. `docs/document-impact-map.json` maps changed facts/code to the minimum documentation closure. These files classify documentation and do not replace manifests, KernelSchema, OpenAPI, dependency decisions or Runtime coverage. Use `./scripts/core-docs-governance check` for the static documentation gate.
+
 `company-rules/` is synchronized by CompanyOS for internal work and is intentionally Git-ignored in this public repository. External clones remain governed by this public `AGENTS.md` when that local directory is absent.
 
 ## Current Boundary

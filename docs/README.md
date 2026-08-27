@@ -1,42 +1,41 @@
-# Peanut Admin Documentation
+# Peanut Admin Core documentation
 
-This directory is the public documentation source for Peanut Admin.
+This directory is the technical and public developer documentation source for the product-neutral Peanut Admin Core. It describes package contracts and verified behavior; it does not own Peanut Admin Application capabilities, deployment state or product Modules.
 
-## Current Scope
+## Start here
 
-The buildable documentation site contains the P0 developer guide, runtime references, core concepts, architecture, engineering standards, task status, dependency decisions, and API contract. Runtime claims are bound to executable examples or current source symbols.
+| Need | Entry | Lifecycle |
+| --- | --- | --- |
+| Find the fact owner | [Authoritative source map](governance/authoritative-source-map.md) | authoritative |
+| Adopt or extend Core | [Developer guide](guide/index.md) | current |
+| Understand trust and ownership | [Core concepts](core-concepts/index.md) and [architecture](architecture/index.md) | current |
+| Look up schema, targets or packages | `reference/` | current/generated |
+| Inspect API | [API contract](api/index.md) | current projection of OpenAPI |
+| Inspect qualification/history | `status/`, `reviews/`, `releases/` | plan/evidence; not primary navigation |
+| Change documentation | [Lifecycle](governance/document-lifecycle.md) and [docs-impact](governance/docs-impact.md) | authoritative governance |
 
-Run the site locally from the repository root:
+The generated [document catalog](reference/document-catalog.generated.md) is the complete discoverability layer. `docs/content-status.json` is the only document registry.
+
+## AI reading order
+
+1. Read repository `AGENTS.md` and required status facts.
+2. Read `docs/content-status.json`, this index and the authoritative source map.
+3. Open only the owning manifest, Schema, OpenAPI, command, decision or fixed evidence.
+4. Use `docs/document-impact-map.json` to select the smallest update.
+5. Do not infer implementation from plans or qualification from commit subjects.
+6. Run `./scripts/core-docs-governance check` and the affected documentation build once.
+
+Search stable IDs in `docs/content-status.json`, then exact operation, module or package names. A path match does not determine lifecycle; check its registered status and content group.
+
+## Commands
 
 ```bash
-./scripts/bootstrap-worktree-dependencies
-pnpm docs:dev
+./scripts/core-docs-governance impact --base origin/main
+./scripts/core-docs-governance generate
+./scripts/core-docs-governance check
+pnpm docs:build
 ```
 
-If bootstrap reports an offline cache miss, run
-`./scripts/warm-worktree-dependencies` explicitly and retry bootstrap.
+The broader `./scripts/check-docs` also runs executable examples and temporary database work. It belongs to an explicitly authorized stage, not a pure static documentation change.
 
-Build the same static output used by GitHub Pages:
-
-```bash
-./scripts/check-docs
-```
-
-`check-docs` also runs `scripts/verify-doc-examples`, including a temporary MySQL installation and the fictional Module contract tutorial.
-
-## Content Status
-
-Every Markdown document under `docs/` must be registered in `content-status.json`.
-
-Allowed states:
-
-- `canonical`: current implementation fact source;
-- `draft`: incomplete and not an implementation fact source;
-- `superseded`: historical content excluded from current guidance;
-- `generated`: produced from code or schema and not manually edited.
-
-Run `./scripts/check-doc-content-status` from the repository root after adding, moving, or removing documentation.
-
-## Editing Rule
-
-Documentation and implementation must change in the same task when public behavior changes. Generated areas are updated only through their generator.
+`impact` is a closure check, not only a routing report: every required target must be changed in the same diff or named with an exact `--waive-target` and one non-empty reason. Record the classifications, closure and any waiver in the task or PR checklist.
