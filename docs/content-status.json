@@ -522,6 +522,14 @@
       "replacement": null
     },
     {
+      "id": "core-doc-status-p1-ed01-r01-settings-persistence-scope-contract",
+      "path": "docs/status/p1-ed01-r01-settings-persistence-scope-contract.md",
+      "title": "P1-ED01-R01 Settings Persistence Scope Contract",
+      "status": "planned",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
       "id": "core-doc-status-p1-execution-baseline",
       "path": "docs/status/p1-execution-baseline.md",
       "title": "P1 Execution Baseline",

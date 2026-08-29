@@ -75,6 +75,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-status-p1-cl01-ui-neutral-client-transport-contract` | `docs/status/p1-cl01-ui-neutral-client-transport-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-downstream-module-readiness-plan` | `docs/status/p1-downstream-module-readiness-plan.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-ed01-edition-persistence-scope-contract` | `docs/status/p1-ed01-edition-persistence-scope-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
+| `core-doc-status-p1-ed01-r01-settings-persistence-scope-contract` | `docs/status/p1-ed01-r01-settings-persistence-scope-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-execution-and-post-q01-roadmap` | `docs/status/p1-execution-and-post-q01-roadmap.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-execution-baseline` | `docs/status/p1-execution-baseline.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-ovr01-admin-web-override-registry-contract` | `docs/status/p1-ovr01-admin-web-override-registry-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |

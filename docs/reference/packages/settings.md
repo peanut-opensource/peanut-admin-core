@@ -45,6 +45,15 @@ A missing managed row uses the positive definition revision and a null ETag;
 clients create with `If-None-Match: *`. An existing row always has a strong
 ETag, including when it is unset, future, or expired.
 
+## Persistence scope
+
+`PdoSettingRepository` and `Schema::createSql()` default to `tenant-scoped`. A Host that stores one
+physical application partition may explicitly select `instance-scoped` and supply its fixed logical
+Tenant ID when constructing the repository. Only the Tenant ownership columns, indexes, foreign keys
+and SQL predicates of the Tenant and target value tables are omitted. Tenant/member authorization,
+target authorization, secret context and the public resolver/writer inputs remain unchanged; a
+different logical Tenant or a Schema/mode mismatch fails closed.
+
 ## Secrets
 
 The Host supplies `SecretProtector`. The reference Host reads a 32-byte active

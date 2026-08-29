@@ -15,5 +15,7 @@ database side effect. The repository never infers a scope from Schema, skips val
 driver or falls back to another mode. Cross-mode data conversion belongs to the host because it changes
 ownership and recovery semantics.
 
-The executable contract and exact current write set are recorded in
-[`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md).
+The executable contracts and exact write sets are recorded in
+[`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
+Import/Export, and [`P1-ED01-R01`](../status/p1-ed01-r01-settings-persistence-scope-contract.md) for
+Settings.
