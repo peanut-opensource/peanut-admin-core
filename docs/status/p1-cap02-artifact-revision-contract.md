@@ -38,8 +38,8 @@ required, and exposes any HTTP, OpenAPI, Web, event or product projection.
 CAP02 does not add media Article/editor/body/publishing/review rules; a generic
 document/blob/schema/diff engine; collaboration/CRDT/presence/realtime;
 Workflow or File/Media source; delete/retention/legal-hold/restore policy; Host
-HTTP/Web/npm; dependencies; qualification, adoption, publication or a DCS
-candidate.
+HTTP/Web/npm; dependencies; qualification, adoption, publication or a
+downstream-consumption candidate.
 
 ## Existing Owners And Required Reuse
 
@@ -207,6 +207,7 @@ mapping and isolated Alpha.5 consumer evidence.
 Implementation tasks run static review, exact-write-set inspection and
 `git diff --check` only; repository PR automation remains required, while the
 complete fixed-candidate evidence stays deferred to CAP05. CAP02 does not
-qualify/publish Alpha.5, change npm/application locks, nominate DCS or start
-consumption. CAP03 begins only from the final CAP02 merge commit; CAP03/CAP04
+qualify/publish Alpha.5, change npm/application locks, nominate a
+downstream-consumption candidate or start consumption. CAP03 begins only from
+the final CAP02 merge commit; CAP03/CAP04
 are not implemented in parallel with CAP02.

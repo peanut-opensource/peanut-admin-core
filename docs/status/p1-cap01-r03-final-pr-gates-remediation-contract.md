@@ -49,7 +49,8 @@ atomically while preserving the real HTTP readiness check.
 This remediation does not add Workflow behavior, alter schema, change tests,
 weaken static analysis, reserve a fixed port, retry a failed test group, change
 performance limits, add dependencies, change package versions, publish a
-package, move a downstream lock, start CAP02 or nominate a DCS candidate.
+package, move a downstream lock, start CAP02 or nominate a
+downstream-consumption candidate.
 
 ## Exact Implementation Write Set
 
@@ -82,5 +83,5 @@ groups are not manually rerun.
 
 CAP01 closes only after PR #7 is merged into `dev`. CAP02 must pin that exact
 40-character merge commit. R03 does not qualify CAP01 under CAP05, adopt it
-under CAP06, publish Alpha.5 or form the `PA-DCS-ADOPT-01` candidate; that
+under CAP06, publish Alpha.5 or form a downstream-adoption candidate; that
 candidate remains `UNKNOWN` until the minimum consumable Starter Gate exists.

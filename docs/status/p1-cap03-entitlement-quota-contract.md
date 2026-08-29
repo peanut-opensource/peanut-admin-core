@@ -38,7 +38,7 @@ or absent policy.
 CAP03 does not add SaaS billing; commercial-license enforcement; product meter
 names; floating-point money or quantities; middleware-wide enforcement; a
 super-user/unlimited bypass; HTTP, OpenAPI or Web UI; application consumption;
-package publication; or a DCS candidate.
+package publication; or a downstream-consumption candidate.
 
 ## Existing Owners And Required Reuse
 
@@ -208,5 +208,5 @@ evidence.
 Implementation tasks use static review, exact-write-set inspection and
 `git diff --check`; repository PR automation remains required. Complete fixed
 candidate evidence stays deferred to CAP05. CAP03 does not qualify or publish
-Alpha.5, move application locks, nominate DCS or start CAP04. CAP04 begins only
+Alpha.5, move application locks, nominate a downstream-consumption candidate or start CAP04. CAP04 begins only
 from the final CAP03 merge commit.
