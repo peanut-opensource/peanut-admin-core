@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3dac357520db055189bd94c9af30d445",
+    "content-hash": "9d737411134580d358805162a1899df3",
     "packages": [
         {
             "name": "composer/semver",
@@ -275,11 +275,11 @@
         },
         {
             "name": "peanut-admin/core",
-            "version": "0.1.0-alpha.2",
+            "version": "0.1.0-alpha.10",
             "dist": {
                 "type": "path",
                 "url": "../packages/php",
-                "reference": "d36c20ed63ddf690d17337157778e7954dcb826f"
+                "reference": "3b4309717417f6d7f8c132e1f7931e96956f10db"
             },
             "require": {
                 "ext-fileinfo": "*",
@@ -296,7 +296,9 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
+                    "PeanutAdmin\\ArtifactRevision\\": "artifact-revision/src/",
                     "PeanutAdmin\\DataPermission\\": "data-permission/src/",
+                    "PeanutAdmin\\EntitlementQuota\\": "entitlement-quota/src/",
                     "PeanutAdmin\\FileMedia\\": "file-media/src/",
                     "PeanutAdmin\\ImportExport\\": "import-export/src/",
                     "PeanutAdmin\\IntegrationSecurity\\": "integration-security/src/",
@@ -305,18 +307,22 @@
                     "PeanutAdmin\\OpsConsole\\": "ops-console/src/",
                     "PeanutAdmin\\ReferenceCodes\\": "reference-codes/src/",
                     "PeanutAdmin\\Settings\\": "settings/src/",
-                    "PeanutAdmin\\TaskJob\\": "task-job/src/"
+                    "PeanutAdmin\\TaskJob\\": "task-job/src/",
+                    "PeanutAdmin\\Workflow\\": "workflow/src/"
                 }
             },
             "autoload-dev": {
                 "psr-4": {
+                    "PeanutAdmin\\ArtifactRevision\\Tests\\": "artifact-revision/tests/",
                     "PeanutAdmin\\DataPermission\\Tests\\": "data-permission/tests/",
+                    "PeanutAdmin\\EntitlementQuota\\Tests\\": "entitlement-quota/tests/",
                     "PeanutAdmin\\FileMedia\\Tests\\": "file-media/tests/",
                     "PeanutAdmin\\Kernel\\Tests\\": "kernel/tests/",
                     "PeanutAdmin\\ReferenceCodes\\Tests\\": "reference-codes/tests/",
                     "PeanutAdmin\\Settings\\Tests\\": "settings/tests/",
                     "PeanutAdmin\\Testing\\": "testing/src/",
-                    "PeanutAdmin\\Testing\\Tests\\": "testing/tests/"
+                    "PeanutAdmin\\Testing\\Tests\\": "testing/tests/",
+                    "PeanutAdmin\\Workflow\\Tests\\": "workflow/tests/"
                 }
             },
             "license": [
