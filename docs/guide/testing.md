@@ -77,6 +77,9 @@ commit when preparing a Starter v1 milestone, qualification, or release
 candidate. That concentrated gate includes the full regression and browser
 matrix, clean install and upgrade, backup and restore, performance, starter
 reproducibility, and independent fixed-commit review required by the candidate.
+The secret gate scans the complete history reachable from the fixed candidate
+`HEAD` plus all current tracked and untracked files; unrelated local Git refs
+from another branch, worktree, or tool snapshot are not candidate evidence.
 `./scripts/verify-internal-starter` creates and installs two independent starter
 copies and belongs only to this fixed-candidate or qualification phase.
 

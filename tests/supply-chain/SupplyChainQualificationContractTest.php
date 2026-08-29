@@ -26,6 +26,10 @@ final class SupplyChainQualificationContractTest extends TestCase
         self::assertStringContainsString('./scripts/check-secrets', $gate);
         self::assertStringContainsString('./scripts/check-third-party-licenses', $gate);
         self::assertStringContainsString(
+            'gitleaks git --log-opts=HEAD',
+            (string) file_get_contents($this->root . '/scripts/check-secrets'),
+        );
+        self::assertStringContainsString(
             'third-party-licenses.generated.md',
             (string) file_get_contents($this->root . '/scripts/check-third-party-licenses'),
         );
