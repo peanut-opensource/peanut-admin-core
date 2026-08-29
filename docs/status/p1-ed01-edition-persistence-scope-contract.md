@@ -35,8 +35,10 @@ publish a package. The default constructor and schema API remain `tenant-scoped`
   different context fails closed; a caller cannot select or relabel the single physical partition.
 - Transactions, locking, lease fences, idempotency replay, retries, checksums, retention and state
   transitions are unchanged. Mode mismatch, invalid logical context or missing expected columns fails
-  closed before a repository operation can modify data. Repositories validate their owned tables against
-  the explicitly selected mode; they do not auto-detect, switch modes or issue a compatibility query.
+  closed before repository SQL can read or modify data. Each repository validates its owned tables once,
+  when its first operation begins, and reuses that result only for the lifetime of that repository
+  instance. Construction and Host composition do not access the database. Repositories do not
+  auto-detect, switch modes, skip validation for a non-MySQL test double or issue a compatibility query.
 
 There is no migration in this repository. The consuming application owns Edition-specific fresh
 Schema and upgrade migrations. Downgrade and cross-mode conversion are outside this task.
