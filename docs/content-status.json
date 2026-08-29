@@ -1082,6 +1082,14 @@
       "replacement": null
     },
     {
+      "id": "core-doc-decisions-releases-p1-ed01-alpha10-publication-approval",
+      "path": "docs/decisions/releases/p1-ed01-alpha10-publication-approval.md",
+      "title": "P1-ED01 Alpha.10 Publication Approval",
+      "status": "current",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
       "id": "core-doc-status-p1-ovr01-admin-web-override-registry-contract",
       "path": "docs/status/p1-ovr01-admin-web-override-registry-contract.md",
       "title": "P1-OVR01 Admin Web Override Registry Contract",

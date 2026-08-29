@@ -1,4 +1,4 @@
-name: Publish public packages
+name: Publish npm package and GitHub Release
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish Composer and npm packages
+    name: Publish npm package and GitHub Release
     runs-on: ubuntu-24.04
     environment: npm-release
     env:
@@ -63,6 +63,16 @@ jobs:
           # this publication-identity warning to a failure.
           composer validate --no-check-publish --working-dir="$projection"
           tar -czf "$RUNNER_TEMP/peanut-admin-core-${GITHUB_REF_NAME}.tar.gz" -C "$projection" .
+
+      - name: Verify published Composer split identity
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          split="$RUNNER_TEMP/composer-split"
+          git clone --depth 1 --branch "$GITHUB_REF_NAME" \
+            https://github.com/peanut-opensource/peanut-admin-core-php.git "$split"
+          rm -rf "$split/.git"
+          diff -ru "$RUNNER_TEMP/composer-projection" "$split"
 
       - name: Publish npm package
         shell: bash

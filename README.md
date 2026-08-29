@@ -47,10 +47,10 @@ tree `d6dbde37907d1dd43b00057fc16fbd1a8d6dd052`. It provides versioned
 definitions, Tenant instances, human work items, immutable subject-revision
 pins and adapters to the existing authorization, File/Media, Task/Job,
 Notification/SMS and audit authorities. It contains no media product model or
-realtime editing implementation. The unpublished Alpha.5 Composer projection
-remains unqualified, unadopted and unpublished until CAP05, CAP06 and a
-separate publication approval. The core package version line is independent of
-the Peanut Admin application v1.0.0 release.
+realtime editing implementation. Later prereleases incorporated this source;
+historical Alpha.5 planning text is not the current package identity. The Core
+package version line remains independent of every Peanut Admin application
+release.
 
 Starter v1 C02 adds an unqualified first-party File And Media candidate with a
 provider-neutral PHP boundary, a local private development adapter,
@@ -68,13 +68,13 @@ release, or downstream consumption lock.
 
 P1-PKG01 consolidates the installable Runtime surface into exactly two public
 package boundaries: Composer package `peanut-admin/core` and npm package
-`@peanut-admin/admin`. The historical Alpha.2 projection was published for
-both boundaries; the npm line later published Alpha.3 and Alpha.4 while the
-Composer application baseline remains Alpha.2. Domain source directories
-remain separate inside those packages and are not independently installable or
-publishable. The Workflow source candidate advances only the unpublished
-Composer projection toward Alpha.5; it is not a registry publication, stable
-compatibility promise or downstream consumption approval.
+`@peanut-admin/admin`. Current manifests prepare the coordinated
+`0.1.0-alpha.10` candidate, including product-neutral tenant-scoped and
+instance-scoped persistence for Idempotency, Task/Job and Import/Export. A
+branch or manifest value is not consumable release evidence: the exact source
+tag, generated Composer split tag, Packagist version, npm version and clean
+consumers must all agree. Domain source directories remain private inside the
+two public packages and are not independently publishable.
 
 ## Principles
 

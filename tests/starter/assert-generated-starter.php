@@ -89,7 +89,7 @@ $frontend = json_decode(
     JSON_THROW_ON_ERROR,
 );
 foreach ([
-    '@peanut-admin/admin' => 'workspace:0.1.0-alpha.9',
+    '@peanut-admin/admin' => 'workspace:0.1.0-alpha.10',
 ] as $package => $version) {
     if (($frontend['dependencies'][$package] ?? null) !== $version) {
         fwrite(STDERR, "ERROR: starter must lock {$package} to {$version}\n");
