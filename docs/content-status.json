@@ -442,6 +442,14 @@
       "replacement": null
     },
     {
+      "id": "core-doc-architecture-edition-persistence-scope",
+      "path": "docs/architecture/edition-persistence-scope.md",
+      "title": "Edition-neutral Persistence Scope",
+      "status": "current",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
       "id": "core-doc-standards-index",
       "path": "docs/standards/index.md",
       "title": "Engineering Standards",
@@ -502,6 +510,14 @@
       "path": "docs/status/index.md",
       "title": "Core Status",
       "status": "authoritative",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-status-p1-ed01-edition-persistence-scope-contract",
+      "path": "docs/status/p1-ed01-edition-persistence-scope-contract.md",
+      "title": "P1-ED01 Edition Persistence Scope Contract",
+      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },

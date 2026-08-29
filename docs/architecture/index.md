@@ -32,7 +32,7 @@ authenticate tenant audience
 -> write audience-aware audit event
 ```
 
-Tenant-owned tables use `tenant_id NOT NULL`. Tenant identifiers come from trusted server context, remain immutable after creation, and participate in tenant-local uniqueness and cross-table constraints. `0`, `NULL`, or a magic string never represents platform scope.
+Tenant-scoped persistence tables use `tenant_id NOT NULL`. Tenant identifiers come from trusted server context, remain immutable after creation, and participate in tenant-local uniqueness and cross-table constraints. `0`, `NULL`, or a magic string never represents platform scope. A host that distributes an instance-scoped artifact keeps the same trusted logical context while omitting Tenant ownership columns only through the explicit [edition-neutral persistence scope](./edition-persistence-scope.md) contract.
 
 ## Functional And Data Authorization
 
