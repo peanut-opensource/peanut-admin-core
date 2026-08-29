@@ -11,7 +11,7 @@ composer_candidate: peanut-admin/core@0.1.0-alpha.5
 composer_projection_sha256: ca30576ae9f671197c0050fea8a42e7d7e61b5c0f43abebd69aec99cd43e5c0e
 npm_candidate: @peanut-admin/admin@0.1.0-alpha.5
 npm_projection_sha256: 5d01076276a4599682b65fcfde812f5fe201c3e597f2fab38b8ef23cbabe8c80
-downstream_repository: /Users/xing/Documents/company-projects/peanut-admin
+downstream_repository: operator-supplied external application repository
 downstream_prerequisite_commit: 09eeb747c3fbe4f261da4fa6900d777796ab717f
 test_owner: P1-CROSS-PRODUCT-DOWNSTREAM-001
 qualification: private exact-commit adoption only
@@ -66,7 +66,7 @@ CAP06 does not:
 - migrate every existing application path to Alpha.5, remove all historical
   application behavior, or start the planned media-resource-management
   repository; or
-- nominate a DCS candidate or start SaaS01. Those decisions require separate
+- nominate a downstream-consumption candidate or start SaaS01. Those decisions require separate
   contracts and evidence.
 
 ## Immutable Input And Artifact Contract
