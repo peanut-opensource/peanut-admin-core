@@ -11,6 +11,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-api-problems-module-installation-failed` | `docs/api/problems/module-installation-failed.md` | `current` | `reference` | `Peanut Admin maintainers` |
 | `core-doc-api-problems-precondition-required` | `docs/api/problems/precondition-required.md` | `current` | `reference` | `Peanut Admin maintainers` |
 | `core-doc-api-problems-validation-failed` | `docs/api/problems/validation-failed.md` | `current` | `reference` | `Peanut Admin maintainers` |
+| `core-doc-architecture-edition-persistence-scope` | `docs/architecture/edition-persistence-scope.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-architecture-index` | `docs/architecture/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-core-concepts-index` | `docs/core-concepts/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-index` | `docs/decisions/dependencies/index.md` | `current` | `decision` | `Peanut Admin maintainers` |
@@ -72,6 +73,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-status-p1-cap06-private-downstream-adoption-contract` | `docs/status/p1-cap06-private-downstream-adoption-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-cl01-ui-neutral-client-transport-contract` | `docs/status/p1-cl01-ui-neutral-client-transport-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-downstream-module-readiness-plan` | `docs/status/p1-downstream-module-readiness-plan.md` | `planned` | `plan` | `Peanut Admin maintainers` |
+| `core-doc-status-p1-ed01-edition-persistence-scope-contract` | `docs/status/p1-ed01-edition-persistence-scope-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-execution-and-post-q01-roadmap` | `docs/status/p1-execution-and-post-q01-roadmap.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-execution-baseline` | `docs/status/p1-execution-baseline.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-ovr01-admin-web-override-registry-contract` | `docs/status/p1-ovr01-admin-web-override-registry-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |

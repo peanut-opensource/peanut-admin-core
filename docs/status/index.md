@@ -19,6 +19,11 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 
 ## Active plans and candidate contracts
 
+- [P1-ED01 Edition persistence scope](./p1-ed01-edition-persistence-scope-contract.md)
+  records the approved, not-yet-implemented product-neutral persistence contract required by hosts
+  that distribute tenant-scoped and instance-scoped artifacts. It does not move the fixed downstream
+  lock or publish a package.
+
 - [P1 Execution Baseline](./p1-execution-baseline.md) — execution constraints
   and prerequisites; it is not implementation proof.
 - [P1 Downstream Module Readiness Plan](./p1-downstream-module-readiness-plan.md)
