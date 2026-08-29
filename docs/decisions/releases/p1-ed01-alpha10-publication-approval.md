@@ -5,13 +5,14 @@ Document ID: `core-doc-decisions-releases-p1-ed01-alpha10-publication-approval`
 ## Status
 
 ```text
-state: conditionally approved
+state: superseded after incomplete publication attempt
 source_branch: dev
 composer_package: peanut-admin/core@0.1.0-alpha.10
 npm_package: @peanut-admin/admin@0.1.0-alpha.10
 npm_dist_tag: alpha
 immutable_tag: v0.1.0-alpha.10
-publication_authorized: true after every gate below passes on one fixed candidate
+publication_authorized: false; immutable tag retained as historical evidence
+superseded_by: v0.1.0-alpha.11
 ```
 
 Alpha.10 is the first coordinated package release authorized to include the
@@ -51,3 +52,13 @@ qualification and formal publication needed by the dual-Edition application
 delivery path. This approval applies only to Alpha.10 after the gates above and
 does not authorize unrelated Core features, stable `0.1.0`, production data,
 credentials in source, or automatic Peanut Admin adoption.
+
+## Publication Outcome
+
+The source tag was created at `fe633c1765e41589d70348af44b5e0e27e332ab1` after its fixed-tree
+qualification. The generated Composer split tag also exists. The source-tag workflow then stopped
+at npm's interactive one-time-password requirement before publishing npm or creating the GitHub
+Release, and Packagist was not refreshed. The immutable tag and split tag remain unchanged.
+
+The later Settings persistence-scope closure is not in that tag. The corrective release therefore
+uses Alpha.11; no Alpha.10 tag, package, split or registry identity is overwritten or deleted.

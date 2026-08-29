@@ -24,7 +24,7 @@ Packages recorded: **561**.
 | Composer | `opis/json-schema` | `2.6.0` | `Apache-2.0` |
 | Composer | `opis/string` | `2.1.0` | `Apache-2.0` |
 | Composer | `opis/uri` | `1.1.0` | `Apache-2.0` |
-| Composer | `peanut-admin/core` | `0.1.0-alpha.10` | `Apache-2.0` |
+| Composer | `peanut-admin/core` | `0.1.0-alpha.11` | `Apache-2.0` |
 | Composer | `phar-io/manifest` | `2.0.4` | `BSD-3-Clause` |
 | Composer | `phar-io/version` | `3.2.1` | `BSD-3-Clause` |
 | Composer | `phpdocumentor/graphviz` | `2.1.0` | `MIT` |
