@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-10T19:50:00+08:00",
-  "task": "ADMIN-WEB-ALPHA4-UNIAPP-PEER-CANDIDATE",
-  "prerequisite_commit": "2f07186a70b3351605cb87c0f5c3f0d7013aa6be",
+  "generated_at": "2026-08-30T05:23:29+08:00",
+  "task": "CORE-ALPHA10-CURRENT-LOCK-EVIDENCE",
+  "prerequisite_commit": "db19b2243ae3752af8ff84201d32fb1e63ff3fcb",
   "candidate_commit": "the commit containing this evidence",
-  "slice_status": "admin-web-alpha4-uniapp-peer-candidate",
-  "third_party_dependency_change": false,
+  "slice_status": "core-alpha10-current-lock-evidence",
+  "third_party_dependency_change": true,
   "public_runtime_packages": [
-    "peanut-admin/core@0.1.0-alpha.2",
-    "@peanut-admin/admin@0.1.0-alpha.4"
+    "peanut-admin/core@0.1.0-alpha.10",
+    "@peanut-admin/admin@0.1.0-alpha.10"
   ],
   "toolchain": {
     "php": "8.3.24",
@@ -18,20 +18,20 @@
   },
   "locks": {
     "composer.lock": {
-      "sha256": "65efd044c5277b09c3cb73048d14494e126dc33d3fdd3ddc8ff88444ba6d65f0",
-      "delta": "peanut-admin/core first-party version and path reference only"
+      "sha256": "8eea2b96cb8052bbf4681f7ff89922f6bf9f574250ef559b9c1251bd63fcb570",
+      "delta": "peanut-admin/core first-party version, path reference and package autoload surface updated for alpha.10; third-party resolutions unchanged"
     },
     "pnpm-lock.yaml": {
-      "sha256": "0dedd353b50b34670349dfbd7bd1702b39cd3df8f16843acb747bf43e8920068",
-      "delta": "@peanut-admin/admin workspace specifier updated for alpha.9 and nanoid security override"
+      "sha256": "3230081d0d22f66e190f3661dca8ed0bfe56d4a4cec32486bca193d8416d42e3",
+      "delta": "@peanut-admin/admin workspace specifier updated for alpha.10, its optional host peers moved to development resolution, and the nanoid security override resolves 3.3.18"
     },
     "starter/backend/composer.lock": {
-      "sha256": "9667edf7b9a6a0b5d151f5697919cee34fc198cf17697860089fe423af63a923",
-      "delta": "peanut-admin/core first-party version and path reference only"
+      "sha256": "3967565c1fa7db670f8c657cd248d3e3eecacb593e3ef0fcf29bef680b9d1031",
+      "delta": "peanut-admin/core first-party version, path reference and package autoload surface updated for alpha.10; third-party resolutions unchanged"
     },
     "starter/pnpm-lock.yaml": {
-      "sha256": "d3f8fdc0d5321035ec0b11308c6ed48bc8e8da7b68a7e252aebb5a1916987067",
-      "delta": "@peanut-admin/admin workspace specifier updated for alpha.9"
+      "sha256": "15a221126c64f272fd46bf6b8ebf164e3ac278db1321d66c3271291037ff5c31",
+      "delta": "@peanut-admin/admin workspace specifier updated for alpha.10 and its optional host peers moved to development resolution"
     }
   },
   "verification": {
@@ -40,7 +40,7 @@
     "publication": "not authorized"
   },
   "notes": [
-    "No third-party version or resolution changed in this candidate; the Admin Web Vue peer range is relaxed from ^3.5.39 to ^3.4.21, Element Plus and Pinia become optional host peers, and the unused Vue Router dependency leaves the public package while remaining in the reference Host and starter.",
+    "The only third-party resolution change since the prior current-lock evidence is the accepted root development override from nanoid 3.3.17 to 3.3.18; the other lock movement records first-party alpha.10 package identities and the Admin Web host-peer boundary.",
     "Historical P1-PKG01 and P1-PKG02 lock evidence remains unchanged.",
     "This evidence does not publish a package, create a tag or Release, or approve downstream consumption."
   ]
