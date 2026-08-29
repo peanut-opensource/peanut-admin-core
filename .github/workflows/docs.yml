@@ -13,6 +13,8 @@ on:
       - 'scripts/bootstrap-worktree-dependencies'
       - 'scripts/warm-worktree-dependencies'
       - 'scripts/check-docs'
+      - 'scripts/check-doc-content-status'
+      - 'scripts/core-docs-governance'
       - 'scripts/verify-doc-examples'
       - '.github/workflows/docs.yml'
   workflow_dispatch:

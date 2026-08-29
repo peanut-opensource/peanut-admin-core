@@ -11,13 +11,14 @@
     "build": "pnpm --filter @peanut-admin/reference-admin build && pnpm docs:build",
     "docs:dev": "vitepress docs",
     "docs:build": "vitepress build docs",
+    "docs:check": "./scripts/core-docs-governance check && vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "lint": "eslint frontend packages/web --max-warnings=0",
     "test:unit": "vitest run frontend/tests packages/web",
     "typecheck": "pnpm --recursive --if-present typecheck"
   },
   "devDependencies": {
-    "@peanut-admin/admin": "workspace:0.1.0-alpha.9",
+    "@peanut-admin/admin": "workspace:0.1.0-alpha.10",
     "@playwright/test": "1.61.1",
     "@redocly/cli": "2.39.0",
     "@types/node": "24.10.1",

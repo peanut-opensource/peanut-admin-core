@@ -74,7 +74,7 @@ $composer = json_decode(
 foreach ([
     'composer/semver' => '3.4.4',
     'opis/json-schema' => '2.6.0',
-    'peanut-admin/core' => '0.1.0-alpha.2',
+    'peanut-admin/core' => '0.1.0-alpha.10',
 ] as $package => $version) {
     if (($composer['require'][$package] ?? null) !== $version) {
         fwrite(STDERR, "ERROR: starter must lock {$package} to {$version}\n");
@@ -89,7 +89,7 @@ $frontend = json_decode(
     JSON_THROW_ON_ERROR,
 );
 foreach ([
-    '@peanut-admin/admin' => 'workspace:0.1.0-alpha.9',
+    '@peanut-admin/admin' => 'workspace:0.1.0-alpha.10',
 ] as $package => $version) {
     if (($frontend['dependencies'][$package] ?? null) !== $version) {
         fwrite(STDERR, "ERROR: starter must lock {$package} to {$version}\n");

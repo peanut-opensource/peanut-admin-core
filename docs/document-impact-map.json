@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "classifications": {
+    "none": "No public behavior, contract, owner, command, configuration or architecture changed; record the reason.",
+    "technical": "Update the affected Core contract or maintainer explanation.",
+    "developer-site": "Update the public developer projection after its upstream fact.",
+    "generated": "Regenerate checked-in API, type or documentation projections.",
+    "architecture-decision": "Record an accepted package, trust, data-owner or Core/Application boundary decision first."
+  },
+  "rules": [
+    {
+      "id": "internal-refactor",
+      "paths": ["packages/php/**/*.php", "packages/web/src/**/*", "backend/app/**/*.php", "frontend/src/**/*"],
+      "classifications": ["none"],
+      "upstream": ["changed implementation"],
+      "technical_docs": [],
+      "site_docs": [],
+      "generated": []
+    },
+    {
+      "id": "http-api",
+      "paths": ["docs/api/openapi.yaml", "backend/route/**/*.php", "backend/app/**/*Controller.php", "scripts/check-openapi"],
+      "classifications": ["technical", "developer-site", "generated"],
+      "upstream": ["docs/api/openapi.yaml", "route and handler"],
+      "technical_docs": ["docs/api/index.md", "docs/status/runtime-operation-coverage.json"],
+      "site_docs": ["docs/api/index.md", "docs/guide/module-development.md"],
+      "generated": ["backend/route/openapi-generated.php", "packages/web/admin-core/src/generated/api.d.ts"]
+    },
+    {
+      "id": "cli-command",
+      "paths": ["scripts/*", "backend/think", "backend/app/**/command/**/*.php"],
+      "exclude_paths": ["scripts/core-docs-governance"],
+      "classifications": ["technical", "developer-site"],
+      "upstream": ["executable and --help output"],
+      "technical_docs": ["docs/guide/installation.md", "docs/guide/testing.md"],
+      "site_docs": ["docs/guide/installation.md", "docs/guide/troubleshooting.md"],
+      "generated": []
+    },
+    {
+      "id": "schema-owner",
+      "paths": ["packages/php/kernel/src/Schema/*.php", "packages/php/kernel/src/Schema/**/*.php", "kernel/src/Schema/*.php", "kernel/src/Schema/**/*.php", "**/module.json", "**/migrations/**/*"],
+      "classifications": ["architecture-decision", "technical", "developer-site"],
+      "upstream": ["KernelSchema", "module.json", "Module migration owner"],
+      "technical_docs": ["docs/reference/kernel-schema.md", "docs/architecture/index.md"],
+      "site_docs": ["docs/guide/module-development.md", "docs/guide/upgrade.md"],
+      "generated": []
+    },
+    {
+      "id": "module-manifest",
+      "paths": ["**/module.json", "packages/php/kernel/src/Module/**/*"],
+      "classifications": ["technical", "developer-site"],
+      "upstream": ["module.json", "packages/php/kernel/resources/module-manifest.schema.json"],
+      "technical_docs": ["docs/architecture/index.md", "docs/guide/module-development.md"],
+      "site_docs": ["docs/guide/module-development.md"],
+      "generated": []
+    },
+    {
+      "id": "environment-command",
+      "paths": ["compose.yaml", "profiles/**/*", "scripts/preflight", "scripts/install", "scripts/upgrade"],
+      "classifications": ["technical", "developer-site"],
+      "upstream": ["compose/configuration and executable help"],
+      "technical_docs": ["docs/guide/installation.md", "docs/guide/upgrade.md"],
+      "site_docs": ["docs/guide/installation.md", "docs/guide/troubleshooting.md"],
+      "generated": []
+    },
+    {
+      "id": "runtime-status",
+      "paths": ["docs/status/runtime-operation-coverage.json", "docs/status/*.md", "docs/reviews/*.md", "docs/releases/*.md"],
+      "classifications": ["technical"],
+      "upstream": ["runtime coverage ledger and fixed-commit evidence"],
+      "technical_docs": ["docs/status/index.md"],
+      "site_docs": [],
+      "generated": []
+    },
+    {
+      "id": "architecture-boundary",
+      "paths": ["composer.json", "package.json", "deptrac.yaml", "packages/php/**/composer.json", "packages/web/package.json", "docs/architecture/*.md", "docs/decisions/**/*.md"],
+      "classifications": ["architecture-decision", "technical", "developer-site"],
+      "upstream": ["accepted decision", "package manifests", "dependency graph"],
+      "technical_docs": ["docs/architecture/index.md", "docs/governance/authoritative-source-map.md"],
+      "site_docs": ["docs/core-concepts/index.md", "docs/guide/module-development.md"],
+      "generated": []
+    },
+    {
+      "id": "documentation-governance",
+      "paths": ["docs/content-status.json", "docs/document-impact-map.json", "docs/governance/**/*.md", "scripts/core-docs-governance", "docs/.vitepress/config.ts"],
+      "classifications": ["technical", "developer-site", "generated"],
+      "upstream": ["docs/content-status.json", "docs/document-impact-map.json"],
+      "technical_docs": ["docs/README.md", "docs/governance/authoritative-source-map.md"],
+      "site_docs": ["docs/index.md"],
+      "generated": ["docs/reference/document-catalog.generated.md"]
+    }
+  ],
+  "scenarios": [
+    {"id": "internal-refactor", "path": "packages/php/kernel/src/Support/Example.php", "must_include": ["none"], "must_not_include": ["developer-site"]},
+    {"id": "http-api", "path": "docs/api/openapi.yaml", "must_include": ["technical", "developer-site", "generated"], "must_not_include": ["none"]},
+    {"id": "cli-command", "path": "scripts/example-command", "must_include": ["technical", "developer-site"], "must_not_include": ["architecture-decision"]},
+    {"id": "schema-owner", "path": "packages/php/kernel/src/Schema/ExampleSchema.php", "must_include": ["architecture-decision", "technical", "developer-site"], "must_not_include": ["none"]},
+    {"id": "module-manifest", "path": "kernel/module.json", "must_include": ["technical", "developer-site"], "must_not_include": ["none", "generated"]},
+    {"id": "environment", "path": "compose.yaml", "must_include": ["technical", "developer-site"], "must_not_include": ["none"]},
+    {"id": "runtime-status", "path": "docs/status/runtime-operation-coverage.json", "must_include": ["technical"], "must_not_include": ["developer-site"]},
+    {"id": "architecture-boundary", "path": "composer.json", "must_include": ["architecture-decision", "technical", "developer-site"], "must_not_include": ["none"]}
+  ]
+}
