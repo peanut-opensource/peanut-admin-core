@@ -16,7 +16,8 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-core-concepts-index` | `docs/core-concepts/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-index` | `docs/decisions/dependencies/index.md` | `current` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-p1-cap04-collaboration` | `docs/decisions/dependencies/p1-cap04-collaboration.md` | `current` | `decision` | `Peanut Admin maintainers` |
-| `core-doc-decisions-releases-p1-ed01-alpha10-publication-approval` | `docs/decisions/releases/p1-ed01-alpha10-publication-approval.md` | `current` | `decision` | `Peanut Admin maintainers` |
+| `core-doc-decisions-releases-p1-ed01-alpha10-publication-approval` | `docs/decisions/releases/p1-ed01-alpha10-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
+| `core-doc-decisions-releases-p1-ed01-alpha11-publication-approval` | `docs/decisions/releases/p1-ed01-alpha11-publication-approval.md` | `current` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-releases-p1-pkg02-publication-approval` | `docs/decisions/releases/p1-pkg02-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-releases-p1-pkg03-alpha2-publication-approval` | `docs/decisions/releases/p1-pkg03-alpha2-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-governance-authoritative-source-map` | `docs/governance/authoritative-source-map.md` | `authoritative` | `guide` | `Peanut Admin maintainers` |

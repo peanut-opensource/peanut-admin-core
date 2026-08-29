@@ -1093,6 +1093,14 @@
       "id": "core-doc-decisions-releases-p1-ed01-alpha10-publication-approval",
       "path": "docs/decisions/releases/p1-ed01-alpha10-publication-approval.md",
       "title": "P1-ED01 Alpha.10 Publication Approval",
+      "status": "archived",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-decisions-releases-p1-ed01-alpha11-publication-approval",
+      "path": "docs/decisions/releases/p1-ed01-alpha11-publication-approval.md",
+      "title": "P1-ED01 Alpha.11 Publication Approval",
       "status": "current",
       "owner": "Peanut Admin maintainers",
       "replacement": null

@@ -17,7 +17,7 @@ importers:
   .:
     devDependencies:
       '@peanut-admin/admin':
-        specifier: workspace:0.1.0-alpha.10
+        specifier: workspace:0.1.0-alpha.11
         version: link:packages/web
       '@playwright/test':
         specifier: 1.61.1
