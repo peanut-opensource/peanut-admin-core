@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-for required_port in MYSQL_PORT DB_PORT; do
+for required_port in MYSQL_PORT DB_PORT PEANUT_STARTER_BACKEND_PORT PEANUT_STARTER_FRONTEND_PORT; do
   value="${!required_port-}"
   if [[ -z "$value" ]]; then
     echo "ERROR: $required_port is required for starter verification" >&2
@@ -173,20 +173,7 @@ pnpm --dir "$first" typecheck
 pnpm --dir "$first" test
 pnpm --dir "$first" build
 
-free_port() {
-  php -r '
-  $socket = stream_socket_server("tcp://127.0.0.1:0", $errorCode, $errorMessage);
-  if ($socket === false) {
-      fwrite(STDERR, "ERROR: {$errorMessage}\n");
-      exit(1);
-  }
-  $name = stream_socket_get_name($socket, false);
-  fclose($socket);
-  echo substr((string) strrchr((string) $name, ":"), 1);
-  '
-}
-
-backend_port="$(free_port)"
+backend_port="$PEANUT_STARTER_BACKEND_PORT"
 
 php -S "127.0.0.1:$backend_port" \
   -t "$first/backend/public" \
@@ -196,7 +183,7 @@ backend_pid="$!"
 
 NO_COLOR=1 pnpm --dir "$first" --filter @peanut-admin/internal-starter-admin preview \
   --host 127.0.0.1 \
-  --port 0 \
+  --port "$PEANUT_STARTER_FRONTEND_PORT" \
   --strictPort \
   >"$workdir/frontend.log" 2>&1 &
 frontend_pid="$!"

@@ -18,7 +18,7 @@
     "typecheck": "pnpm --recursive --if-present typecheck"
   },
   "devDependencies": {
-    "@peanut-admin/admin": "workspace:0.1.0-alpha.9",
+    "@peanut-admin/admin": "workspace:0.1.0-alpha.10",
     "@playwright/test": "1.61.1",
     "@redocly/cli": "2.39.0",
     "@types/node": "24.10.1",
