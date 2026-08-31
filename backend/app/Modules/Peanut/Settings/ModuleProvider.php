@@ -12,4 +12,9 @@ final class ModuleProvider implements ModuleProviderContract
     {
         return 'peanut.settings';
     }
+
+    public function bindings(): array
+    {
+        return [];
+    }
 }

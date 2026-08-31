@@ -13,4 +13,9 @@ final class ModuleProvider implements ModuleProviderContract
     {
         return ModuleKey::fromString('peanut.settings')->value();
     }
+
+    public function bindings(): array
+    {
+        return [];
+    }
 }

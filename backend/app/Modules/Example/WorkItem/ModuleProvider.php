@@ -34,6 +34,11 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return 'example.work-item';
     }
 
+    public function bindings(): array
+    {
+        return [WorkItemRuntimeProvider::class => self::class];
+    }
+
     public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void
     {
         $provider = new WorkItemPolicyProvider(new StandardResourcePolicyProvider(

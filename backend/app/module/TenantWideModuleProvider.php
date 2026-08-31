@@ -31,6 +31,11 @@ abstract class TenantWideModuleProvider implements
 {
     abstract protected function tenantColumn(): string;
 
+    public function bindings(): array
+    {
+        return [];
+    }
+
     public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void
     {
         $registry->registerResourceProvider(static::class, $this);
