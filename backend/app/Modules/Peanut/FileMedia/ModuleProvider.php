@@ -34,6 +34,11 @@ final class ModuleProvider implements
         return 'peanut.file-media';
     }
 
+    public function bindings(): array
+    {
+        return [];
+    }
+
     public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void
     {
         $registry->registerResourceProvider(self::class, $this);

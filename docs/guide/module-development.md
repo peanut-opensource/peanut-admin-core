@@ -49,6 +49,19 @@ The manifest must pass the versioned JSON Schema. A minimal capability declares 
 }
 ```
 
+`backend.routes` is not a manifest field. HTTP route ownership belongs to the
+Host Application; `frontend.routes` remains a valid build-time frontend
+contribution.
+
+Every provider implements `bindings()` and returns only an associative map of
+contract class to implementation class. Empty contributions return `[]`.
+`ModuleProviderBindings::collect()` validates compatibility, sorts the result,
+and rejects duplicate contracts before the Host changes its container. The Host
+composition root is the only code that applies those bindings; providers do not
+receive the framework container, return factories, or create service locators.
+`lifecycle.protected` remains deployment policy and does not change this startup
+contract.
+
 Run:
 
 ```bash

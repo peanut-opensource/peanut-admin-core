@@ -42,6 +42,25 @@ final class ModuleManifestValidationTest extends TestCase
         self::expectNotToPerformAssertions();
     }
 
+    public function testOpisValidatorAcceptsFrontendRoutesButRejectsBackendRoutes(): void
+    {
+        $validator = new OpisManifestSchemaValidator(
+            dirname(__DIR__, 3) . '/packages/php/kernel/resources/schemas/module-manifest.schema.json',
+        );
+        $manifest = json_decode(
+            (string) file_get_contents(dirname(__DIR__, 2) . '/app/Modules/Example/WorkItem/module.json'),
+            false,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+
+        $validator->assertValid($manifest);
+        $manifest->backend->routes = 'Http/routes.php';
+
+        $this->expectException(ModuleException::class);
+        $validator->assertValid($manifest);
+    }
+
     public function testOpisValidatorRejectsUnknownSchemaVersionAndProperties(): void
     {
         $validator = new OpisManifestSchemaValidator(
