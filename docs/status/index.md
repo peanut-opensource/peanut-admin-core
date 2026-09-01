@@ -43,6 +43,10 @@ and fixed-commit evidence remain the authoritative sources for their facts.
   coordinates the next package identity for the already merged Module provider binding contract.
   It is not qualified, published, consumable or adopted by an application.
 
+- [P1-PKG14 Alpha.12 qualification resources](./p1-pkg14-alpha12-qualification-resources-contract.md)
+  registers the exclusive fixed-candidate resource bundle. Registration does not qualify or
+  publish Alpha.12 and does not replace the required immutable-candidate Gate.
+
 ## Historical evidence
 
 Completed remediations, candidate qualifications, publication records and

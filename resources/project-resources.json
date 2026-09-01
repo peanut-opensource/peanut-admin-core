@@ -38,10 +38,38 @@
         ]
       },
       {
+        "stable_resource_id": "peanut-admin-core-php83-alpha12-qualification",
+        "purpose": "fixed host PHP runtime for the Alpha.12 repository qualification",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "host": "macbookpro-arm64",
+        "port": null,
+        "database": null,
+        "schema": null,
+        "namespace": "/opt/homebrew/opt/php@8.3/bin/php",
+        "service_type": "Homebrew PHP CLI",
+        "version": "8.3.24",
+        "credential_ref": null,
+        "data_source": "the fixed P1 performance baseline and historical Core qualification toolchain",
+        "freshness_requirement": "the exact binary exists and reports PHP 8.3.24 before dependency or qualification commands run",
+        "health_check": "/opt/homebrew/opt/php@8.3/bin/php -r reports PHP_VERSION 8.3.24",
+        "fallback": "none",
+        "lifecycle": "persistent owner-managed qualification toolchain",
+        "cleanup_responsibility": "not applicable",
+        "consumers": [
+          "scripts/check",
+          "scripts/test-performance",
+          "scripts/verify-internal-starter"
+        ]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-composer-2.10.2-development",
         "purpose": "exact Composer toolchain for coordinated Core package lock generation and projection checks",
         "environments": [
-          "development"
+          "development",
+          "qualification"
         ],
         "owner": "Peanut Admin Core release candidate owner",
         "host": "getcomposer.org",
@@ -69,7 +97,8 @@
         "stable_resource_id": "peanut-admin-core-node24-pnpm11-development",
         "purpose": "exact Node and pnpm toolchain for coordinated Core workspace lock generation and package checks",
         "environments": [
-          "development"
+          "development",
+          "qualification"
         ],
         "owner": "Peanut Admin Core release candidate owner",
         "host": "macbookpro-arm64",
@@ -97,7 +126,8 @@
         "stable_resource_id": "peanut-admin-core-pnpm-store-development",
         "purpose": "offline pnpm content store for focused workspace lock validation",
         "environments": [
-          "development"
+          "development",
+          "qualification"
         ],
         "owner": "Peanut Admin Core release candidate owner",
         "host": "macbookpro-arm64",
@@ -120,7 +150,271 @@
         ]
       }
     ],
+    "databases": [
+      {
+        "stable_resource_id": "peanut-admin-core-mysql84-alpha12-qualification",
+        "purpose": "exclusive MySQL service for the fixed Alpha.12 repository qualification",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "host": "127.0.0.1",
+        "port": 33432,
+        "database": "peanut_admin_alpha12_qualification plus the exact script-owned peanut_admin_* qualification databases",
+        "schema": "the fixed candidate KernelSchema and Module-owned migrations",
+        "namespace": "Docker Compose project peanut-admin-core-alpha12-q01, service mysql",
+        "service_type": "MySQL",
+        "version": "8.4.10",
+        "credential_ref": "compose.yaml qualification fixture environment for MYSQL_ROOT_PASSWORD, MYSQL_USER and MYSQL_PASSWORD; values are not repeated in this registry",
+        "data_source": "the fixed Alpha.12 candidate install, upgrade, integration, browser, recovery and performance fixtures",
+        "freshness_requirement": "the Compose project, its MySQL volume and every script-owned qualification database are absent before the run; the fixed candidate creates all data fresh",
+        "health_check": "after explicit selection, Docker reports the peanut-admin-core-alpha12-q01 mysql service healthy and a PDO connection to 127.0.0.1:33432 reports MySQL 8.4.10",
+        "fallback": "none",
+        "lifecycle": "one fixed Alpha.12 qualification run",
+        "cleanup_responsibility": "the qualification owner runs docker compose for only peanut-admin-core-alpha12-q01 down with volumes and orphans, then proves its containers, volume, network, listener and databases are absent"
+      }
+    ],
+    "caches": [
+      {
+        "stable_resource_id": "peanut-admin-core-valkey91-alpha12-qualification",
+        "purpose": "exclusive cache service for the fixed Alpha.12 integration and browser qualification groups",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "host": "127.0.0.1",
+        "port": 36432,
+        "database": null,
+        "schema": null,
+        "namespace": "Docker Compose project peanut-admin-core-alpha12-q01, service cache and volume cache-data",
+        "service_type": "Valkey",
+        "version": "9.1.0-alpine",
+        "credential_ref": null,
+        "data_source": "ephemeral cache entries created by the fixed Alpha.12 qualification fixtures",
+        "freshness_requirement": "the Compose project, cache volume and listener are absent before the run",
+        "health_check": "after explicit selection, valkey-cli PING inside peanut-admin-core-alpha12-q01 returns PONG through the service published at 127.0.0.1:36432",
+        "fallback": "none",
+        "lifecycle": "one fixed Alpha.12 qualification run",
+        "cleanup_responsibility": "the qualification owner removes only the peanut-admin-core-alpha12-q01 cache container and volume, then proves the project and listener are absent"
+      }
+    ],
+    "browsers": [
+      {
+        "stable_resource_id": "peanut-admin-core-playwright-chromium-alpha12-qualification",
+        "purpose": "real Chromium execution for the fixed Alpha.12 browser and security qualification groups",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "host": "macbookpro-arm64",
+        "port": null,
+        "database": null,
+        "schema": null,
+        "namespace": "worktree-local @playwright/test with the owner-managed Playwright browser cache",
+        "service_type": "Playwright Chromium",
+        "version": "@playwright/test 1.61.1 bundled Chromium",
+        "credential_ref": null,
+        "data_source": "pnpm-lock.yaml and the Playwright browser installed for the exact worktree",
+        "freshness_requirement": "the exact pnpm lock is installed and pnpm exec playwright reports 1.61.1 before the qualification run",
+        "health_check": "pnpm exec playwright --version reports 1.61.1 and the fixed browser gate starts Chromium without downloading or selecting another browser",
+        "fallback": "none",
+        "lifecycle": "persistent owner-managed browser cache; one fixed Alpha.12 browser run",
+        "cleanup_responsibility": "the browser cache is retained; the qualification owner terminates the exact browser processes and removes only the registered run output"
+      }
+    ],
+    "containers": [
+      {
+        "stable_resource_id": "peanut-admin-core-compose-alpha12-qualification",
+        "purpose": "exclusive container namespace for fixed Alpha.12 MySQL and Valkey qualification services",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "host": "macbookpro-arm64 Docker Desktop Linux VM",
+        "port": null,
+        "database": "peanut_admin_alpha12_qualification and script-owned qualification databases",
+        "schema": "candidate-owned database fixtures only",
+        "namespace": "Docker Compose project peanut-admin-core-alpha12-q01",
+        "service_type": "Docker Compose",
+        "version": "compose.yaml with mysql:8.4.10 and valkey/valkey:9.1.0-alpine",
+        "credential_ref": "compose.yaml qualification fixture environment; no secret value is stored in the registry",
+        "data_source": "the exact fixed candidate compose.yaml and docker/php/Dockerfile",
+        "freshness_requirement": "docker compose ps, Docker container, network and volume inventories contain no peanut-admin-core-alpha12-q01 resource before the run",
+        "health_check": "docker compose for project peanut-admin-core-alpha12-q01 resolves the fixed config and its started mysql/cache services become healthy",
+        "fallback": "none",
+        "lifecycle": "one fixed Alpha.12 qualification run",
+        "cleanup_responsibility": "the qualification owner removes only project peanut-admin-core-alpha12-q01 with volumes and orphans and proves zero containers, networks, volumes and listeners remain"
+      }
+    ],
+    "outputs": [
+      {
+        "stable_resource_id": "peanut-admin-core-alpha12-qualification-output",
+        "purpose": "exclusive temporary files and evidence scratch space for one fixed Alpha.12 qualification run",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "host": "macbookpro-arm64",
+        "port": null,
+        "database": null,
+        "schema": null,
+        "namespace": "/private/tmp/peanut-admin-core-alpha12-q01; hard-coded runner outputs /tmp/peanut-admin-playwright-results and /tmp/peanut-admin-recovery-report.json",
+        "service_type": "local temporary filesystem",
+        "version": "one immutable candidate run",
+        "credential_ref": null,
+        "data_source": "scripts/check and its browser, recovery, security, performance and starter child commands",
+        "freshness_requirement": "all three exact paths are absent before the run; TMPDIR is fixed to /private/tmp/peanut-admin-core-alpha12-q01",
+        "health_check": "the qualification owner verifies the namespace is writable before the run and absent after evidence is reduced to the versioned qualification record",
+        "fallback": "none",
+        "lifecycle": "one fixed Alpha.12 qualification run",
+        "cleanup_responsibility": "the qualification owner removes only the three exact registered paths after the run and proves they are absent"
+      }
+    ],
     "local_listeners": [
+      {
+        "stable_resource_id": "peanut-admin-core-alpha12-compose-backend-port",
+        "purpose": "fixed backend port projected by compose config during Alpha.12 qualification; the aggregate gate does not start this profile",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 38132,
+        "database": null,
+        "schema": null,
+        "namespace": "peanut-admin-core-alpha12-q01/backend",
+        "service_type": "reserved Compose backend projection",
+        "version": "fixed candidate compose.yaml",
+        "credential_ref": null,
+        "data_source": "compose.yaml",
+        "freshness_requirement": "the port is unbound before qualification and remains unbound because the backend profile is not started",
+        "health_check": "a listener inventory reports no process bound to 127.0.0.1:38132",
+        "fallback": "none",
+        "lifecycle": "reserved for one qualification run",
+        "cleanup_responsibility": "the qualification owner proves the port remains unbound"
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-alpha12-compose-frontend-port",
+        "purpose": "fixed frontend port projected by compose config during Alpha.12 qualification; the aggregate gate does not start this profile",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 35232,
+        "database": null,
+        "schema": null,
+        "namespace": "peanut-admin-core-alpha12-q01/frontend",
+        "service_type": "reserved Compose frontend projection",
+        "version": "fixed candidate compose.yaml",
+        "credential_ref": null,
+        "data_source": "compose.yaml",
+        "freshness_requirement": "the port is unbound before qualification and remains unbound because the frontend profile is not started",
+        "health_check": "a listener inventory reports no process bound to 127.0.0.1:35232",
+        "fallback": "none",
+        "lifecycle": "reserved for one qualification run",
+        "cleanup_responsibility": "the qualification owner proves the port remains unbound"
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-alpha12-browser-backend",
+        "purpose": "real PHP backend listener for the fixed Alpha.12 Playwright gate",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "scripts/test-browser for the Alpha.12 qualification owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 38232,
+        "database": "peanut_admin_browser_test",
+        "schema": "fresh browser fixture",
+        "namespace": "peanut-admin-core-alpha12-q01/browser-backend",
+        "service_type": "PHP 8.3.24 built-in HTTP server",
+        "version": "fixed candidate backend",
+        "credential_ref": "runtime-generated browser fixture values; not persisted",
+        "data_source": "frontend/tests/fixtures/full-stack-setup.php",
+        "freshness_requirement": "the port and peanut_admin_browser_test are absent before the browser group",
+        "health_check": "the browser fixture observes the fixed backend URL on 127.0.0.1:38232",
+        "fallback": "none",
+        "lifecycle": "one browser group",
+        "cleanup_responsibility": "the browser fixture drops its database and terminates the exact child listener; the qualification owner verifies both are absent"
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-alpha12-browser-frontend",
+        "purpose": "real Vite frontend listener for the fixed Alpha.12 Playwright gate",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "scripts/test-browser for the Alpha.12 qualification owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 35332,
+        "database": null,
+        "schema": null,
+        "namespace": "peanut-admin-core-alpha12-q01/browser-frontend",
+        "service_type": "Vite listener used by Playwright",
+        "version": "Vite fixed by pnpm-lock.yaml",
+        "credential_ref": null,
+        "data_source": "fixed candidate frontend",
+        "freshness_requirement": "the port is unbound before the browser group",
+        "health_check": "Playwright reaches the fixed frontend URL on 127.0.0.1:35332",
+        "fallback": "none",
+        "lifecycle": "one browser group",
+        "cleanup_responsibility": "the browser fixture terminates the exact child listener and the qualification owner verifies the port is unbound"
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-alpha12-starter-backend",
+        "purpose": "generated internal Starter backend listener for the fixed Alpha.12 qualification",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "scripts/verify-internal-starter for the Alpha.12 qualification owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 38332,
+        "database": "script-owned generated Starter fixture",
+        "schema": "generated Starter package schema",
+        "namespace": "peanut-admin-core-alpha12-q01/starter-backend",
+        "service_type": "PHP 8.3.24 built-in HTTP server",
+        "version": "generated from the fixed Alpha.12 candidate",
+        "credential_ref": "compose.yaml qualification fixture reference",
+        "data_source": "scripts/create-internal-starter",
+        "freshness_requirement": "the port is unbound and the Starter temporary directory is absent before each owning invocation",
+        "health_check": "GET http://127.0.0.1:38332/health returns the generated Starter health response",
+        "fallback": "none",
+        "lifecycle": "each owning Starter invocation within one qualification run",
+        "cleanup_responsibility": "scripts/verify-internal-starter terminates its exact child and removes its temporary directory; the qualification owner verifies the port is unbound"
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-alpha12-starter-frontend",
+        "purpose": "generated internal Starter frontend listener for the fixed Alpha.12 qualification",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "scripts/verify-internal-starter for the Alpha.12 qualification owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 35432,
+        "database": null,
+        "schema": null,
+        "namespace": "peanut-admin-core-alpha12-q01/starter-frontend",
+        "service_type": "Vite preview",
+        "version": "generated Starter lock from the fixed Alpha.12 candidate",
+        "credential_ref": null,
+        "data_source": "scripts/create-internal-starter",
+        "freshness_requirement": "the port is unbound before each owning invocation",
+        "health_check": "the Starter verifier receives a successful HTTP response from http://127.0.0.1:35432/",
+        "fallback": "none",
+        "lifecycle": "each owning Starter invocation within one qualification run",
+        "cleanup_responsibility": "scripts/verify-internal-starter terminates its exact Vite child and the qualification owner verifies the port is unbound"
+      },
       {
         "stable_resource_id": "peanut-admin-core-github-ci-starter-backend",
         "purpose": "generated internal Starter backend HTTP verification in GitHub Actions",
