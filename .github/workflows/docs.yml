@@ -28,6 +28,8 @@ jobs:
     env:
       MYSQL_PORT: '3306'
       DB_PORT: '3306'
+      PEANUT_STARTER_BACKEND_PORT: '20280'
+      PEANUT_STARTER_FRONTEND_PORT: '20281'
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0

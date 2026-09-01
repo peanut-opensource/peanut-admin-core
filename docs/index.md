@@ -9,6 +9,7 @@ Peanut Admin Core provides product-neutral PHP and Web packages, a reference Hos
 - **Build a Module:** follow [Module development](./guide/module-development.md), including manifest, data owner, Tenant and permission boundaries.
 - **Build Admin UI:** use [Admin Web composition](./guide/admin-web.md) after the backend contract is fixed.
 - **Validate and deliver:** use [testing](./guide/testing.md), [upgrade](./guide/upgrade.md) and [troubleshooting](./guide/troubleshooting.md).
+- **Select runtime resources:** use the repository's versioned `resources/project-resources.json`; an unregistered host, port or fallback is not a test input.
 - **Look up facts:** start at the [reference catalog](./reference/document-catalog.generated.md) and [API contract](./api/).
 
 ## Documentation boundary

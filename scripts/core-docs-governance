@@ -385,7 +385,7 @@ def main() -> int:
         return report(generate(args.check_only), "Generated documentation is current." if args.check_only else "Documentation projections generated.")
     impact = load(IMPACT)
     if args.command == "scenarios":
-        return report(scenarios(impact), f"Documentation impact scenarios passed: {len(impact['scenarios'])}/8.")
+        return report(scenarios(impact), f"Documentation impact scenarios passed: {len(impact['scenarios'])}.")
     if args.command == "impact":
         if args.base and args.paths:
             print("ERROR: choose either --base or --paths", file=sys.stderr)

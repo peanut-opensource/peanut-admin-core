@@ -20,6 +20,8 @@ The generated [document catalog](reference/document-catalog.generated.md) is the
 
 1. Read repository `AGENTS.md` and required status facts.
 2. Read `docs/content-status.json`, this index and the authoritative source map.
+   Before any stateful check, also select the exact resource from
+   `resources/project-resources.json`.
 3. Open only the owning manifest, Schema, OpenAPI, command, decision or fixed evidence.
 4. Use `docs/document-impact-map.json` to select the smallest update.
 5. Do not infer implementation from plans or qualification from commit subjects.

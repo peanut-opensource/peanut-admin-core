@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "project_id": "peanut-admin-core",
+  "authority": {
+    "owner": "Peanut Admin Core maintainers",
+    "source": "this versioned file",
+    "resource_observation_policy": "select and verify an exact registered resource before each stateful operation",
+    "credentials_policy": "record credential references only; never commit secret values",
+    "local_port_policy": "registered ports are fixed for their named environment and have no fallback"
+  },
+  "resources": {
+    "tooling": [
+      {
+        "stable_resource_id": "peanut-admin-core-github-ci-ripgrep15",
+        "purpose": "negative-pattern and repository architecture checks in the aggregate GitHub Actions quality job",
+        "environments": [
+          "ci"
+        ],
+        "owner": "Peanut Admin Core GitHub Actions quality job",
+        "host": "github.com",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "/usr/bin/rg on the isolated GitHub-hosted runner",
+        "service_type": "official ripgrep Debian package",
+        "version": "15.1.0",
+        "download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep_15.1.0-1_amd64.deb",
+        "sha256": "62ce186675c71edbc7c48a67dc36f986974551354d6ce63726adc2d85aad802c",
+        "credential_ref": null,
+        "data_source": "BurntSushi/ripgrep official GitHub Release 15.1.0",
+        "freshness_requirement": "download the immutable named asset and verify its registered SHA-256 before installation",
+        "health_check": "rg --version reports ripgrep 15.1.0 after the package checksum passes",
+        "fallback": "none",
+        "lifecycle": "one isolated GitHub Actions quality job",
+        "cleanup_responsibility": "GitHub disposes the runner after the job",
+        "consumers": [
+          ".github/workflows/ci.yml"
+        ]
+      }
+    ],
+    "local_listeners": [
+      {
+        "stable_resource_id": "peanut-admin-core-github-ci-starter-backend",
+        "purpose": "generated internal Starter backend HTTP verification in GitHub Actions",
+        "environments": [
+          "ci"
+        ],
+        "owner": "Peanut Admin Core GitHub Actions workflow job",
+        "host": "127.0.0.1 on the isolated GitHub-hosted runner",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 20280,
+        "database": null,
+        "schema": null,
+        "namespace": "github-actions/${{ github.run_id }}/${{ github.job }}",
+        "service_type": "PHP built-in HTTP server for the generated internal Starter",
+        "version": "PHP 8.3 selected by the consuming workflow",
+        "credential_ref": null,
+        "data_source": "generated internal Starter from the checked-out Core commit",
+        "freshness_requirement": "the loopback port must be unbound before scripts/verify-internal-starter starts the server",
+        "health_check": "GET http://127.0.0.1:20280/health returns the generated Starter health response",
+        "fallback": "none",
+        "lifecycle": "one isolated GitHub Actions job",
+        "cleanup_responsibility": "scripts/verify-internal-starter terminates its exact child process; GitHub disposes the runner after the job",
+        "consumers": [
+          ".github/workflows/ci.yml",
+          ".github/workflows/docs.yml",
+          ".github/workflows/starter.yml",
+          ".github/workflows/recovery.yml"
+        ]
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-github-ci-starter-frontend",
+        "purpose": "generated internal Starter frontend preview verification in GitHub Actions",
+        "environments": [
+          "ci"
+        ],
+        "owner": "Peanut Admin Core GitHub Actions workflow job",
+        "host": "127.0.0.1 on the isolated GitHub-hosted runner",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 20281,
+        "database": null,
+        "schema": null,
+        "namespace": "github-actions/${{ github.run_id }}/${{ github.job }}",
+        "service_type": "Vite preview for the generated internal Starter",
+        "version": "Vite version fixed by the generated Starter lock",
+        "credential_ref": null,
+        "data_source": "generated internal Starter from the checked-out Core commit",
+        "freshness_requirement": "the loopback port must be unbound before scripts/verify-internal-starter starts the preview",
+        "health_check": "the starter verifier observes the preview URL and receives a successful HTTP response from http://127.0.0.1:20281/",
+        "fallback": "none",
+        "lifecycle": "one isolated GitHub Actions job",
+        "cleanup_responsibility": "scripts/verify-internal-starter terminates its exact child process; GitHub disposes the runner after the job",
+        "consumers": [
+          ".github/workflows/ci.yml",
+          ".github/workflows/docs.yml",
+          ".github/workflows/starter.yml",
+          ".github/workflows/recovery.yml"
+        ]
+      }
+    ]
+  }
+}
