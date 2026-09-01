@@ -64,7 +64,6 @@ export PEANUT_STARTER_BACKEND_PORT=38332
 export PEANUT_STARTER_FRONTEND_PORT=35432
 export MYSQL_DATABASE=peanut_admin_alpha12_qualification
 export TMPDIR=/private/tmp/peanut-admin-core-alpha12-q01
-export PATH=/Users/xing/.nvm/versions/node/v24.13.0/bin:/opt/homebrew/opt/php@8.3/bin:$PATH
 export PEANUT_COMPOSER=/private/tmp/peanut-admin-core-tools/composer-2.10.2
 ```
 

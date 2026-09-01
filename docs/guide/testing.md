@@ -31,6 +31,13 @@ A task that does not touch one of these boundaries does not inherit its full
 test suite. A task that does touch one must test the changed boundary, including
 the relevant negative and failure paths.
 
+Every pull request runs `./scripts/check --static`. Documentation- and
+resource-only pull requests run no Runtime, build, browser, recovery,
+performance, security, starter, or aggregate group. The static contract checks
+documentation governance, dependency decisions, Runtime coverage metadata,
+resource-registry JSON, the approved license, forbidden content, workspace
+shape, and the pull-request diff.
+
 ## Worktree Dependencies
 
 Run the following once when opening a new worktree:
@@ -103,6 +110,12 @@ The secret gate scans the complete history reachable from the fixed candidate
 from another branch, worktree, or tool snapshot are not candidate evidence.
 `./scripts/verify-internal-starter` creates and installs two independent starter
 copies and belongs only to this fixed-candidate or qualification phase.
+
+GitHub Actions does not run the qualification matrix after a merge to `dev`.
+The qualification owner manually supplies one exact 40-character candidate
+commit to the aggregate workflow. Documentation, starter, recovery, security,
+and performance workflows accept the same immutable input only for the one
+allowed rerun of a failed group; a passing group is not repeated.
 
 If a performance check fails, the affected qualification, release, or
 downstream consumption-lock movement remains blocked until it passes. The

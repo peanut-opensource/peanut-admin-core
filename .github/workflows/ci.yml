@@ -2,16 +2,52 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches:
-      - dev
   workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact fixed-candidate commit to qualify
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  quality:
+  static-contracts:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          tools: none
+          coverage: none
+      - name: Install ripgrep 15.1.0
+        run: |
+          package="$RUNNER_TEMP/ripgrep_15.1.0-1_amd64.deb"
+          curl --fail --silent --show-error --location \
+            --output "$package" \
+            https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep_15.1.0-1_amd64.deb
+          echo "62ce186675c71edbc7c48a67dc36f986974551354d6ce63726adc2d85aad802c  $package" \
+            | sha256sum --check
+          sudo dpkg --install "$package"
+          rg --version | grep -E '^ripgrep 15\.1\.0( \(rev [0-9a-f]+\))?$'
+      - name: Run static contracts
+        run: ./scripts/check --static
+      - name: Check pull-request diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git diff --check "$BASE_SHA...$HEAD_SHA"
+
+  qualification:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       MYSQL_PORT: '3306'
@@ -21,10 +57,21 @@ jobs:
       PEANUT_STARTER_FRONTEND_PORT: '20281'
       PEANUT_PERFORMANCE_PHP_IMAGE: peanut-admin-performance-php:8.3.24
     steps:
-      - name: Checkout
+      - name: Validate fixed candidate
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
+      - name: Checkout fixed candidate
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          ref: ${{ inputs.candidate_sha }}
           fetch-depth: 0
+          persist-credentials: false
+      - name: Verify fixed candidate
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:

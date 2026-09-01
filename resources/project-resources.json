@@ -12,11 +12,11 @@
     "tooling": [
       {
         "stable_resource_id": "peanut-admin-core-github-ci-ripgrep15",
-        "purpose": "negative-pattern and repository architecture checks in the aggregate GitHub Actions quality job",
+        "purpose": "negative-pattern checks in pull-request static contracts and fixed-candidate aggregate qualification",
         "environments": [
           "ci"
         ],
-        "owner": "Peanut Admin Core GitHub Actions quality job",
+        "owner": "Peanut Admin Core GitHub Actions CI workflow",
         "host": "github.com",
         "port": 443,
         "database": null,
