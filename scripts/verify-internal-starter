@@ -181,11 +181,13 @@ php -S "127.0.0.1:$backend_port" \
   >"$workdir/backend.log" 2>&1 &
 backend_pid="$!"
 
-NO_COLOR=1 pnpm --dir "$first" --filter @peanut-admin/internal-starter-admin preview \
-  --host 127.0.0.1 \
-  --port "$PEANUT_STARTER_FRONTEND_PORT" \
-  --strictPort \
-  >"$workdir/frontend.log" 2>&1 &
+(
+  cd "$first/frontend"
+  exec env NO_COLOR=1 ./node_modules/.bin/vite preview \
+    --host 127.0.0.1 \
+    --port "$PEANUT_STARTER_FRONTEND_PORT" \
+    --strictPort
+) >"$workdir/frontend.log" 2>&1 &
 frontend_pid="$!"
 
 wait_for_url() {

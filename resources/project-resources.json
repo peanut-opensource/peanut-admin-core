@@ -9,6 +9,35 @@
     "local_port_policy": "registered ports are fixed for their named environment and have no fallback"
   },
   "resources": {
+    "tooling": [
+      {
+        "stable_resource_id": "peanut-admin-core-github-ci-ripgrep15",
+        "purpose": "negative-pattern and repository architecture checks in the aggregate GitHub Actions quality job",
+        "environments": [
+          "ci"
+        ],
+        "owner": "Peanut Admin Core GitHub Actions quality job",
+        "host": "github.com",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "/usr/bin/rg on the isolated GitHub-hosted runner",
+        "service_type": "official ripgrep Debian package",
+        "version": "15.1.0",
+        "download_url": "https://github.com/BurntSushi/ripgrep/releases/download/15.1.0/ripgrep_15.1.0-1_amd64.deb",
+        "sha256": "62ce186675c71edbc7c48a67dc36f986974551354d6ce63726adc2d85aad802c",
+        "credential_ref": null,
+        "data_source": "BurntSushi/ripgrep official GitHub Release 15.1.0",
+        "freshness_requirement": "download the immutable named asset and verify its registered SHA-256 before installation",
+        "health_check": "rg --version reports ripgrep 15.1.0 after the package checksum passes",
+        "fallback": "none",
+        "lifecycle": "one isolated GitHub Actions quality job",
+        "cleanup_responsibility": "GitHub disposes the runner after the job",
+        "consumers": [
+          ".github/workflows/ci.yml"
+        ]
+      }
+    ],
     "local_listeners": [
       {
         "stable_resource_id": "peanut-admin-core-github-ci-starter-backend",

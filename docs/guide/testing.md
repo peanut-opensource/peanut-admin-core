@@ -73,7 +73,10 @@ GitHub-hosted workflow jobs select
 `peanut-admin-core-github-ci-starter-backend` and
 `peanut-admin-core-github-ci-starter-frontend` from
 `resources/project-resources.json`; their fixed loopback ports are isolated by
-the per-job runner and are removed with the job.
+the per-job runner and are removed with the job. The aggregate quality job also
+selects the registered, checksum-pinned ripgrep 15.1.0 binary before any
+negative-pattern gate runs. Starter verification launches Vite as the owned
+child process so repeated aggregate invocations release the same fixed port.
 
 It builds the documentation and Admin Web, validates OpenAPI and Module manifests, runs architecture checks, PHP unit and MySQL integration tests, authorization security tests, browser tests, PHPStan, Deptrac, PHP-CS-Fixer, ESLint, TypeScript checks, Vitest, and production builds.
 
