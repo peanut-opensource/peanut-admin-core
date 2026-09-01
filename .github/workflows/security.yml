@@ -1,11 +1,12 @@
 name: Security
 
 on:
-  pull_request:
-  push:
-    branches:
-      - dev
   workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact fixed-candidate commit for the failed-group rerun
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -17,10 +18,21 @@ jobs:
       MYSQL_PORT: '3306'
       DB_PORT: '3306'
     steps:
-      - name: Checkout full history
+      - name: Validate fixed candidate
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
+      - name: Checkout fixed candidate history
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          ref: ${{ inputs.candidate_sha }}
           fetch-depth: 0
+          persist-credentials: false
+      - name: Verify fixed candidate
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
