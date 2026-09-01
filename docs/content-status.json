@@ -1274,6 +1274,14 @@
       "replacement": null
     },
     {
+      "id": "core-doc-status-p1-pkg13-alpha12-publication-candidate-contract",
+      "path": "docs/status/p1-pkg13-alpha12-publication-candidate-contract.md",
+      "title": "P1-PKG13 Alpha.12 Publication Candidate Contract",
+      "status": "planned",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
       "id": "core-doc-governance-authoritative-source-map",
       "path": "docs/governance/authoritative-source-map.md",
       "title": "Authoritative Source Map",

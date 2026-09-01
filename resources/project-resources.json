@@ -36,6 +36,88 @@
         "consumers": [
           ".github/workflows/ci.yml"
         ]
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-composer-2.10.2-development",
+        "purpose": "exact Composer toolchain for coordinated Core package lock generation and projection checks",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core release candidate owner",
+        "host": "getcomposer.org",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "/private/tmp/peanut-admin-core-tools/composer-2.10.2",
+        "service_type": "official Composer PHAR and local fixed executable",
+        "version": "2.10.2",
+        "download_url": "https://getcomposer.org/download/2.10.2/composer.phar",
+        "sha256": "5ee7125f8a30a34d246cefdc0bc85b8a783b28f2aec968994118512350d28027",
+        "credential_ref": null,
+        "data_source": "official Composer 2.10.2 immutable download",
+        "freshness_requirement": "the fixed local path is either absent or matches the registered SHA-256 and reports Composer 2.10.2 before use",
+        "health_check": "shasum -a 256 on the exact local path equals the registered digest and php <path> --version reports Composer 2.10.2",
+        "fallback": "none",
+        "lifecycle": "retained through one coordinated Core release candidate and its clean Composer consumer check",
+        "cleanup_responsibility": "the release candidate owner removes only /private/tmp/peanut-admin-core-tools after all dependent checks complete",
+        "consumers": [
+          "composer.lock",
+          "starter/backend/composer.lock"
+        ]
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-node24-pnpm11-development",
+        "purpose": "exact Node and pnpm toolchain for coordinated Core workspace lock generation and package checks",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core release candidate owner",
+        "host": "macbookpro-arm64",
+        "port": null,
+        "database": null,
+        "schema": null,
+        "namespace": "/Users/xing/.nvm/versions/node/v24.13.0/bin",
+        "service_type": "Node.js and pnpm CLI",
+        "version": "Node 24.13.0; pnpm 11.13.0",
+        "node_command": "/Users/xing/.nvm/versions/node/v24.13.0/bin/node",
+        "pnpm_command": "/Users/xing/.nvm/versions/node/v24.13.0/bin/pnpm",
+        "credential_ref": null,
+        "data_source": "package.json packageManager plus pnpm-lock.yaml and starter/pnpm-lock.yaml",
+        "freshness_requirement": "both exact binaries must report the registered versions before changing a workspace lock",
+        "health_check": "node --version reports v24.13.0 and pnpm --version reports 11.13.0 from the registered directory",
+        "fallback": "none",
+        "lifecycle": "persistent owner-managed development toolchain",
+        "cleanup_responsibility": "not applicable",
+        "consumers": [
+          "pnpm-lock.yaml",
+          "starter/pnpm-lock.yaml"
+        ]
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-pnpm-store-development",
+        "purpose": "offline pnpm content store for focused workspace lock validation",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core release candidate owner",
+        "host": "macbookpro-arm64",
+        "port": null,
+        "database": null,
+        "schema": null,
+        "namespace": "/Users/xing/Library/pnpm/store/v11",
+        "service_type": "pnpm content-addressable dependency cache",
+        "version": "pnpm 11.13.0 store v11",
+        "credential_ref": null,
+        "data_source": "public packages fixed by pnpm-lock.yaml and starter/pnpm-lock.yaml",
+        "freshness_requirement": "pnpm store path must equal the registered path and both lock checks must complete offline; a cache miss blocks instead of enabling network access",
+        "health_check": "pnpm --store-dir /Users/xing/Library/pnpm/store/v11 store path returns the same path",
+        "fallback": "none",
+        "lifecycle": "persistent shared dependency cache",
+        "cleanup_responsibility": "the task removes only worktree-local dependency links and temporary outputs; it never deletes the shared store",
+        "consumers": [
+          "pnpm-lock.yaml",
+          "starter/pnpm-lock.yaml"
+        ]
       }
     ],
     "local_listeners": [
@@ -98,6 +180,94 @@
           ".github/workflows/starter.yml",
           ".github/workflows/recovery.yml"
         ]
+      }
+    ],
+    "external_services": [
+      {
+        "stable_resource_id": "peanut-admin-core-source-github-repository",
+        "purpose": "Core source control, pull requests, immutable annotated tags and GitHub prereleases",
+        "environments": [
+          "development",
+          "release"
+        ],
+        "owner": "peanut-opensource GitHub organization",
+        "host": "github.com",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "peanut-opensource/peanut-admin-core",
+        "service_type": "GitHub source repository",
+        "version": "immutable annotated release tags",
+        "credential_ref": "developer gh/SSH credential provider and GitHub environment npm-release/NPM_TOKEN metadata; secret values are never read or printed",
+        "data_source": "https://github.com/peanut-opensource/peanut-admin-core.git",
+        "freshness_requirement": "fetch dev and prove the target tag and Release are absent before candidate preparation or publication",
+        "health_check": "git ls-remote origin refs/heads/dev plus read-only gh repository and workflow metadata",
+        "fallback": "none",
+        "cleanup_responsibility": "not applicable"
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-composer-split-github-repository",
+        "purpose": "generated-only Composer projection publication and immutable tag verification",
+        "environments": [
+          "release"
+        ],
+        "owner": "peanut-opensource GitHub organization",
+        "host": "github.com",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "peanut-opensource/peanut-admin-core-php",
+        "service_type": "GitHub generated Composer split repository",
+        "version": "immutable annotated release tags",
+        "credential_ref": "release owner gh/SSH credential provider",
+        "data_source": "the exact packages/php projection from one qualified source commit",
+        "freshness_requirement": "prove the target tag is absent and the projection commit tree matches the qualified packages/php subtree before tagging",
+        "health_check": "git ls-remote --tags https://github.com/peanut-opensource/peanut-admin-core-php.git",
+        "fallback": "none",
+        "cleanup_responsibility": "not applicable"
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-npm-registry",
+        "purpose": "immutable @peanut-admin/admin publication and clean npm consumer verification",
+        "environments": [
+          "release"
+        ],
+        "owner": "npm public registry; peanut-opensource package publisher",
+        "host": "registry.npmjs.org",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "@peanut-admin/admin",
+        "service_type": "npm registry",
+        "version": "public HTTPS API",
+        "credential_ref": "GitHub environment peanut-opensource/peanut-admin-core/npm-release secret NPM_TOKEN; token values are never printed or stored in Git",
+        "data_source": "the immutable source tag published by .github/workflows/release.yml with provenance",
+        "freshness_requirement": "prove the exact version is absent and the environment secret name exists before the source tag is created; verify version, integrity and provenance after publication",
+        "health_check": "npm view @peanut-admin/admin@<exact-version> plus gh secret list --env npm-release without secret values",
+        "fallback": "none",
+        "cleanup_responsibility": "not applicable"
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-packagist-registry",
+        "purpose": "immutable peanut-admin/core metadata refresh and clean Composer consumer verification",
+        "environments": [
+          "release"
+        ],
+        "owner": "Packagist public registry; peanut-admin/core maintainers",
+        "host": "repo.packagist.org",
+        "control_plane_host": "packagist.org",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "peanut-admin/core",
+        "service_type": "Packagist Composer v2 registry",
+        "version": "public HTTPS API",
+        "credential_ref": "operator-authenticated Packagist maintainer session; credentials and session material are never stored in Git",
+        "data_source": "the immutable generated Composer split tag refreshed by an authenticated maintainer",
+        "freshness_requirement": "prove the split tag and projection identity before refresh; after refresh resolve the exact version and retain its source/dist reference",
+        "health_check": "read-only https://repo.packagist.org/p2/peanut-admin/core.json followed by authenticated package ownership verification before refresh",
+        "fallback": "none",
+        "cleanup_responsibility": "not applicable"
       }
     ]
   }

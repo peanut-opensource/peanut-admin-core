@@ -39,6 +39,10 @@ and fixed-commit evidence remain the authoritative sources for their facts.
   and [PKG12 Application Infrastructure Extraction](./p1-pkg12-application-infrastructure-extraction-contract.md),
   authorize only their stated work and do not establish completion.
 
+- [P1-PKG13 Alpha.12 publication candidate](./p1-pkg13-alpha12-publication-candidate-contract.md)
+  coordinates the next package identity for the already merged Module provider binding contract.
+  It is not qualified, published, consumable or adopted by an application.
+
 ## Historical evidence
 
 Completed remediations, candidate qualifications, publication records and

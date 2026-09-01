@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-30T07:10:01+08:00",
-  "task": "CORE-ALPHA11-CURRENT-LOCK-EVIDENCE",
-  "prerequisite_commit": "db5852f1f19bffb1fd2c222fd69ac58dfd084859",
+  "generated_at": "2026-09-01T17:30:29+08:00",
+  "task": "CORE-ALPHA12-CURRENT-LOCK-EVIDENCE",
+  "prerequisite_commit": "b3262637c260c70a76f778247d43acb54e979fba",
   "candidate_commit": "the commit containing this evidence",
-  "slice_status": "core-alpha11-current-lock-evidence",
+  "slice_status": "core-alpha12-current-lock-evidence",
   "third_party_dependency_change": false,
   "public_runtime_packages": [
-    "peanut-admin/core@0.1.0-alpha.11",
-    "@peanut-admin/admin@0.1.0-alpha.11"
+    "peanut-admin/core@0.1.0-alpha.12",
+    "@peanut-admin/admin@0.1.0-alpha.12"
   ],
   "toolchain": {
     "php": "8.3.24",
@@ -18,29 +18,29 @@
   },
   "locks": {
     "composer.lock": {
-      "sha256": "9cb64fb4b34f69a63f0d4c6bb6c30573ca6158c46ad08a70c8b04cf1c15afd3c",
-      "delta": "peanut-admin/core first-party version and path reference updated for alpha.11; third-party resolutions unchanged"
+      "sha256": "4a7368eb7273b4d83ae7e126e2e40ff824bd4b5cc759f16865c336f500fb0be3",
+      "delta": "peanut-admin/core first-party version and path reference updated for alpha.12; third-party resolutions unchanged"
     },
     "pnpm-lock.yaml": {
-      "sha256": "8a8c13118e8d26bc1df04e802fb1babf5f4b4c088478fc3d17cd0996b4a30691",
-      "delta": "@peanut-admin/admin workspace specifier updated for alpha.11; third-party resolutions unchanged"
+      "sha256": "c69f5db964c5cbbfe377ff4e83d56efd08037a093b5101ddc4bb5307a8cfeb95",
+      "delta": "@peanut-admin/admin workspace specifier updated for alpha.12; third-party resolutions unchanged"
     },
     "starter/backend/composer.lock": {
-      "sha256": "48ed403e924bd502be3e899cb4da50c0aabbae8f161bf904d54c3827198feec0",
-      "delta": "peanut-admin/core first-party version and path reference updated for alpha.11; third-party resolutions unchanged"
+      "sha256": "ac85251785de2cfdb817133068a196380787adfd19c37504e9d3dd27bb375e6b",
+      "delta": "peanut-admin/core first-party version and path reference updated for alpha.12; third-party resolutions unchanged"
     },
     "starter/pnpm-lock.yaml": {
-      "sha256": "e3f20fb7e62b199f8bdf168ebf0074efaace9b9f98efd4983db139a777d3935e",
-      "delta": "@peanut-admin/admin workspace specifier updated for alpha.11; third-party resolutions unchanged"
+      "sha256": "be252534ab258939841ccf39afc0361f7f5b0803be5b73b10bda1b38638e1ce1",
+      "delta": "@peanut-admin/admin workspace specifier updated for alpha.12; third-party resolutions unchanged"
     }
   },
   "verification": {
-    "manifest_lock_consistency": "passed: ./scripts/check-workspace",
+    "manifest_lock_consistency": "passed: focused Composer manifest, offline frozen pnpm lock and recorded SHA-256 checks",
     "fixed_candidate_qualification": "pending separate fixed-commit plan",
     "publication": "not authorized"
   },
   "notes": [
-    "No third-party resolution changes in this candidate; the lock movement records only coordinated Alpha.11 first-party package identities.",
+    "No third-party resolution changes in this candidate; the lock movement records only coordinated Alpha.12 first-party package identities.",
     "Historical P1-PKG01 and P1-PKG02 lock evidence remains unchanged.",
     "This evidence does not publish a package, create a tag or Release, or approve downstream consumption."
   ]
