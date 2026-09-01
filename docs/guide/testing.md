@@ -78,6 +78,12 @@ selects the registered, checksum-pinned ripgrep 15.1.0 binary before any
 negative-pattern gate runs. Starter verification launches Vite as the owned
 child process so repeated aggregate invocations release the same fixed port.
 
+Coordinated package candidates also select the exact Composer and Node/pnpm toolchain entries in
+`resources/project-resources.json`. Source GitHub, generated Composer split, npm and Packagist
+entries authorize only their named release step; their presence is not publication approval. A
+candidate without exact, exclusively claimable qualification resources stops before
+`./scripts/check` rather than reusing CI, another project or a prior candidate's resources.
+
 It builds the documentation and Admin Web, validates OpenAPI and Module manifests, runs architecture checks, PHP unit and MySQL integration tests, authorization security tests, browser tests, PHPStan, Deptrac, PHP-CS-Fixer, ESLint, TypeScript checks, Vitest, and production builds.
 
 Run `./scripts/check` and the qualification-only suites against a clean, fixed

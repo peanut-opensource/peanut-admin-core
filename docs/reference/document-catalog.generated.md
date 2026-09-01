@@ -113,6 +113,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-status-p1-pkg10-final-qualification-wiring-contract` | `docs/status/p1-pkg10-final-qualification-wiring-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-pkg11-tenant-refresh-sampling-follow-up-contract` | `docs/status/p1-pkg11-tenant-refresh-sampling-follow-up-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-pkg12-application-infrastructure-extraction-contract` | `docs/status/p1-pkg12-application-infrastructure-extraction-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
+| `core-doc-status-p1-pkg13-alpha12-publication-candidate-contract` | `docs/status/p1-pkg13-alpha12-publication-candidate-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-post-q01-cross-product-capability-plan` | `docs/status/p1-post-q01-cross-product-capability-plan.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-r02-external-operation-host-kit-contract` | `docs/status/p1-r02-external-operation-host-kit-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-w01-protected-transport-origin-contract` | `docs/status/p1-w01-protected-transport-origin-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
