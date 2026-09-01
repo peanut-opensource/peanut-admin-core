@@ -69,6 +69,11 @@ browser backend/frontend and generated starter backend/frontend. In particular,
 `PEANUT_STARTER_BACKEND_PORT` and `PEANUT_STARTER_FRONTEND_PORT` are required;
 the starter verifier never selects a random listener. A missing or occupied
 registered port stops qualification instead of switching to another address.
+GitHub-hosted workflow jobs select
+`peanut-admin-core-github-ci-starter-backend` and
+`peanut-admin-core-github-ci-starter-frontend` from
+`resources/project-resources.json`; their fixed loopback ports are isolated by
+the per-job runner and are removed with the job.
 
 It builds the documentation and Admin Web, validates OpenAPI and Module manifests, runs architecture checks, PHP unit and MySQL integration tests, authorization security tests, browser tests, PHPStan, Deptrac, PHP-CS-Fixer, ESLint, TypeScript checks, Vitest, and production builds.
 

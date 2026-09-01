@@ -17,6 +17,8 @@ jobs:
       MYSQL_PORT: '3306'
       DB_PORT: '3306'
       CACHE_PORT: '6379'
+      PEANUT_STARTER_BACKEND_PORT: '20280'
+      PEANUT_STARTER_FRONTEND_PORT: '20281'
       PEANUT_PERFORMANCE_PHP_IMAGE: peanut-admin-performance-php:8.3.24
     steps:
       - name: Checkout

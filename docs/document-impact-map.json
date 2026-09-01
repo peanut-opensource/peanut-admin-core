@@ -64,6 +64,15 @@
       "generated": []
     },
     {
+      "id": "runtime-resource",
+      "paths": ["resources/project-resources.json", ".github/workflows/*.yml"],
+      "classifications": ["technical", "developer-site"],
+      "upstream": ["resources/project-resources.json", "GitHub Actions job environment"],
+      "technical_docs": ["docs/governance/authoritative-source-map.md", "docs/guide/testing.md"],
+      "site_docs": ["docs/guide/testing.md"],
+      "generated": []
+    },
+    {
       "id": "runtime-status",
       "paths": ["docs/status/runtime-operation-coverage.json", "docs/status/*.md", "docs/reviews/*.md", "docs/releases/*.md"],
       "classifications": ["technical"],
@@ -98,6 +107,7 @@
     {"id": "schema-owner", "path": "packages/php/kernel/src/Schema/ExampleSchema.php", "must_include": ["architecture-decision", "technical", "developer-site"], "must_not_include": ["none"]},
     {"id": "module-manifest", "path": "kernel/module.json", "must_include": ["technical", "developer-site"], "must_not_include": ["none", "generated"]},
     {"id": "environment", "path": "compose.yaml", "must_include": ["technical", "developer-site"], "must_not_include": ["none"]},
+    {"id": "runtime-resource", "path": "resources/project-resources.json", "must_include": ["technical", "developer-site"], "must_not_include": ["none", "architecture-decision"]},
     {"id": "runtime-status", "path": "docs/status/runtime-operation-coverage.json", "must_include": ["technical"], "must_not_include": ["developer-site"]},
     {"id": "architecture-boundary", "path": "composer.json", "must_include": ["architecture-decision", "technical", "developer-site"], "must_not_include": ["none"]}
   ]
