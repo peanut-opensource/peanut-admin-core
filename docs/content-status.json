@@ -1282,6 +1282,14 @@
       "replacement": null
     },
     {
+      "id": "core-doc-status-p1-pkg14-alpha12-qualification-resources-contract",
+      "path": "docs/status/p1-pkg14-alpha12-qualification-resources-contract.md",
+      "title": "P1-PKG14 Alpha.12 Qualification Resources Contract",
+      "status": "planned",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
       "id": "core-doc-governance-authoritative-source-map",
       "path": "docs/governance/authoritative-source-map.md",
       "title": "Authoritative Source Map",

@@ -84,6 +84,13 @@ entries authorize only their named release step; their presence is not publicati
 candidate without exact, exclusively claimable qualification resources stops before
 `./scripts/check` rather than reusing CI, another project or a prior candidate's resources.
 
+Alpha.12 fixed-candidate qualification selects the complete bundle defined by P1-PKG14: Compose
+project `peanut-admin-core-alpha12-q01`, MySQL `127.0.0.1:33432`, Valkey
+`127.0.0.1:36432`, its six fixed listener ports, Playwright Chromium and the registered temporary
+output namespace. Every target must be absent or free before the run and absent again after exact
+cleanup. A conflict stops the candidate; it never causes automatic port, database or output
+selection.
+
 It builds the documentation and Admin Web, validates OpenAPI and Module manifests, runs architecture checks, PHP unit and MySQL integration tests, authorization security tests, browser tests, PHPStan, Deptrac, PHP-CS-Fixer, ESLint, TypeScript checks, Vitest, and production builds.
 
 Run `./scripts/check` and the qualification-only suites against a clean, fixed
