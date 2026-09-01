@@ -98,6 +98,10 @@ port, credential, host, service, or fallback may be guessed.
 4. Perform static review, verify the exact write set, run `git diff --check`,
    and record the controlling stage's deferred verification identifier.
 5. Inspect the staged diff and commit only the current task.
-6. Stop after the assigned task.
+6. Merge the completed task branch directly into the latest local `dev`, push
+   `dev` once, then delete the task's local/remote branch and worktree.
+7. Use a pull request only for `dev` to `main`, a formal release, or when the
+   user explicitly requests review; ordinary development does not require one.
+8. Stop after the assigned task and branch cleanup.
 
 If facts conflict or the file whitelist is insufficient, stop and report the conflict instead of guessing.
