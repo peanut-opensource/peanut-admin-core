@@ -40,12 +40,13 @@ and fixed-commit evidence remain the authoritative sources for their facts.
   authorize only their stated work and do not establish completion.
 
 - [P1-PKG13 Alpha.12 publication candidate](./p1-pkg13-alpha12-publication-candidate-contract.md)
-  coordinates the next package identity for the already merged Module provider binding contract.
-  It is not qualified, published, consumable or adopted by an application.
+  freezes the next package identity for the merged Module provider binding, transaction ownership,
+  locked external-channel read and workspace shadow-tree corrections. It is not yet qualified,
+  published, consumable or adopted by an application.
 
 - [P1-PKG14 Alpha.12 qualification resources](./p1-pkg14-alpha12-qualification-resources-contract.md)
-  registers the exclusive fixed-candidate resource bundle. Registration does not qualify or
-  publish Alpha.12 and does not replace the required immutable-candidate Gate.
+  selects the exclusive fixed-candidate resource bundle. Selection does not qualify or publish
+  Alpha.12 and does not replace the required immutable-candidate Gate.
 
 ## Historical evidence
 

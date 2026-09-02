@@ -4,26 +4,27 @@ Document ID: `core-doc-status-p1-pkg13-alpha12-publication-candidate-contract`
 
 ```text
 task: P1-PKG13
-state: development candidate preparation
-prerequisite: b3262637c260c70a76f778247d43acb54e979fba
+state: fixed candidate prepared
+prerequisite: 32314b10fa7a01d8e60b91323c4a9de4b969f738
 composer_package: peanut-admin/core@0.1.0-alpha.12
 npm_package: @peanut-admin/admin@0.1.0-alpha.12
 candidate_commit: the commit containing this contract
-qualification: pending separately registered fixed-candidate resources
-publication_authorized: false
+qualification: pending one immutable-candidate run with the P1-PKG14 bundle
+publication_authorized: true only after successful qualification and publication preflight
 downstream_adoption: false
 ```
 
 ## Objective
 
-Prepare one coordinated Alpha.12 source candidate containing the product-neutral Module provider
-binding contribution and manifest contract already merged through PR #25, plus the directly related
-CI corrections merged through PR #26. Alpha.12 remains a prerelease and does not add product
-business semantics, a second composition root, a Runtime locator, or a compatibility field.
+Freeze one coordinated Alpha.12 source candidate containing the product-neutral Module provider
+binding contribution, transaction-ownership correction, locked external-channel read contract,
+root shadow-tree prevention and directly related qualification wiring already merged to `dev`.
+Alpha.12 remains a prerelease and does not add product business semantics, a second composition
+root, a Runtime locator or a compatibility field.
 
-This task changes only release identity, lock evidence, resource registration and the minimum
-documentation projection. It does not create a split commit, Tag, GitHub Release, npm or Packagist
-version, qualification claim, downstream lock, application adoption or deployment.
+This freeze changes only the minimum candidate-status projection. It does not create a split
+commit, Tag, GitHub Release, npm or Packagist version, qualification claim, downstream lock,
+application adoption or deployment.
 
 ## Exact Write Set
 
@@ -78,11 +79,13 @@ Before qualification, Core must register exact, exclusively claimable MySQL, cac
 listener, output and container resources for one fixed Alpha.12 commit. The qualification owner then
 runs `./scripts/check` once from that immutable candidate and proves zero residual resources.
 
-Publication requires separate user authorization after qualification. The Composer split projection
-must be exactly `packages/php/` from the qualified tree and receive its immutable annotated Tag
-before the source Tag. The source Tag workflow may then publish npm with provenance and create the
-GitHub prerelease; Packagist remains an explicit authenticated refresh. Clean Composer and npm
-consumers must resolve the same immutable version before any downstream application may adopt it.
+The user authorized completing the Alpha.12 publication and application-adoption chain on
+2026-09-03. That authorization is conditional on successful qualification and the immutable
+publication preflight. The Composer split projection must be exactly `packages/php/` from the
+qualified tree and receive its immutable annotated Tag before the source Tag. The source Tag
+workflow may then publish npm with provenance and create the GitHub prerelease; Packagist remains
+an explicit authenticated refresh. Clean Composer and npm consumers must resolve the same
+immutable version before any downstream application may adopt it.
 
 Failure or missing authority blocks only its direct step. No existing Tag, Registry version or
 Release is moved, overwritten, unpublished or deleted.

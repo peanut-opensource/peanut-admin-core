@@ -4,12 +4,12 @@ Document ID: `core-doc-status-p1-pkg14-alpha12-qualification-resources-contract`
 
 ```text
 task: P1-PKG14
-state: qualification resource registration
-prerequisite: 6dda523983b643d07274eae176c5b1c6142ea304
+state: fixed qualification bundle selected
+prerequisite: 32314b10fa7a01d8e60b91323c4a9de4b969f738
 runtime_change: none
 candidate_commit: the merge commit containing this contract
 qualification: pending one immutable-candidate run
-publication_authorized: false
+publication_authorized: true only after successful qualification and publication preflight
 downstream_adoption: false
 ```
 
@@ -73,8 +73,8 @@ port, database, container project, browser, toolchain, output directory or fallb
 
 ## Preflight And Fixed Candidate
 
-After this task merges, its exact merge commit and tree become the new Alpha.12 qualification
-candidate because the diff changes only resource and documentation facts. Before the single Gate:
+After this freeze merges, its exact merge commit and tree become the Alpha.12 qualification
+candidate because the diff changes only candidate-status documentation. Before the single Gate:
 
 1. fetch `dev` and create a clean detached qualification worktree at that exact commit;
 2. prove the Alpha.12 source Tag, split Tag, GitHub Release, npm and Packagist versions remain absent;
