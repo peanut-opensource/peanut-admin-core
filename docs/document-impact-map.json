@@ -38,7 +38,7 @@
     },
     {
       "id": "schema-owner",
-      "paths": ["packages/php/kernel/src/Schema/*.php", "packages/php/kernel/src/Schema/**/*.php", "kernel/src/Schema/*.php", "kernel/src/Schema/**/*.php", "**/module.json", "**/migrations/**/*"],
+      "paths": ["packages/php/kernel/src/Schema/*.php", "packages/php/kernel/src/Schema/**/*.php", "**/module.json", "**/migrations/**/*"],
       "classifications": ["architecture-decision", "technical", "developer-site"],
       "upstream": ["KernelSchema", "module.json", "Module migration owner"],
       "technical_docs": ["docs/reference/kernel-schema.md", "docs/architecture/index.md"],
@@ -105,7 +105,7 @@
     {"id": "http-api", "path": "docs/api/openapi.yaml", "must_include": ["technical", "developer-site", "generated"], "must_not_include": ["none"]},
     {"id": "cli-command", "path": "scripts/example-command", "must_include": ["technical", "developer-site"], "must_not_include": ["architecture-decision"]},
     {"id": "schema-owner", "path": "packages/php/kernel/src/Schema/ExampleSchema.php", "must_include": ["architecture-decision", "technical", "developer-site"], "must_not_include": ["none"]},
-    {"id": "module-manifest", "path": "kernel/module.json", "must_include": ["technical", "developer-site"], "must_not_include": ["none", "generated"]},
+    {"id": "module-manifest", "path": "packages/php/kernel/module.json", "must_include": ["technical", "developer-site"], "must_not_include": ["none", "generated"]},
     {"id": "environment", "path": "compose.yaml", "must_include": ["technical", "developer-site"], "must_not_include": ["none"]},
     {"id": "runtime-resource", "path": "resources/project-resources.json", "must_include": ["technical", "developer-site"], "must_not_include": ["none", "architecture-decision"]},
     {"id": "runtime-status", "path": "docs/status/runtime-operation-coverage.json", "must_include": ["technical"], "must_not_include": ["developer-site"]},

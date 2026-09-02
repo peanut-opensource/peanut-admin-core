@@ -37,6 +37,26 @@ if find packages/web -mindepth 2 -maxdepth 2 -name package.json -print -quit | g
   exit 1
 fi
 
+root_shadow_directories=(
+  data-permission
+  file-media
+  import-export
+  integration-security
+  kernel
+  notification-sms
+  ops-console
+  reference-codes
+  settings
+  task-job
+  testing
+)
+for directory in "${root_shadow_directories[@]}"; do
+  if [[ -d "$directory" ]]; then
+    echo "ERROR: root shadow source directory is forbidden: $directory" >&2
+    exit 1
+  fi
+done
+
 composer_bin="${PEANUT_COMPOSER:-composer}"
 composer_version="$("$composer_bin" --version --no-ansi | sed -E 's/^Composer version ([0-9.]+).*/\1/')"
 pnpm_version="$(pnpm --version)"
