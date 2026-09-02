@@ -53,14 +53,15 @@ The manifest must pass the versioned JSON Schema. A minimal capability declares 
 Host Application; `frontend.routes` remains a valid build-time frontend
 contribution.
 
-Every provider implements `bindings()` and returns only an associative map of
-contract class to implementation class. Empty contributions return `[]`.
-`ModuleProviderBindings::collect()` validates compatibility, sorts the result,
-and rejects duplicate contracts before the Host changes its container. The Host
-composition root is the only code that applies those bindings; providers do not
-receive the framework container, return factories, or create service locators.
-`lifecycle.protected` remains deployment policy and does not change this startup
-contract.
+Every provider implements `bindings()` and returns an associative map of
+contract class to implementation class or startup factory closure. Empty
+contributions return `[]`. `ModuleProviderBindings::collect()` validates class
+compatibility, accepts closures as opaque Host factories, sorts the result, and
+rejects duplicate contracts before the Host changes its container. The Host
+composition root is the only code that invokes and applies those bindings;
+business services still receive dependencies through constructors and do not
+resolve them from a container. `lifecycle.protected` remains deployment policy
+and does not change this startup contract.
 
 Run:
 

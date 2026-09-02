@@ -46,6 +46,7 @@ A `ProductProfile` is a version-controlled installation recipe. It can select mo
 
 A `Module` owns a reusable capability. `TenantModule` records whether a deployed module is open for a tenant. Effective access requires all three conditions: the module is installed, the tenant has it open, and the member has the required functional and data permissions.
 
-A Module provider declares its contract-to-implementation bindings without
-receiving a framework container. Core validates and combines those declarations;
-the Host's single composition root is the only code that applies them.
+A Module provider declares contract bindings as compatible implementation classes
+or Host-owned startup factory closures. Core validates and combines those
+declarations; the Host's single composition root is the only code that invokes
+and applies them.
