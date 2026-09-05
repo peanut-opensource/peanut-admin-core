@@ -27,6 +27,12 @@ This freeze changes only the minimum candidate-status projection. It does not cr
 commit, Tag, GitHub Release, npm or Packagist version, qualification claim, downstream lock,
 application adoption or deployment.
 
+The earlier candidate `021baf33707b64f6d51bd150a6b28454a8477576` was not qualified: its owner
+started the aggregate check before creating the registered writable `TMPDIR`, so the run stopped
+in the first temporary-file fixture before any database, cache, container, listener or browser
+resource started. This commit refreezes the unchanged Runtime tree after correcting that operator
+precondition; it does not treat the environment failure as a product defect.
+
 ## Exact Write Set
 
 - `README.md`;

@@ -42,7 +42,9 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 - [P1-PKG13 Alpha.12 publication candidate](./p1-pkg13-alpha12-publication-candidate-contract.md)
   freezes the next package identity for the merged Module provider binding, transaction ownership,
   locked external-channel read, workspace shadow-tree and Standalone entry-binding storage
-  corrections. It is not yet qualified, published, consumable or adopted by an application.
+  corrections. The first qualification attempt stopped on an uncreated registered temporary
+  directory before stateful work and the candidate has been refrozen; it is not yet qualified,
+  published, consumable or adopted by an application.
 
 - [P1-PKG14 Alpha.12 qualification resources](./p1-pkg14-alpha12-qualification-resources-contract.md)
   selects the exclusive fixed-candidate resource bundle. Selection does not qualify or publish
