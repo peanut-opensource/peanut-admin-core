@@ -5,7 +5,7 @@ Document ID: `core-doc-status-p1-pkg13-alpha12-publication-candidate-contract`
 ```text
 task: P1-PKG13
 state: fixed candidate prepared
-prerequisite: 32314b10fa7a01d8e60b91323c4a9de4b969f738
+prerequisite: 99bc303f74b49863a9358a3cc0e0d142d57b7c93
 composer_package: peanut-admin/core@0.1.0-alpha.12
 npm_package: @peanut-admin/admin@0.1.0-alpha.12
 candidate_commit: the commit containing this contract
@@ -18,7 +18,8 @@ downstream_adoption: false
 
 Freeze one coordinated Alpha.12 source candidate containing the product-neutral Module provider
 binding contribution, transaction-ownership correction, locked external-channel read contract,
-root shadow-tree prevention and directly related qualification wiring already merged to `dev`.
+root shadow-tree prevention, Standalone entry-binding storage isolation and directly related
+qualification wiring already merged to `dev`.
 Alpha.12 remains a prerelease and does not add product business semantics, a second composition
 root, a Runtime locator or a compatibility field.
 
