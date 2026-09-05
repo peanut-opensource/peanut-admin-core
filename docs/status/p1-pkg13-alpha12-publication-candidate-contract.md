@@ -33,6 +33,12 @@ in the first temporary-file fixture before any database, cache, container, liste
 resource started. This commit refreezes the unchanged Runtime tree after correcting that operator
 precondition; it does not treat the environment failure as a product defect.
 
+Candidate `6015c92c4ea1b0ac05f2bc75c84cefc9de867270` was then invalidated when the
+aggregate unit group proved that a PDO driver may reject the tenant-binding query during
+`prepare()`, before the existing failure-normalization boundary. Commit
+`833823fbc7fd9484d3fe44ff0374d95f90ac390d` moves that preparation into the existing
+fail-closed boundary; this commit fixes the resulting Alpha.12 candidate identity.
+
 ## Exact Write Set
 
 - `README.md`;
