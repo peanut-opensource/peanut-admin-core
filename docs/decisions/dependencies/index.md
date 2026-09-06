@@ -60,6 +60,12 @@ WebSocket server nor creates a third public package. See the
 [machine-readable record](./p1-cap04-collaboration.json). Installation remains
 blocked until the independent CAP04 Runtime contract is accepted.
 
+P1 Storage Driver Dependency Decision accepts optional Aliyun, Qcloud and Qiniu
+SDK integration points for a selecting Host. See the
+[decision](./p1-storage-drivers.md) and
+[machine-readable record](./p1-storage-drivers.json). The Core aggregate exposes
+only Composer `suggest`; the Host must explicitly require and lock a selected SDK.
+
 ## Explicitly Deferred
 
 P0 does not install or create speculative abstractions for filesystem storage, queue management UI, spreadsheet import/export, notifications, Plugin runtime or marketplace, MFA, or OIDC. Each requires an approved use path and a new dependency decision before installation.

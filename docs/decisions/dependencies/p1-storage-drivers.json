@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "decision_id": "P1-STORAGE-DRIVER-DEPENDENCIES",
+  "status": "accepted",
+  "reviewed_at": "2026-09-07",
+  "core_prerequisite_commit": "cefb050002b455747c20bb0790864d6f50eb24d8",
+  "application_evidence_commit": "f74d841b4e084dbb8b5ec4a2d6312494042b0d10",
+  "public_package": "peanut-admin/core",
+  "dependencies": [
+    {
+      "name": "aliyuncs/oss-sdk-php",
+      "exact_version": "2.7.3",
+      "constraint": "^2.4",
+      "license": "MIT",
+      "core_direct_dependency": false,
+      "selecting_host_direct_dependency": true,
+      "purpose": "Host-assembled Aliyun OSS client for the optional AliyunStorageDriver",
+      "alternatives": ["league/flysystem", "custom OSS protocol implementation"],
+      "adapter": "AliyunStorageDriver receives an OSS\\OssClient constructed by the Host",
+      "exit_plan": "Migrate provider configuration and stored objects, replace the driver behind StorageDriver, then remove the Host SDK requirement",
+      "security_status": "Identity, MIT license and exact version inspected in the application Composer lock on 2026-09-07; Host lock audit and candidate qualification remain mandatory",
+      "official_sources": [
+        "https://github.com/aliyun/aliyun-oss-php-sdk",
+        "https://www.alibabacloud.com/help/en/oss/developer-reference/php-installation"
+      ]
+    },
+    {
+      "name": "qcloud/cos-sdk-v5",
+      "exact_version": "2.6.17",
+      "constraint": "^2.5",
+      "license": "MIT",
+      "core_direct_dependency": false,
+      "selecting_host_direct_dependency": true,
+      "purpose": "Host-assembled Tencent COS client for the optional QcloudStorageDriver",
+      "alternatives": ["league/flysystem", "custom COS protocol implementation"],
+      "adapter": "QcloudStorageDriver receives a Qcloud\\Cos\\Client constructed and instrumented by the Host",
+      "exit_plan": "Migrate provider configuration and stored objects, replace the driver behind StorageDriver, then remove the Host SDK requirement",
+      "security_status": "Identity, MIT license and exact version inspected in the application Composer lock on 2026-09-07; Host lock audit and candidate qualification remain mandatory",
+      "official_sources": [
+        "https://github.com/tencentyun/cos-php-sdk-v5",
+        "https://cloud.tencent.com/document/product/436/12266"
+      ]
+    },
+    {
+      "name": "qiniu/php-sdk",
+      "exact_version": "7.4.0",
+      "constraint": "^7.4",
+      "license": "MIT",
+      "core_direct_dependency": false,
+      "selecting_host_direct_dependency": true,
+      "purpose": "Host-assembled Qiniu authentication for the optional QiniuStorageDriver",
+      "alternatives": ["league/flysystem", "custom Qiniu signing implementation"],
+      "adapter": "QiniuStorageDriver receives Qiniu\\Auth and uses the first-party StorageHttpTransport for Host-governed HTTP",
+      "exit_plan": "Migrate provider configuration and stored objects, replace the driver behind StorageDriver, then remove the Host SDK requirement",
+      "security_status": "Identity, MIT license and exact version inspected in the application Composer lock on 2026-09-07; Host lock audit and candidate qualification remain mandatory",
+      "official_sources": [
+        "https://github.com/qiniu/php-sdk",
+        "https://developer.qiniu.com/kodo/1241/php"
+      ]
+    }
+  ],
+  "aggregate_install": {
+    "authorized": false,
+    "composer_metadata": "suggest only",
+    "reason": "Each SDK is optional and must be explicitly required and locked by a Host that selects that provider"
+  },
+  "host_install_authorization": {
+    "authorized": true,
+    "scope": "Only a selected provider's accepted constraint may be required directly by the consuming Host",
+    "verification": "The Host Composer lock must resolve and audit the selected SDK before integration"
+  },
+  "publication_authorized": false
+}

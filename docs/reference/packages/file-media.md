@@ -12,6 +12,17 @@ adapter. Production object storage, malware scanning, public delivery,
 retention deletion, attachments, thumbnails, and resumable uploads are not
 claimed by Starter v1.
 
+The low-level `StorageDriver` contract owns four technical operations—put,
+delete, downloadTo, and localPath—over an opaque object key. It is the storage
+mechanism boundary and remains separate from the higher-level `StorageProvider`
+contract consumed by the existing File And Media Runtime. That Runtime owns
+File And Media lifecycle, metadata, visibility, delivery, and product-facing
+behavior; the interface itself has no database owner. Aliyun, Qcloud, and Qiniu drivers are optional
+Host SDK integrations; the Host explicitly requires and locks a selected SDK,
+while Core exposes the optional requirement through Composer `suggest`. Their
+presence does not establish complete FileMedia production qualification or
+package publication.
+
 The Stage B delivery package adds an `ObjectStorageProvider` capability
 boundary without invalidating the existing `StorageProvider`. The
 `PrivateStorageAdapter` lets the local development provider participate while

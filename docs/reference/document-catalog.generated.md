@@ -13,9 +13,11 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-api-problems-validation-failed` | `docs/api/problems/validation-failed.md` | `current` | `reference` | `Peanut Admin maintainers` |
 | `core-doc-architecture-edition-persistence-scope` | `docs/architecture/edition-persistence-scope.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-architecture-index` | `docs/architecture/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
+| `core-doc-architecture-storage-driver-boundary` | `docs/architecture/storage-driver-boundary.md` | `current` | `architecture` | `architecture` |
 | `core-doc-core-concepts-index` | `docs/core-concepts/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-index` | `docs/decisions/dependencies/index.md` | `current` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-p1-cap04-collaboration` | `docs/decisions/dependencies/p1-cap04-collaboration.md` | `current` | `decision` | `Peanut Admin maintainers` |
+| `core-doc-decisions-dependencies-p1-storage-drivers` | `docs/decisions/dependencies/p1-storage-drivers.md` | `current` | `decision` | `architecture` |
 | `core-doc-decisions-releases-p1-ed01-alpha10-publication-approval` | `docs/decisions/releases/p1-ed01-alpha10-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-releases-p1-ed01-alpha11-publication-approval` | `docs/decisions/releases/p1-ed01-alpha11-publication-approval.md` | `current` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-releases-p1-pkg02-publication-approval` | `docs/decisions/releases/p1-pkg02-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |

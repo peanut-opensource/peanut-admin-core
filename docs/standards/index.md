@@ -11,6 +11,10 @@ Peanut Admin treats architecture, security, tests, documentation, and dependency
 - Treat context, permissions, module state, target resolution, and providers as fail-closed contracts.
 - Keep module data ownership explicit; cross-module access uses public contracts.
 - Update public documentation in the same task that changes public behavior.
+- Add concise responsibility comments to new or materially changed classes and methods. Complex methods
+  must state tenant/authorization prerequisites, side effects, exceptions, and stream or temporary-file
+  ownership. Standard CRUD, accessors, and constructor-only injection may omit method comments, while
+  class responsibility comments remain required. Core comments use English.
 - Never expose credentials, tokens, cookies, secrets, private paths, or personal data in logs, fixtures, commits, or generated documentation.
 - Do not weaken checks, swallow exit codes, add test-only production bypasses, or use destructive Git commands.
 

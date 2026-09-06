@@ -7,6 +7,7 @@ This directory is the technical and public developer documentation source for th
 | Need | Entry | Lifecycle |
 | --- | --- | --- |
 | Find the fact owner | [Authoritative source map](governance/authoritative-source-map.md) | authoritative |
+| Understand storage ownership | [Storage Driver boundary](architecture/storage-driver-boundary.md) | current Core boundary and execution contract |
 | Adopt or extend Core | [Developer guide](guide/index.md) | current |
 | Understand trust and ownership | [Core concepts](core-concepts/index.md) and [architecture](architecture/index.md) | current |
 | Look up schema, targets or packages | `reference/` | current/generated |

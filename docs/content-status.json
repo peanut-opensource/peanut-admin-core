@@ -414,6 +414,14 @@
   ],
   "documents": [
     {
+      "id": "core-doc-architecture-storage-driver-boundary",
+      "path": "docs/architecture/storage-driver-boundary.md",
+      "title": "Storage Driver Boundary",
+      "status": "current",
+      "owner": "architecture",
+      "replacement": null
+    },
+    {
       "id": "core-doc-readme",
       "path": "docs/README.md",
       "title": "Peanut Admin Documentation",
@@ -755,6 +763,14 @@
       "title": "P1-CAP04 Collaboration Dependency Decision",
       "status": "current",
       "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-decisions-dependencies-p1-storage-drivers",
+      "path": "docs/decisions/dependencies/p1-storage-drivers.md",
+      "title": "P1 Storage Driver Dependency Decision",
+      "status": "current",
+      "owner": "architecture",
       "replacement": null
     },
     {

@@ -30,6 +30,14 @@ port, credential, host, service, or fallback may be guessed.
 - Do not add product-specific business logic, names, tables, pages, or examples.
 - Do not install dependencies without an accepted dependency decision record.
 - Prefer mature libraries when an accepted dependency exists; do not recreate established infrastructure without a recorded reason.
+- Core/Application ownership and the planned storage extraction boundary are recorded in
+  `docs/architecture/storage-driver-boundary.md`; Core owns product-neutral storage mechanisms and
+  explicit technical state, while the application owns provider assembly, credentials, authorization,
+  object ledger, compensation and product lifecycle.
+- New or materially changed classes and methods need concise responsibility comments. Complex methods
+  document tenant/authorization prerequisites, side effects, exceptions and stream or temporary-file
+  ownership; standard CRUD, accessors and constructor-only injection may omit method comments while
+  retaining class responsibility comments. Core comments are English.
 
 ## P1 Execution Stop Line
 

@@ -39,11 +39,12 @@
       },
       {
         "stable_resource_id": "peanut-admin-core-php83-alpha12-qualification",
-        "purpose": "fixed host PHP runtime for the Alpha.12 repository qualification",
+        "purpose": "fixed host PHP runtime for Core development checks and Alpha.12 repository qualification",
         "environments": [
+          "development",
           "qualification"
         ],
-        "owner": "Peanut Admin Core Alpha.12 qualification owner",
+        "owner": "Peanut Admin Core development and Alpha.12 qualification owner",
         "host": "macbookpro-arm64",
         "port": null,
         "database": null,
@@ -59,6 +60,7 @@
         "lifecycle": "persistent owner-managed qualification toolchain",
         "cleanup_responsibility": "not applicable",
         "consumers": [
+          "PHP source lint",
           "scripts/check",
           "scripts/test-performance",
           "scripts/verify-internal-starter"
