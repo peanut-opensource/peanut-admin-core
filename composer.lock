@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99d4b562f442f418bf8835a70a26823d",
+    "content-hash": "7073344f49f89aff77c2b484d1009416",
     "packages": [
         {
             "name": "opis/json-schema",
@@ -198,11 +198,11 @@
         },
         {
             "name": "peanut-admin/core",
-            "version": "0.1.0-alpha.10",
+            "version": "0.1.0-alpha.12",
             "dist": {
                 "type": "path",
                 "url": "packages/php",
-                "reference": "37f33846e9f579d06153fd579c6348691d93c429"
+                "reference": "7f60764df208e7b11777688e9d311e53afa61697"
             },
             "require": {
                 "ext-fileinfo": "*",

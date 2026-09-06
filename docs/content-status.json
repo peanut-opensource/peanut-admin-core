@@ -316,6 +316,8 @@
         "docs/status/p1-pkg09-ci-environment-wiring-contract.md",
         "docs/status/p1-pkg10-final-qualification-wiring-contract.md",
         "docs/status/p1-pkg11-tenant-refresh-sampling-follow-up-contract.md",
+        "docs/status/p1-pkg13-alpha12-publication-candidate-contract.md",
+        "docs/status/p1-pkg14-alpha12-qualification-resources-contract.md",
         "docs/status/starter-v1-c02-file-media-delivery-handoff.md"
       ],
       "audience": [
@@ -365,6 +367,8 @@
         "docs/status/p1-pkg09-ci-environment-wiring-contract.md",
         "docs/status/p1-pkg10-final-qualification-wiring-contract.md",
         "docs/status/p1-pkg11-tenant-refresh-sampling-follow-up-contract.md",
+        "docs/status/p1-pkg13-alpha12-publication-candidate-contract.md",
+        "docs/status/p1-pkg14-alpha12-qualification-resources-contract.md",
         "docs/status/starter-v1-c02-file-media-delivery-handoff.md"
       ],
       "exclude": [],
@@ -517,6 +521,14 @@
       "id": "core-doc-status-p1-ed01-edition-persistence-scope-contract",
       "path": "docs/status/p1-ed01-edition-persistence-scope-contract.md",
       "title": "P1-ED01 Edition Persistence Scope Contract",
+      "status": "planned",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-status-p1-ed01-r01-settings-persistence-scope-contract",
+      "path": "docs/status/p1-ed01-r01-settings-persistence-scope-contract.md",
+      "title": "P1-ED01-R01 Settings Persistence Scope Contract",
       "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
@@ -1085,6 +1097,14 @@
       "id": "core-doc-decisions-releases-p1-ed01-alpha10-publication-approval",
       "path": "docs/decisions/releases/p1-ed01-alpha10-publication-approval.md",
       "title": "P1-ED01 Alpha.10 Publication Approval",
+      "status": "archived",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-decisions-releases-p1-ed01-alpha11-publication-approval",
+      "path": "docs/decisions/releases/p1-ed01-alpha11-publication-approval.md",
+      "title": "P1-ED01 Alpha.11 Publication Approval",
       "status": "current",
       "owner": "Peanut Admin maintainers",
       "replacement": null
@@ -1254,6 +1274,22 @@
       "path": "docs/status/p1-pkg12-application-infrastructure-extraction-contract.md",
       "title": "P1-PKG12 Application Infrastructure Extraction Contract",
       "status": "planned",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-status-p1-pkg13-alpha12-publication-candidate-contract",
+      "path": "docs/status/p1-pkg13-alpha12-publication-candidate-contract.md",
+      "title": "P1-PKG13 Alpha.12 Publication Candidate Contract",
+      "status": "archived",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-status-p1-pkg14-alpha12-qualification-resources-contract",
+      "path": "docs/status/p1-pkg14-alpha12-qualification-resources-contract.md",
+      "title": "P1-PKG14 Alpha.12 Qualification Resources Contract",
+      "status": "archived",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },

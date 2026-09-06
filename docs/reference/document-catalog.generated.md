@@ -16,7 +16,8 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-core-concepts-index` | `docs/core-concepts/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-index` | `docs/decisions/dependencies/index.md` | `current` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-p1-cap04-collaboration` | `docs/decisions/dependencies/p1-cap04-collaboration.md` | `current` | `decision` | `Peanut Admin maintainers` |
-| `core-doc-decisions-releases-p1-ed01-alpha10-publication-approval` | `docs/decisions/releases/p1-ed01-alpha10-publication-approval.md` | `current` | `decision` | `Peanut Admin maintainers` |
+| `core-doc-decisions-releases-p1-ed01-alpha10-publication-approval` | `docs/decisions/releases/p1-ed01-alpha10-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
+| `core-doc-decisions-releases-p1-ed01-alpha11-publication-approval` | `docs/decisions/releases/p1-ed01-alpha11-publication-approval.md` | `current` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-releases-p1-pkg02-publication-approval` | `docs/decisions/releases/p1-pkg02-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-releases-p1-pkg03-alpha2-publication-approval` | `docs/decisions/releases/p1-pkg03-alpha2-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-governance-authoritative-source-map` | `docs/governance/authoritative-source-map.md` | `authoritative` | `guide` | `Peanut Admin maintainers` |
@@ -75,6 +76,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-status-p1-cl01-ui-neutral-client-transport-contract` | `docs/status/p1-cl01-ui-neutral-client-transport-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-downstream-module-readiness-plan` | `docs/status/p1-downstream-module-readiness-plan.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-ed01-edition-persistence-scope-contract` | `docs/status/p1-ed01-edition-persistence-scope-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
+| `core-doc-status-p1-ed01-r01-settings-persistence-scope-contract` | `docs/status/p1-ed01-r01-settings-persistence-scope-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-execution-and-post-q01-roadmap` | `docs/status/p1-execution-and-post-q01-roadmap.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-execution-baseline` | `docs/status/p1-execution-baseline.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-ovr01-admin-web-override-registry-contract` | `docs/status/p1-ovr01-admin-web-override-registry-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
@@ -111,6 +113,8 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-status-p1-pkg10-final-qualification-wiring-contract` | `docs/status/p1-pkg10-final-qualification-wiring-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-pkg11-tenant-refresh-sampling-follow-up-contract` | `docs/status/p1-pkg11-tenant-refresh-sampling-follow-up-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-pkg12-application-infrastructure-extraction-contract` | `docs/status/p1-pkg12-application-infrastructure-extraction-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
+| `core-doc-status-p1-pkg13-alpha12-publication-candidate-contract` | `docs/status/p1-pkg13-alpha12-publication-candidate-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
+| `core-doc-status-p1-pkg14-alpha12-qualification-resources-contract` | `docs/status/p1-pkg14-alpha12-qualification-resources-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-post-q01-cross-product-capability-plan` | `docs/status/p1-post-q01-cross-product-capability-plan.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-r02-external-operation-host-kit-contract` | `docs/status/p1-r02-external-operation-host-kit-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-w01-protected-transport-origin-contract` | `docs/status/p1-w01-protected-transport-origin-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |

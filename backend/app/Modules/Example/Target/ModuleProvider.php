@@ -29,6 +29,11 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return 'example.target';
     }
 
+    public function bindings(): array
+    {
+        return [TargetRuntimeProvider::class => self::class];
+    }
+
     public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void
     {
         $departments = new PdoDepartmentHierarchyProvider($pdo);

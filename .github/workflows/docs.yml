@@ -1,23 +1,12 @@
 name: Documentation
 
 on:
-  push:
-    branches:
-      - dev
-    paths:
-      - 'docs/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.npmrc'
-      - 'scripts/bootstrap-worktree-dependencies'
-      - 'scripts/warm-worktree-dependencies'
-      - 'scripts/check-docs'
-      - 'scripts/check-doc-content-status'
-      - 'scripts/core-docs-governance'
-      - 'scripts/verify-doc-examples'
-      - '.github/workflows/docs.yml'
   workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact fixed-candidate commit for the failed-group rerun
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -28,9 +17,23 @@ jobs:
     env:
       MYSQL_PORT: '3306'
       DB_PORT: '3306'
+      PEANUT_STARTER_BACKEND_PORT: '20280'
+      PEANUT_STARTER_FRONTEND_PORT: '20281'
     steps:
-      - name: Checkout
+      - name: Validate fixed candidate
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: |
+          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
+      - name: Checkout fixed candidate
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          persist-credentials: false
+      - name: Verify fixed candidate
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:

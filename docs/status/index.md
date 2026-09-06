@@ -16,13 +16,19 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 - A completed candidate, qualification, publication, remediation or handoff
   record proves only its named fixed scope. It does not authorize a later
   Runtime, package publication, release, production claim or downstream lock.
+- Coordinated Core `0.1.0-alpha.12` is published from source commit
+  `9089516a18f19e19a048683594087e0b4ffc5455` and Composer split commit
+  `9017212da0da63f445d693be94d533f681c6dc92`. The annotated source/split tags,
+  GitHub Release, npm package, Packagist package and clean Composer consumer
+  agree. Peanut Admin Application v3.0.13 has adopted that immutable version.
 
 ## Active plans and candidate contracts
 
-- [P1-ED01 Edition persistence scope](./p1-ed01-edition-persistence-scope-contract.md)
-  records the approved, not-yet-implemented product-neutral persistence contract required by hosts
-  that distribute tenant-scoped and instance-scoped artifacts. It does not move the fixed downstream
-  lock or publish a package.
+- [P1-ED01 Edition persistence scope](./p1-ed01-edition-persistence-scope-contract.md) is implemented
+  for Idempotency, Task/Job and Import/Export in the Alpha.11 source line. The follow-up
+  [P1-ED01-R01 Settings persistence scope](./p1-ed01-r01-settings-persistence-scope-contract.md)
+  records the approved Settings closure. Neither candidate moves the fixed downstream lock; a Host
+  may formally consume them only from a separately approved published version.
 
 - [P1 Execution Baseline](./p1-execution-baseline.md) — execution constraints
   and prerequisites; it is not implementation proof.

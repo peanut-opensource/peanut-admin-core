@@ -13,4 +13,9 @@ final class ExampleGreetingModuleProvider implements ModuleProvider
     {
         return ModuleKey::fromString('example.greeting')->value();
     }
+
+    public function bindings(): array
+    {
+        return [];
+    }
 }

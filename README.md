@@ -68,13 +68,12 @@ release, or downstream consumption lock.
 
 P1-PKG01 consolidates the installable Runtime surface into exactly two public
 package boundaries: Composer package `peanut-admin/core` and npm package
-`@peanut-admin/admin`. Current manifests prepare the coordinated
-`0.1.0-alpha.10` candidate, including product-neutral tenant-scoped and
-instance-scoped persistence for Idempotency, Task/Job and Import/Export. A
-branch or manifest value is not consumable release evidence: the exact source
-tag, generated Composer split tag, Packagist version, npm version and clean
-consumers must all agree. Domain source directories remain private inside the
-two public packages and are not independently publishable.
+`@peanut-admin/admin`. Coordinated `0.1.0-alpha.12` is published from source
+commit `9089516a18f19e19a048683594087e0b4ffc5455` and Composer split commit
+`9017212da0da63f445d693be94d533f681c6dc92`; its source/split tags, GitHub
+Release, Packagist and npm identities agree, and clean Composer consumption has
+been verified. Domain source directories remain private inside the two public
+packages and are not independently publishable.
 
 ## Principles
 

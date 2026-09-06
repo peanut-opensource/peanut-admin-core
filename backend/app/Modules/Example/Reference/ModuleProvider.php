@@ -28,6 +28,11 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return 'example.reference';
     }
 
+    public function bindings(): array
+    {
+        return [ReferenceRuntimeProvider::class => self::class];
+    }
+
     public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void
     {
         $provider = new ReferencePolicyProvider(new StandardResourcePolicyProvider(

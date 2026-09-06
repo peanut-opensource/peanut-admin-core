@@ -52,5 +52,5 @@ The follow-up is submitted as a PR to `dev`. Repository automation remains
 authoritative; a new non-formatting failure receives one read-only diagnosis
 and stops instead of widening R04. CAP02 starts only after this follow-up is
 merged and the final Core `dev` commit is fixed as its 40-character
-prerequisite. R04 does not qualify, adopt or publish Alpha.5, and the DCS
-candidate remains `UNKNOWN`.
+prerequisite. R04 does not qualify, adopt or publish Alpha.5, and the
+downstream-consumption candidate remains `UNKNOWN`.

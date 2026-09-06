@@ -31,6 +31,13 @@ A task that does not touch one of these boundaries does not inherit its full
 test suite. A task that does touch one must test the changed boundary, including
 the relevant negative and failure paths.
 
+Every pull request runs `./scripts/check --static`. Documentation- and
+resource-only pull requests run no Runtime, build, browser, recovery,
+performance, security, starter, or aggregate group. The static contract checks
+documentation governance, dependency decisions, Runtime coverage metadata,
+resource-registry JSON, the approved license, forbidden content, workspace
+shape, and the pull-request diff.
+
 ## Worktree Dependencies
 
 Run the following once when opening a new worktree:
@@ -69,6 +76,27 @@ browser backend/frontend and generated starter backend/frontend. In particular,
 `PEANUT_STARTER_BACKEND_PORT` and `PEANUT_STARTER_FRONTEND_PORT` are required;
 the starter verifier never selects a random listener. A missing or occupied
 registered port stops qualification instead of switching to another address.
+GitHub-hosted workflow jobs select
+`peanut-admin-core-github-ci-starter-backend` and
+`peanut-admin-core-github-ci-starter-frontend` from
+`resources/project-resources.json`; their fixed loopback ports are isolated by
+the per-job runner and are removed with the job. The aggregate quality job also
+selects the registered, checksum-pinned ripgrep 15.1.0 binary before any
+negative-pattern gate runs. Starter verification launches Vite as the owned
+child process so repeated aggregate invocations release the same fixed port.
+
+Coordinated package candidates also select the exact Composer and Node/pnpm toolchain entries in
+`resources/project-resources.json`. Source GitHub, generated Composer split, npm and Packagist
+entries authorize only their named release step; their presence is not publication approval. A
+candidate without exact, exclusively claimable qualification resources stops before
+`./scripts/check` rather than reusing CI, another project or a prior candidate's resources.
+
+Alpha.12 fixed-candidate qualification selects the complete bundle defined by P1-PKG14: Compose
+project `peanut-admin-core-alpha12-q01`, MySQL `127.0.0.1:33432`, Valkey
+`127.0.0.1:36432`, its six fixed listener ports, Playwright Chromium and the registered temporary
+output namespace. Every target must be absent or free before the run and absent again after exact
+cleanup. A conflict stops the candidate; it never causes automatic port, database or output
+selection.
 
 It builds the documentation and Admin Web, validates OpenAPI and Module manifests, runs architecture checks, PHP unit and MySQL integration tests, authorization security tests, browser tests, PHPStan, Deptrac, PHP-CS-Fixer, ESLint, TypeScript checks, Vitest, and production builds.
 
@@ -82,6 +110,12 @@ The secret gate scans the complete history reachable from the fixed candidate
 from another branch, worktree, or tool snapshot are not candidate evidence.
 `./scripts/verify-internal-starter` creates and installs two independent starter
 copies and belongs only to this fixed-candidate or qualification phase.
+
+GitHub Actions does not run the qualification matrix after a merge to `dev`.
+The qualification owner manually supplies one exact 40-character candidate
+commit to the aggregate workflow. Documentation, starter, recovery, security,
+and performance workflows accept the same immutable input only for the one
+allowed rerun of a failed group; a passing group is not repeated.
 
 If a performance check fails, the affected qualification, release, or
 downstream consumption-lock movement remains blocked until it passes. The

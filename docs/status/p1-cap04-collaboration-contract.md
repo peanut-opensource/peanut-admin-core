@@ -259,4 +259,4 @@ Implementation tasks perform static review, exact-write-set inspection and
 `git diff --check`. One integration owner runs the repository PR automation on
 the final tree. Full fixed-tree cross-capability qualification remains CAP05.
 CAP04 does not deploy Hocuspocus, publish Alpha.5, move application locks,
-nominate DCS or begin CAP06.
+nominate a downstream-consumption candidate or begin CAP06.
