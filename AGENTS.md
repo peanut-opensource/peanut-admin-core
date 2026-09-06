@@ -4,16 +4,11 @@ This repository is the clean implementation home for Peanut Admin.
 
 ## Required Reading
 
-Before changing files, read in order:
-
-1. `company-rules/core.md` and `company-rules/code-repository.md` when the local company-only directory exists.
-2. `README.md`
-3. `docs/README.md`
-4. `docs/content-status.json`
-5. `docs/status/index.md`
-6. `docs/status/runtime-operation-coverage.json`
-7. `docs/status/p1-execution-baseline.md` for P1 work.
-8. The task-specific files named by the controlling prompt.
+Read the current task and relevant implementation first. Use `README.md` for orientation;
+`docs/README.md` and `docs/content-status.json` for documentation changes;
+`docs/status/index.md` and `docs/status/runtime-operation-coverage.json` for status or coverage decisions;
+and `docs/status/p1-execution-baseline.md` for P1 Runtime work.
+Read applicable `company-rules/` files when that internally synchronized directory exists.
 
 The versioned runtime-resource authority is
 `resources/project-resources.json`. Before a task connects to, starts, tests,
@@ -66,13 +61,10 @@ port, credential, host, service, or fallback may be guessed.
 
 ## Verification Policy
 
-- Automated verification runs only when the controlling stage contract assigns
-  it to that stage's integration owner or to a fixed-candidate qualification
-  owner.
-- Feature, follow-up, and review tasks do not run PHP, database, Web unit,
-  typecheck, build, Host, OpenAPI/generated, starter, aggregate, or test-probe
-  commands. They use static review, an exact write-set check, `git diff --check`,
-  and a clean commit, and record runtime verification for the owning stage.
+- Ordinary changes use static review, an exact write-set check and `git diff --check`.
+  Behavior changes run one affected existing check using registered resources when required.
+  Do not add tests unless requested. Shared integration and full qualification remain assigned
+  to their stage or fixed-candidate owner; do not repeat unaffected passing groups.
 - The integration owner completes every source acceptance and shared wiring,
   performs static review, verifies the exact write set, and fixes the final
   tree before running any automated check. Immediately before the final stage

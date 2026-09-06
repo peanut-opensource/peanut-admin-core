@@ -18,7 +18,7 @@ The generated [document catalog](reference/document-catalog.generated.md) is the
 
 ## AI reading order
 
-1. Read repository `AGENTS.md` and required status facts.
+1. Read repository `AGENTS.md`; load status facts only when the task changes or judges that status.
 2. Read `docs/content-status.json`, this index and the authoritative source map.
    Before any stateful check, also select the exact resource from
    `resources/project-resources.json`.
