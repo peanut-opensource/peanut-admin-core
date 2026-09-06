@@ -16,6 +16,11 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 - A completed candidate, qualification, publication, remediation or handoff
   record proves only its named fixed scope. It does not authorize a later
   Runtime, package publication, release, production claim or downstream lock.
+- Coordinated Core `0.1.0-alpha.12` is published from source commit
+  `9089516a18f19e19a048683594087e0b4ffc5455` and Composer split commit
+  `9017212da0da63f445d693be94d533f681c6dc92`. The annotated source/split tags,
+  GitHub Release, npm package, Packagist package and clean Composer consumer
+  agree. Peanut Admin Application v3.0.13 has adopted that immutable version.
 
 ## Active plans and candidate contracts
 
@@ -38,17 +43,6 @@ and fixed-commit evidence remain the authoritative sources for their facts.
   [R02 External Operation Host Kit](./p1-r02-external-operation-host-kit-contract.md)
   and [PKG12 Application Infrastructure Extraction](./p1-pkg12-application-infrastructure-extraction-contract.md),
   authorize only their stated work and do not establish completion.
-
-- [P1-PKG13 Alpha.12 publication candidate](./p1-pkg13-alpha12-publication-candidate-contract.md)
-  freezes the next package identity for the merged Module provider binding, transaction ownership,
-  locked external-channel read, workspace shadow-tree and Standalone entry-binding storage
-  corrections. The candidate has been refrozen after correcting the qualification preflight and
-  the PDO prepare-time failure boundary found by the next aggregate run; it is not yet qualified,
-  published, consumable or adopted by an application.
-
-- [P1-PKG14 Alpha.12 qualification resources](./p1-pkg14-alpha12-qualification-resources-contract.md)
-  selects the exclusive fixed-candidate resource bundle. Selection does not qualify or publish
-  Alpha.12 and does not replace the required immutable-candidate Gate.
 
 ## Historical evidence
 
