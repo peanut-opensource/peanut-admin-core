@@ -5,7 +5,7 @@ Document ID: `core-doc-status-alpha13-publication-candidate-contract`
 ```text
 task: CORE-ALPHA13-CANDIDATE
 mode: Development
-state: integration-boundary repair prepared; failed-group retry pending
+state: workspace static-analysis repair prepared; failed-group retry pending
 prerequisite: 2901732c6f722a91186b46c40725ed6cfc60339c
 composer_package: peanut-admin/core@0.1.0-alpha.13
 npm_package: @peanut-admin/admin@0.1.0-alpha.13
@@ -110,7 +110,26 @@ repair makes the existing Reference Codes helper await and assert login, Tenant
 selection, menu readiness and the requested workspace identity; it does not
 increase a timeout, intercept a request or weaken an assertion. This test-only
 repair invalidates the candidate identity and permits one Browser failed-group
-retry. Recovery and later groups remain unexecuted.
+retry. Recovery and later groups remained unexecuted at that point.
+
+The Browser retry passed all `46/46` tests. Recovery then passed its contract,
+clean-install and restore suites (`2/17`, `4 seconds`, `2/27`); its external
+report digest is recorded by the candidate lock. Every registered performance
+target passed below its threshold, including the 10-target, 500-target and
+5,000-target authorization cases and the login, refresh, context and master
+routes. The independent Starter run passed deterministic generation, backend
+and frontend suites and the production build.
+
+The first Workspace execution reached the real PHPStan stage after Composer,
+lock/store and the `688`-test PHP aggregate succeeded (`385` non-integration
+tests, `303` integration tests statically skipped by that stage, `3,741`
+assertions, eight non-failing framework deprecations). PHPStan then reported one
+missing iterable value type on the private test helper
+`AdminAccessServiceTest::administrationState()`. The focused repair documents
+the exact nested table-snapshot shape; it changes no Runtime, assertion, skip or
+analysis rule. This test-only type declaration invalidates the candidate
+identity and permits one Workspace failed-group retry after a focused PHPStan
+check. The final repository-contract group remains unexecuted until it passes.
 
 The existing license generator initially encountered a missing pnpm package
 index for `@playwright/test@1.61.1` in the registered cache. Q01 installed the
