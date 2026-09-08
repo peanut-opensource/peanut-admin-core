@@ -70,9 +70,14 @@ for attempt in $(seq 1 60); do
 done
 
 PEANUT_INTEGRATION=1 php vendor/bin/phpunit \
+  packages/php/artifact-revision/tests/Integration \
+  packages/php/entitlement-quota/tests/Integration \
+  packages/php/file-media/tests/Integration \
   packages/php/kernel/tests/Integration \
   packages/php/data-permission/tests/Integration \
+  packages/php/reference-codes/tests/Integration \
   packages/php/settings/tests/Integration \
+  packages/php/workflow/tests/Integration \
   backend/tests/Integration \
   backend/tests/Install \
   backend/tests/Upgrade \
