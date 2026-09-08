@@ -13,9 +13,11 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-api-problems-validation-failed` | `docs/api/problems/validation-failed.md` | `current` | `reference` | `Peanut Admin maintainers` |
 | `core-doc-architecture-edition-persistence-scope` | `docs/architecture/edition-persistence-scope.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-architecture-index` | `docs/architecture/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
+| `core-doc-architecture-storage-driver-boundary` | `docs/architecture/storage-driver-boundary.md` | `current` | `architecture` | `architecture` |
 | `core-doc-core-concepts-index` | `docs/core-concepts/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-index` | `docs/decisions/dependencies/index.md` | `current` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-dependencies-p1-cap04-collaboration` | `docs/decisions/dependencies/p1-cap04-collaboration.md` | `current` | `decision` | `Peanut Admin maintainers` |
+| `core-doc-decisions-dependencies-p1-storage-drivers` | `docs/decisions/dependencies/p1-storage-drivers.md` | `current` | `decision` | `architecture` |
 | `core-doc-decisions-releases-p1-ed01-alpha10-publication-approval` | `docs/decisions/releases/p1-ed01-alpha10-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-releases-p1-ed01-alpha11-publication-approval` | `docs/decisions/releases/p1-ed01-alpha11-publication-approval.md` | `current` | `decision` | `Peanut Admin maintainers` |
 | `core-doc-decisions-releases-p1-pkg02-publication-approval` | `docs/decisions/releases/p1-pkg02-publication-approval.md` | `archived` | `decision` | `Peanut Admin maintainers` |
@@ -35,6 +37,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-guide-installation` | `docs/guide/installation.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-internal-starter` | `docs/guide/internal-starter.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-module-development` | `docs/guide/module-development.md` | `current` | `guide` | `Peanut Admin maintainers` |
+| `core-doc-guide-release-qualification` | `docs/guide/release-qualification.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-testing` | `docs/guide/testing.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-troubleshooting` | `docs/guide/troubleshooting.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-upgrade` | `docs/guide/upgrade.md` | `current` | `guide` | `Peanut Admin maintainers` |
@@ -61,6 +64,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-security-p0-baseline` | `docs/security/p0-baseline.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-standards-dependency-policy` | `docs/standards/dependency-policy.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-standards-index` | `docs/standards/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
+| `core-doc-status-alpha13-publication-candidate-contract` | `docs/status/alpha13-publication-candidate-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-index` | `docs/status/index.md` | `authoritative` | `index` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-b03-minimal-settings-contract` | `docs/status/p1-b03-minimal-settings-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-b04-minimal-reference-codes-contract` | `docs/status/p1-b04-minimal-reference-codes-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |

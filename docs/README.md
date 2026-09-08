@@ -7,18 +7,20 @@ This directory is the technical and public developer documentation source for th
 | Need | Entry | Lifecycle |
 | --- | --- | --- |
 | Find the fact owner | [Authoritative source map](governance/authoritative-source-map.md) | authoritative |
+| Understand storage ownership | [Storage Driver boundary](architecture/storage-driver-boundary.md) | current Core boundary and execution contract |
 | Adopt or extend Core | [Developer guide](guide/index.md) | current |
 | Understand trust and ownership | [Core concepts](core-concepts/index.md) and [architecture](architecture/index.md) | current |
 | Look up schema, targets or packages | `reference/` | current/generated |
 | Inspect API | [API contract](api/index.md) | current projection of OpenAPI |
 | Inspect qualification/history | `status/`, `reviews/`, `releases/` | plan/evidence; not primary navigation |
+| Validate a source release tag | [Release qualification binding](guide/release-qualification.md) | current publication gate and evidence contract |
 | Change documentation | [Lifecycle](governance/document-lifecycle.md) and [docs-impact](governance/docs-impact.md) | authoritative governance |
 
 The generated [document catalog](reference/document-catalog.generated.md) is the complete discoverability layer. `docs/content-status.json` is the only document registry.
 
 ## AI reading order
 
-1. Read repository `AGENTS.md` and required status facts.
+1. Read repository `AGENTS.md`; load status facts only when the task changes or judges that status.
 2. Read `docs/content-status.json`, this index and the authoritative source map.
    Before any stateful check, also select the exact resource from
    `resources/project-resources.json`.

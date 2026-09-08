@@ -560,7 +560,9 @@ generated-license document belongs to WF01-I.
   `phpunit.xml` only to register the new namespace/source/test layer;
 - `scripts/check-alpha5-package-projection` and
   `.github/workflows/alpha5-composer-projection-preflight.yml` for the exact
-  Composer-only candidate projection;
+  Composer-only candidate projection (both executable entries are now retired;
+  [release qualification binding](../guide/release-qualification.md) preserves
+  their historical lookup and documents the current gate);
 - `scripts/check-workspace` only to include the new internal directory in
   `peanut-admin/core` and align its exact public Composer candidate assertion
   from `0.1.0-alpha.2` to `0.1.0-alpha.5`;

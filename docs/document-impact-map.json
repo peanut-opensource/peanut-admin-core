@@ -29,7 +29,7 @@
     {
       "id": "cli-command",
       "paths": ["scripts/*", "backend/think", "backend/app/**/command/**/*.php"],
-      "exclude_paths": ["scripts/core-docs-governance"],
+      "exclude_paths": ["scripts/core-docs-governance", "scripts/check-release-candidate", "scripts/check-alpha5-package-projection"],
       "classifications": ["technical", "developer-site"],
       "upstream": ["executable and --help output"],
       "technical_docs": ["docs/guide/installation.md", "docs/guide/testing.md"],
@@ -61,6 +61,15 @@
       "upstream": ["compose/configuration and executable help"],
       "technical_docs": ["docs/guide/installation.md", "docs/guide/upgrade.md"],
       "site_docs": ["docs/guide/installation.md", "docs/guide/troubleshooting.md"],
+      "generated": []
+    },
+    {
+      "id": "release-qualification-binding",
+      "paths": ["scripts/check-release-candidate", "scripts/check-alpha5-package-projection", ".github/workflows/release.yml", ".github/workflows/alpha5-composer-projection-preflight.yml", "docs/releases/qualifications/*.json", "tests/supply-chain/release-candidate.test.mjs"],
+      "classifications": ["technical", "developer-site"],
+      "upstream": ["source-tag verifier, committed qualification record and release workflow"],
+      "technical_docs": ["docs/guide/release-qualification.md", "docs/governance/authoritative-source-map.md"],
+      "site_docs": ["docs/guide/testing.md"],
       "generated": []
     },
     {

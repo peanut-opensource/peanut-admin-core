@@ -5,6 +5,11 @@ behavior it changes; a fixed milestone candidate proves the repository as a
 whole. This keeps feedback fast without weakening fail-closed security,
 qualification, or release evidence.
 
+Source-tag publication additionally requires the committed fixed-candidate,
+Q01, D05 and projection binding described in
+[Release qualification binding](./release-qualification.md). Its isolated Git
+regression is a focused publication-tooling check, not a full qualification run.
+
 ## Development Task Verification
 
 For ordinary, reversible, bounded work:
@@ -97,6 +102,14 @@ project `peanut-admin-core-alpha12-q01`, MySQL `127.0.0.1:33432`, Valkey
 output namespace. Every target must be absent or free before the run and absent again after exact
 cleanup. A conflict stops the candidate; it never causes automatic port, database or output
 selection.
+
+Alpha.13 uses its separately registered `peanut-admin-core-alpha13-q01`
+bundle: MySQL `127.0.0.1:33433`, Valkey `127.0.0.1:36433`, six listener
+ports `38133`, `35233`, `38233`, `35333`, `38333`, `35433` and its own
+temporary namespace. The [candidate contract](../status/alpha13-publication-candidate-contract.md)
+defines the exact environment and freeze prerequisites. Alpha.12 qualification
+does not carry forward. The two runner outputs with fixed paths require a
+serial exclusive lease across candidates, absence before use and proven cleanup.
 
 It builds the documentation and Admin Web, validates OpenAPI and Module manifests, runs architecture checks, PHP unit and MySQL integration tests, authorization security tests, browser tests, PHPStan, Deptrac, PHP-CS-Fixer, ESLint, TypeScript checks, Vitest, and production builds.
 

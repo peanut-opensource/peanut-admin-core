@@ -26,6 +26,10 @@ deptrac:
       collectors:
         - type: classNameRegex
           value: '#^(Opis\\JsonSchema|Composer\\(Semver|InstalledVersions)|Phinx\\)#'
+    - name: StorageProviderSdks
+      collectors:
+        - type: classNameRegex
+          value: '#^(OSS\\OssClient|Qcloud\\Cos\\Client|Qiniu\\Auth)$#'
     - name: Kernel
       collectors:
         - type: classNameRegex
@@ -115,6 +119,7 @@ deptrac:
       - Kernel
     FileMedia:
       - Kernel
+      - StorageProviderSdks
     Testing:
       - Kernel
       - DataPermission

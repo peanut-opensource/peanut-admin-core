@@ -9,6 +9,13 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 
 ## Current facts
 
+- Source publication requires the [committed qualification binding](../guide/release-qualification.md).
+  Alpha.13 Q01 and the nine-role D05 review pass for fixed candidate
+  `a949a77728f2940153c6cfd76b104d5d8bb183e3`; the versioned qualification
+  record binds their committed evidence and both package projections. Registry
+  publication and downstream adoption remain separate, uncompleted states. The
+  historical Alpha.5 executable preflight is retired.
+
 - Core remains a product-neutral package and contract repository; Peanut Admin
   Application owns product Modules, deployment and product capability status.
 - The current Runtime operation inventory and executable test ownership are in
@@ -23,6 +30,12 @@ and fixed-commit evidence remain the authoritative sources for their facts.
   agree. Peanut Admin Application v3.0.13 has adopted that immutable version.
 
 ## Active plans and candidate contracts
+
+- [Alpha.13 publication candidate](./alpha13-publication-candidate-contract.md)
+  records the repair and no-repeat continuation that produced qualified source
+  candidate `a949a77728f2940153c6cfd76b104d5d8bb183e3`. Its Q01 and D05 evidence are
+  complete; source/Composer tags, npm, Packagist, GitHub Release and downstream
+  adoption remain pending until their separate publication checks succeed.
 
 - [P1-ED01 Edition persistence scope](./p1-ed01-edition-persistence-scope-contract.md) is implemented
   for Idempotency, Task/Job and Import/Export in the Alpha.11 source line. The follow-up

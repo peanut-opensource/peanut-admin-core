@@ -1,0 +1,109 @@
+#!/usr/bin/env node
+
+// Read-only publication gate. Qualification claims come only from committed evidence.
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+
+const git = (...args) => execFileSync('git', ['--no-replace-objects', ...args], { maxBuffer: 128 * 1024 * 1024 })
+const text = (...args) => git(...args).toString('utf8').trim()
+const requireThat = (condition, message) => { if (!condition) throw new Error(message) }
+const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
+const fullSha = value => typeof value === 'string' && /^[0-9a-f]{40}$/.test(value)
+const digest = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value)
+const object = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+
+function committedFile(commit, path) {
+  requireThat(/^100(?:644|755) blob /.test(text('ls-tree', commit, '--', path)), `Not a committed regular file: ${path}`)
+  return git('show', `${commit}:${path}`)
+}
+
+// SHA-256 over Git-ordered mode/NUL/path/NUL/byte-length/NUL/blob bytes.
+// This covers actual content and modes without archive timestamps or pack lifecycle scripts.
+function projection(commit, path) {
+  const hash = createHash('sha256')
+  const entries = git('ls-tree', '-r', '-z', `${commit}:${path}`).toString('utf8').split('\0').filter(Boolean)
+  requireThat(entries.length > 0, `Empty projection: ${path}`)
+  for (const entry of entries) {
+    const match = /^(100644|100755|120000) blob ([0-9a-f]{40})\t([^\0]+)$/.exec(entry)
+    requireThat(match !== null, `Unsupported projection entry: ${path}`)
+    const [, mode, oid, name] = match
+    requireThat(!name.includes('\ufffd'), 'Projection paths must be valid UTF-8')
+    const blob = git('cat-file', 'blob', oid)
+    hash.update(`${mode}\0${name}\0${blob.length}\0`).update(blob)
+  }
+  return { path, sha256: hash.digest('hex') }
+}
+
+function identity(candidate) {
+  requireThat(fullSha(candidate), 'Candidate must be a full 40-character commit SHA')
+  requireThat(text('rev-parse', `${candidate}^{commit}`) === candidate, 'Candidate must identify a commit')
+  return {
+    candidate,
+    candidate_tree: text('rev-parse', `${candidate}^{tree}`),
+    projections: {
+      composer: projection(candidate, 'packages/php'),
+      npm: projection(candidate, 'packages/web'),
+    },
+  }
+}
+
+function verify(tag) {
+  requireThat(/^v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$/.test(tag), 'Expected a source version tag')
+  const version = tag.slice(1)
+  requireThat(text('cat-file', '-t', `refs/tags/${tag}`) === 'tag', 'Source release tag must be annotated')
+  const tagCommit = text('rev-parse', `refs/tags/${tag}^{commit}`)
+  requireThat(text('rev-parse', 'HEAD') === tagCommit, 'HEAD must be the source tag commit')
+  requireThat(text('status', '--porcelain') === '', 'Release checkout must be clean')
+  requireThat(committedFile(tagCommit, 'scripts/check-release-candidate').equals(readFileSync(process.argv[1])), 'Executed gate must match the committed tag')
+  const recordPath = `docs/releases/qualifications/${version}.json`
+  const record = JSON.parse(committedFile(tagCommit, recordPath))
+  requireThat(object(record) && record.schema_version === 1 && record.version === version && record.status === 'pass', 'Qualification record is missing, pending or invalid')
+  requireThat(fullSha(record.candidate) && fullSha(record.candidate_tree), 'Qualification must bind fixed candidate commit and tree')
+  git('merge-base', '--is-ancestor', record.candidate, tagCommit)
+  const expected = identity(record.candidate)
+  requireThat(record.candidate_tree === expected.candidate_tree, 'Candidate tree mismatch')
+
+  const evidencePrefix = `docs/releases/evidence/${version}/`
+  const allowed = path => path === recordPath
+    || (path.startsWith(evidencePrefix) && /^[a-z0-9][a-z0-9.-]*\.(?:json|md)$/.test(path.slice(evidencePrefix.length)))
+    || ['docs/content-status.json', 'docs/reference/document-catalog.generated.md', 'docs/status/index.md'].includes(path)
+  // Check every intervening commit and every merge parent: an edit followed by a
+  // revert, or a merge hiding unqualified Runtime history, is not evidence-only.
+  for (const commit of text('rev-list', `${record.candidate}..${tagCommit}`).split('\n').filter(Boolean)) {
+    const changed = git('diff-tree', '--root', '-m', '--no-commit-id', '--name-only', '-r', '-z', commit).toString('utf8').split('\0').filter(Boolean)
+    for (const path of changed) requireThat(allowed(path), `Unqualified change after candidate: ${path}`)
+  }
+  for (const [name, path] of [['composer', 'packages/php'], ['npm', 'packages/web']]) {
+    requireThat(text('rev-parse', `${record.candidate}:${path}`) === text('rev-parse', `${tagCommit}:${path}`), `Changed package subtree: ${path}`)
+    const declared = record.projections?.[name]
+    requireThat(object(declared) && declared.path === path && digest(declared.sha256) && declared.sha256 === expected.projections[name].sha256, `${name} projection digest mismatch`)
+    const manifest = JSON.parse(committedFile(tagCommit, `${path}/${name === 'composer' ? 'composer.json' : 'package.json'}`))
+    requireThat(manifest.version === version && manifest.name === (name === 'composer' ? 'peanut-admin/core' : '@peanut-admin/admin'), `${name} package identity mismatch`)
+  }
+  for (const name of ['q01', 'd05']) {
+    const gate = record[name]
+    requireThat(object(gate) && gate.status === 'pass' && gate.candidate === record.candidate, `${name} must pass for the fixed candidate`)
+    requireThat(typeof gate.evidence_path === 'string' && gate.evidence_path.startsWith(evidencePrefix) && allowed(gate.evidence_path), `${name} evidence must be version-local`)
+    const evidence = committedFile(tagCommit, gate.evidence_path)
+    requireThat(evidence.length > 0 && digest(gate.evidence_sha256) && sha256(evidence) === gate.evidence_sha256, `${name} committed evidence digest mismatch`)
+  }
+  requireThat(record.q01.command === './scripts/check', 'Q01 must identify the aggregate qualification command')
+  requireThat(record.q01.evidence_path !== record.d05.evidence_path, 'Q01 and D05 need distinct evidence records')
+  requireThat(Array.isArray(record.d05.roles) && record.d05.roles.length === 9, 'D05 requires nine roles')
+  const roles = [...record.d05.roles].sort((a, b) => a.id - b.id)
+  requireThat(roles.every((role, index) => object(role) && role.id === index + 1 && role.status === 'pass'), 'Every D05 role 1..9 must pass exactly once')
+  console.log(`Release candidate verified: ${tag}; candidate=${record.candidate}; evidence_commit=${tagCommit}`)
+}
+
+try {
+  if (process.argv.length === 4 && process.argv[2] === '--identity') {
+    console.log(JSON.stringify(identity(process.argv[3]), null, 2))
+  } else {
+    requireThat(process.argv.length === 3, 'Usage: check-release-candidate TAG | --identity CANDIDATE_SHA')
+    verify(process.argv[2])
+  }
+} catch (error) {
+  console.error(`Release candidate rejected: ${error.message}`)
+  process.exitCode = 1
+}

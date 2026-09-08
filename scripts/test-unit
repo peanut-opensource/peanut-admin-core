@@ -5,10 +5,15 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 php vendor/bin/phpunit \
+  packages/php/artifact-revision/tests/Unit \
+  packages/php/entitlement-quota/tests/Unit \
+  packages/php/file-media/tests/Unit \
   packages/php/kernel/tests/Unit \
   packages/php/data-permission/tests/Unit \
+  packages/php/reference-codes/tests/Unit \
   packages/php/settings/tests/Unit \
   packages/php/testing/tests/Unit \
+  packages/php/workflow/tests/Unit \
   backend/tests/Architecture \
   backend/tests/Contract \
   backend/tests/Smoke \

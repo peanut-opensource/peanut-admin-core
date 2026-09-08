@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7073344f49f89aff77c2b484d1009416",
+    "content-hash": "1f3d20fa37e1385849fc4caa90e46e66",
     "packages": [
         {
             "name": "opis/json-schema",
@@ -198,11 +198,11 @@
         },
         {
             "name": "peanut-admin/core",
-            "version": "0.1.0-alpha.12",
+            "version": "0.1.0-alpha.13",
             "dist": {
                 "type": "path",
                 "url": "packages/php",
-                "reference": "7f60764df208e7b11777688e9d311e53afa61697"
+                "reference": "518bd46b3ce6c45a3cba03adfbe3a56e090a6caf"
             },
             "require": {
                 "ext-fileinfo": "*",
@@ -215,6 +215,11 @@
             },
             "require-dev": {
                 "phpunit/phpunit": "^12.5.31"
+            },
+            "suggest": {
+                "aliyuncs/oss-sdk-php": "Required by hosts that construct AliyunStorageDriver.",
+                "qcloud/cos-sdk-v5": "Required by hosts that construct QcloudStorageDriver.",
+                "qiniu/php-sdk": "Required by hosts that construct QiniuStorageDriver."
             },
             "type": "library",
             "autoload": {

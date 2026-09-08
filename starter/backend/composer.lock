@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c543578161101e52062b23377f2af441",
+    "content-hash": "82a1b493cc1de2e92eed9e56e15666db",
     "packages": [
         {
             "name": "composer/semver",
@@ -275,11 +275,11 @@
         },
         {
             "name": "peanut-admin/core",
-            "version": "0.1.0-alpha.12",
+            "version": "0.1.0-alpha.13",
             "dist": {
                 "type": "path",
                 "url": "../packages/php",
-                "reference": "9c1fb02c93fa5c0cef295bfa921b541078b2928a"
+                "reference": "993d97b2d93407cabf3314502f35705a3eb467d9"
             },
             "require": {
                 "ext-fileinfo": "*",
@@ -292,6 +292,11 @@
             },
             "require-dev": {
                 "phpunit/phpunit": "^12.5.31"
+            },
+            "suggest": {
+                "aliyuncs/oss-sdk-php": "Required by hosts that construct AliyunStorageDriver.",
+                "qcloud/cos-sdk-v5": "Required by hosts that construct QcloudStorageDriver.",
+                "qiniu/php-sdk": "Required by hosts that construct QiniuStorageDriver."
             },
             "type": "library",
             "autoload": {

@@ -26,7 +26,7 @@ An accepted record is permission to use the named item for the recorded purpose.
 - A lock refresh is a reviewable task. It must run vulnerability, license, build, test, and architecture checks.
 - Placeholder ranges such as `latest`, `*`, `dev-main`, and unbounded major ranges are prohibited.
 
-Transitive packages are governed by the lockfile and audit evidence. If production code starts importing a transitive package directly, that package must first receive its own accepted decision and become an explicit dependency.
+Transitive packages are governed by the lockfile and audit evidence. If production code starts importing a transitive package directly, that package must first receive its own accepted decision and become an explicit dependency. For this Storage Driver extraction only, an accepted DDR may declare the Aliyun, Qcloud or Qiniu SDK as an optional provider dependency that the Core aggregate exposes through Composer `suggest`; the consuming Host must explicitly require and lock the exact SDK version before it can construct that Driver. This is not borrowed undeclared transitive use: Core users who do not install an SDK can omit and cannot enable its provider. The exception does not relax dependency review for other production imports or create a general optional-dependency exemption.
 
 ## Adapter Rule
 

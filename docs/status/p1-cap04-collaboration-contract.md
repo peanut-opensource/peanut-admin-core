@@ -234,6 +234,10 @@ After it merges, one CAP04 candidate may change only the following groups.
 
 ### CAP04-D — dependency and two-package projection wiring
 
+The Alpha.5 script named in this historical whitelist is now retired; see
+[Release qualification binding](../guide/release-qualification.md) for its Git
+history and the current publication gate.
+
 - root `composer.json`, `package.json`, `pnpm-lock.yaml`, `deptrac.yaml` and
   `phpunit.xml`;
 - `packages/php/composer.json` and `packages/web/package.json`;

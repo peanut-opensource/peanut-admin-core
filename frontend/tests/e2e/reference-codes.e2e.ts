@@ -9,11 +9,27 @@ const loginAndEnterTenant = async (page: Page, tenantName: string): Promise<void
   await page.goto('/login')
   await page.getByLabel('邮箱').fill(email)
   await page.getByLabel('密码').fill(browserPassword())
+  const loginResponsePromise = page.waitForResponse(response => (
+    response.request().method() === 'POST'
+    && new URL(response.url()).pathname === '/api/v1/auth/login'
+  ))
   await page.getByRole('button', { name: '登录' }).click()
+  expect((await loginResponsePromise).status()).toBe(200)
   await expect(page).toHaveURL(url => url.pathname === '/select-tenant')
   await page.getByText(tenantName, { exact: true }).click()
+  const tenantResponsePromise = page.waitForResponse(response => (
+    response.request().method() === 'POST'
+    && new URL(response.url()).pathname === '/api/v1/auth/tenants/select'
+  ))
+  const menuResponsePromise = page.waitForResponse(response => (
+    response.request().method() === 'GET'
+    && new URL(response.url()).pathname === '/api/v1/menus'
+  ))
   await page.getByRole('button', { name: '进入工作区' }).click()
+  expect((await tenantResponsePromise).status()).toBe(200)
+  expect((await menuResponsePromise).status()).toBe(200)
   await expect(page).toHaveURL(url => url.pathname === '/app')
+  await expect(page.locator('.workspace-summary').getByText(tenantName, { exact: true })).toBeVisible()
 }
 
 const referenceResponse = (page: Page, method: string): Promise<Response> => page.waitForResponse(response => {
