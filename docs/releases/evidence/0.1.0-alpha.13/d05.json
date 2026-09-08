@@ -2,7 +2,7 @@
   "schema_version": 1,
   "review_id": "CORE-ALPHA13-D05",
   "version": "0.1.0-alpha.13",
-  "status": "pending-final-evidence-review",
+  "status": "pass",
   "candidate": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
   "candidate_tree": "f935360a9ff2ead2b102ce458c81283956dfe61c",
   "mode": "nine-role-fixed-commit-delta-review",
@@ -140,7 +140,8 @@
       ],
       "residual_risks": [
         "The drivers deliberately do not own tenant authorization, credentials or audit policy.",
-        "Application adoption is a separate downstream lock and Host-wiring qualification."
+        "Application adoption is a separate downstream lock and Host-wiring qualification.",
+        "The adjacent platform-operator role assignment path limits after deduplication and relies on the Host request-size limit for duplicate-heavy input; it is a bounded follow-up, not part of the tenant administrator delta."
       ]
     },
     {
@@ -167,7 +168,7 @@
     {
       "id": 8,
       "name": "open-source-maintainability",
-      "status": "pending",
+      "status": "pass",
       "reviewer_tier": "luna-max",
       "attack_questions": [
         "Can a maintainer reproduce the package boundary and release decision without private paths, stale version-specific scripts or mutable tag assumptions?",
@@ -233,13 +234,7 @@
       "repair_commit": "212cc15b47afda9e88d8a8f642c8e57d297cdf40"
     }
   ],
-  "open_blocking_findings": [
-    {
-      "severity": "P1",
-      "summary": "Q01/D05 evidence and the passing qualification record must be committed and reviewed before the maintainability role can pass.",
-      "disposition": "procedural stop line; close only in a later evidence-only commit"
-    }
-  ],
+  "open_blocking_findings": [],
   "review_limitations": [
     "This review approves the fixed source candidate for the Alpha.13 publication gate; it does not itself prove Registry publication or downstream adoption.",
     "Real Aliyun, Qcloud and Qiniu credentials and provider endpoints were not exercised.",

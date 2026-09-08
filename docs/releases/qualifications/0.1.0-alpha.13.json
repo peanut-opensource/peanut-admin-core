@@ -1,10 +1,41 @@
 {
   "schema_version": 1,
   "version": "0.1.0-alpha.13",
-  "status": "pending",
-  "candidate": null,
-  "candidate_tree": null,
-  "q01": null,
-  "d05": null,
-  "projections": null
+  "status": "pass",
+  "candidate": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+  "candidate_tree": "f935360a9ff2ead2b102ce458c81283956dfe61c",
+  "q01": {
+    "status": "pass",
+    "candidate": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+    "command": "./scripts/check",
+    "evidence_path": "docs/releases/evidence/0.1.0-alpha.13/q01.json",
+    "evidence_sha256": "9c2642f2ea6d0247faa5c694bfbc9b56acf9226c5311e0f282d9273afa3cf1e7"
+  },
+  "d05": {
+    "status": "pass",
+    "candidate": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+    "evidence_path": "docs/releases/evidence/0.1.0-alpha.13/d05.json",
+    "evidence_sha256": "35d08575fbd334194a4b88f51174f45604727f3263e02ce3860b2a2b42ae3b89",
+    "roles": [
+      { "id": 1, "status": "pass" },
+      { "id": 2, "status": "pass" },
+      { "id": 3, "status": "pass" },
+      { "id": 4, "status": "pass" },
+      { "id": 5, "status": "pass" },
+      { "id": 6, "status": "pass" },
+      { "id": 7, "status": "pass" },
+      { "id": 8, "status": "pass" },
+      { "id": 9, "status": "pass" }
+    ]
+  },
+  "projections": {
+    "composer": {
+      "path": "packages/php",
+      "sha256": "b23cba13041910e48fc0a86a88af05ded2546ba41023f9c654b04193de366a69"
+    },
+    "npm": {
+      "path": "packages/web",
+      "sha256": "26e01070a1527ec7c4c2309b473b1e76aaeb3a49479011fb1eb5f5a15dfd8f31"
+    }
+  }
 }
