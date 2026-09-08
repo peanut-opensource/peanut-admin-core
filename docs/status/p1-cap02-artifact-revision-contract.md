@@ -138,6 +138,26 @@ updates a revision only with `state='pending'` plus the expected optimistic
 value, increments artifact and revision values, and moves the latest-finalized
 pointer only to a higher revision number. Every read scopes Tenant and artifact.
 
+### Alpha.13 MySQL 8.4 correction
+
+The Alpha.13 candidate replaces the original self-reference CHECK above: MySQL
+8.4 rejects a CHECK that references the AUTO_INCREMENT `id`. The revision table
+also records nullable `parent_revision_number`, and an exact unique
+`(tenant_id, artifact_id, id, revision_number)` key backs a four-column parent
+foreign key. The parent ID and number must both be null, or both be present with
+`parent_revision_number < revision_number`. The foreign key proves that the
+number belongs to the named parent in the same Tenant/artifact; direct SQL
+therefore cannot forge a smaller number, name itself, or name a later revision.
+No triggers or additional database privileges are required. The repository
+still locks and requires a finalized parent. The model exposes the stored parent
+number; the canonical envelope and command receipts retain their original fields.
+
+The existing MySQL repository test owns clean creation, reentry, valid lineage,
+direct-SQL rejection and envelope tamper detection. Its envelope digest assertion
+uses the public canonical encoder because MySQL JSON storage can reorder keys and
+whitespace. These corrections require the Alpha.13 candidate owner's integration
+rerun; this contract update is not qualification evidence.
+
 ## Errors, Audit And Security Results
 
 Stable errors are `ARTIFACT_REVISION_INVALID` (422),
