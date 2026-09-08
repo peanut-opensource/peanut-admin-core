@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\controller\api\v1;
 
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
+use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
 use PeanutAdmin\Kernel\Authorization\Application\Etag;
 use PeanutAdmin\Kernel\Membership\Application\MemberAdminService;
 use think\Request;
@@ -106,6 +107,12 @@ final class MemberController
             $context = MemberAdminRuntime::context($request);
             $body = MemberAdminRuntime::body($request);
             $rawRoleIds = is_array($body['role_ids'] ?? null) ? $body['role_ids'] : [];
+            if (count($rawRoleIds) > MemberAdminService::MAX_ROLE_IDS) {
+                throw AdminAccessException::invalid(
+                    'MEMBER_ROLE_LIMIT_EXCEEDED',
+                    'At most ' . MemberAdminService::MAX_ROLE_IDS . ' role identifiers may be supplied.',
+                );
+            }
             $member = $this->service()->replaceRoles(
                 $context->tenantId,
                 (int) $memberId,
