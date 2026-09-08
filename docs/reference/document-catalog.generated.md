@@ -63,6 +63,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-security-p0-baseline` | `docs/security/p0-baseline.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-standards-dependency-policy` | `docs/standards/dependency-policy.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-standards-index` | `docs/standards/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
+| `core-doc-status-alpha13-publication-candidate-contract` | `docs/status/alpha13-publication-candidate-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-index` | `docs/status/index.md` | `authoritative` | `index` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-b03-minimal-settings-contract` | `docs/status/p1-b03-minimal-settings-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-b04-minimal-reference-codes-contract` | `docs/status/p1-b04-minimal-reference-codes-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |

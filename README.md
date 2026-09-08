@@ -75,6 +75,12 @@ Release, Packagist and npm identities agree, and clean Composer consumption has
 been verified. Domain source directories remain private inside the two public
 packages and are not independently publishable.
 
+Current manifests prepare coordinated `0.1.0-alpha.13` from the converged
+Runtime head `2901732c6f722a91186b46c40725ed6cfc60339c`. Its
+[candidate contract](docs/status/alpha13-publication-candidate-contract.md)
+records the new Auth, storage and administrator-command scope. Alpha.13 is
+not yet qualified, published or approved for downstream consumption.
+
 ## Principles
 
 - Tenant and platform identities remain separate.

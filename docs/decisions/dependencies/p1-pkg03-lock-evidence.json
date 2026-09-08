@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-01T17:30:29+08:00",
-  "task": "CORE-ALPHA12-CURRENT-LOCK-EVIDENCE",
-  "prerequisite_commit": "b3262637c260c70a76f778247d43acb54e979fba",
+  "generated_at": "2026-09-09T03:08:23+08:00",
+  "task": "CORE-ALPHA13-CURRENT-LOCK-EVIDENCE",
+  "prerequisite_commit": "2901732c6f722a91186b46c40725ed6cfc60339c",
   "candidate_commit": "the commit containing this evidence",
-  "slice_status": "core-alpha12-current-lock-evidence",
+  "slice_status": "core-alpha13-current-lock-evidence",
   "third_party_dependency_change": false,
   "public_runtime_packages": [
-    "peanut-admin/core@0.1.0-alpha.12",
-    "@peanut-admin/admin@0.1.0-alpha.12"
+    "peanut-admin/core@0.1.0-alpha.13",
+    "@peanut-admin/admin@0.1.0-alpha.13"
   ],
   "toolchain": {
     "php": "8.3.24",
@@ -18,30 +18,31 @@
   },
   "locks": {
     "composer.lock": {
-      "sha256": "4a7368eb7273b4d83ae7e126e2e40ff824bd4b5cc759f16865c336f500fb0be3",
-      "delta": "peanut-admin/core first-party version and path reference updated for alpha.12; third-party resolutions unchanged"
+      "sha256": "3f50dc96ec4df92ad4be6d7fd066396fe7f9d0a5f0844b1e54527497e7f7880c",
+      "delta": "Core version/path reference and inherited optional SDK suggestions refreshed for alpha.13; third-party resolutions unchanged"
     },
     "pnpm-lock.yaml": {
-      "sha256": "c69f5db964c5cbbfe377ff4e83d56efd08037a093b5101ddc4bb5307a8cfeb95",
-      "delta": "@peanut-admin/admin workspace specifier updated for alpha.12; third-party resolutions unchanged"
+      "sha256": "39d9def547a09e48134f69dcc83eb524aa507aafab2e3d34ca17bb43d2ec5c64",
+      "delta": "@peanut-admin/admin workspace specifier updated for alpha.13; third-party resolutions unchanged"
     },
     "starter/backend/composer.lock": {
-      "sha256": "ac85251785de2cfdb817133068a196380787adfd19c37504e9d3dd27bb375e6b",
-      "delta": "peanut-admin/core first-party version and path reference updated for alpha.12; third-party resolutions unchanged"
+      "sha256": "e7c53dc71623f6a13a5058d9464c0b218713b7fc954de7ef50fb0b458b0b78c7",
+      "delta": "Core version/path reference and inherited optional SDK suggestions refreshed for alpha.13; third-party resolutions unchanged"
     },
     "starter/pnpm-lock.yaml": {
-      "sha256": "be252534ab258939841ccf39afc0361f7f5b0803be5b73b10bda1b38638e1ce1",
-      "delta": "@peanut-admin/admin workspace specifier updated for alpha.12; third-party resolutions unchanged"
+      "sha256": "bd1bf483023b0137b1864dab52c1df4205faef74c7ff30d90a148e8fb1acc42b",
+      "delta": "@peanut-admin/admin workspace specifier updated for alpha.13; third-party resolutions unchanged"
     }
   },
   "verification": {
     "manifest_lock_consistency": "passed: focused Composer manifest, offline frozen pnpm lock and recorded SHA-256 checks",
-    "fixed_candidate_qualification": "pending separate fixed-commit plan",
-    "publication": "not authorized"
+    "fixed_candidate_qualification": "pending CORE-ALPHA13-Q01 and immutable candidate lock",
+    "publication": "pending qualification, preflight and release authority"
   },
   "notes": [
-    "No third-party resolution changes in this candidate; the lock movement records only coordinated Alpha.12 first-party package identities.",
+    "No third-party resolution changes; Composer path entries include the previously accepted optional SDK suggestions without installing any SDK.",
     "Historical P1-PKG01 and P1-PKG02 lock evidence remains unchanged.",
-    "This evidence does not publish a package, create a tag or Release, or approve downstream consumption."
+    "This evidence does not publish a package, create a tag or Release, or approve downstream consumption.",
+    "The existing license generator is blocked by a missing pnpm package index for @playwright/test@1.61.1; only the Core version row is projected mechanically. Regenerate after exact dependency installation during fixed qualification."
   ]
 }

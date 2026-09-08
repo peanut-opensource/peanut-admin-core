@@ -414,6 +414,14 @@
   ],
   "documents": [
     {
+      "id": "core-doc-status-alpha13-publication-candidate-contract",
+      "path": "docs/status/alpha13-publication-candidate-contract.md",
+      "title": "Alpha.13 Publication Candidate Contract",
+      "status": "planned",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
       "id": "core-doc-architecture-storage-driver-boundary",
       "path": "docs/architecture/storage-driver-boundary.md",
       "title": "Storage Driver Boundary",

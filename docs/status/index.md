@@ -24,6 +24,13 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 
 ## Active plans and candidate contracts
 
+- [Alpha.13 publication candidate](./alpha13-publication-candidate-contract.md)
+  prepares the coordinated package and Starter identities from converged Runtime
+  head `2901732c6f722a91186b46c40725ed6cfc60339c`. The separately registered
+  Alpha.13 resource bundle enables one future fixed-candidate qualification;
+  no Alpha.12 evidence qualifies this source, and publication and downstream
+  adoption remain pending.
+
 - [P1-ED01 Edition persistence scope](./p1-ed01-edition-persistence-scope-contract.md) is implemented
   for Idempotency, Task/Job and Import/Export in the Alpha.11 source line. The follow-up
   [P1-ED01-R01 Settings persistence scope](./p1-ed01-r01-settings-persistence-scope-contract.md)
