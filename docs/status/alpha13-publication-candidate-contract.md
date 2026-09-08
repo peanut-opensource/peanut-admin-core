@@ -52,7 +52,9 @@ EntitlementQuota version assertion; Starter backend/frontend manifests and
 locks; version expectations in `scripts/check-workspace` and
 `tests/starter/assert-generated-starter.php`; current lock evidence;
 `resources/project-resources.json`; this contract, status index, testing guide,
-source map, documentation registry and its generated catalog/license inventory.
+source map, documentation registry and its generated catalog/license inventory;
+`deptrac.yaml` classifies the three accepted optional storage SDK types and allows
+only FileMedia to depend on that layer.
 
 All exact first-party identities become `0.1.0-alpha.13`. Composer 2.10.2
 regenerates only the Core path-package lock entries and consumer content hashes;
@@ -65,6 +67,16 @@ governance, documentation impact closure and `git diff --check`. Package behavio
 browser, installation, recovery, performance and the aggregate `./scripts/check`
 are deferred to `CORE-ALPHA13-Q01`. Offline lock generation is not a fresh
 security-advisory audit. No new test or qualification entry point is added.
+
+The first Q01 attempt stopped in `check-docs` before stateful resources because
+the operator PATH omitted the registered Docker CLI; the single failed-group
+retry passed after restoring `/usr/local/bin`. The continuation then stopped at
+the architecture group because the already accepted Aliyun, Qcloud and Qiniu
+optional SDK types were not classified in Deptrac. This Development repair adds
+the narrow `StorageProviderSdks` layer and no package dependency or Runtime code;
+it invalidates that candidate identity. The new fixed candidate reruns only the
+affected documentation-governance and architecture groups before continuing the
+still-unexecuted Q01 groups.
 
 The existing license generator encountered a missing pnpm package index for
 `@playwright/test@1.61.1` in the registered cache. One focused diagnosis
