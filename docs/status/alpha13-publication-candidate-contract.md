@@ -5,7 +5,7 @@ Document ID: `core-doc-status-alpha13-publication-candidate-contract`
 ```text
 task: CORE-ALPHA13-CANDIDATE
 mode: Development
-state: D05 review repairs prepared; affected-gate verification pending
+state: D05 and release-gate repairs prepared; final identity verification pending
 prerequisite: 2901732c6f722a91186b46c40725ed6cfc60339c
 composer_package: peanut-admin/core@0.1.0-alpha.13
 npm_package: @peanut-admin/admin@0.1.0-alpha.13
@@ -161,6 +161,28 @@ assertions). These repairs supersede the reviewed identity. Only their affected
 documentation, Integration/static gates and fixed-commit D05 delta review may be
 carried out for the new candidate; prior unaffected Q01 groups are not repeated.
 
+The engineering delta review also found that administrator role arrays were not
+bounded consistently at the HTTP, OpenAPI and Core transaction boundaries. The
+three public `MemberAdminService` commands and the HTTP adapter now reject more
+than 100 submitted role IDs before deduplication, transaction start or SQL, and
+the OpenAPI schema carries the same `maxItems` contract. The focused regression
+passed `13` tests / `77` assertions, including the earlier owner-concurrency
+case, distinct and duplicate over-limit requests, the legal 100-item edge,
+empty replacement semantics and zero PDO activity on rejection.
+
+The same review found the source-tag workflow could publish any commit whose two
+package manifests happened to match the tag version. The repository now has the
+generic fail-closed `scripts/check-release-candidate` gate and a versioned
+qualification record. The gate binds an annotated source tag to one ancestor
+candidate/tree, Q01 and nine-role D05 evidence, and byte-level Composer/npm
+projection digests; every intervening commit is limited to the documented
+evidence/governance allowlist. Its isolated Git regression passed all `17/17`
+cases. The misleading manually dispatched Alpha.5 workflow and script, whose
+label and hard-coded alpha.6 expectation had diverged, are retired from
+executable paths while their history remains available through Git. Alpha.13's
+record deliberately remains `pending` until the final candidate and review are
+fixed; it does not yet authorize a tag.
+
 The existing license generator initially encountered a missing pnpm package
 index for `@playwright/test@1.61.1` in the registered cache. Q01 installed the
 exact frozen dependency set from the registered pnpm store; the full generated
@@ -222,9 +244,10 @@ candidate exactly. Runtime, test or release-tooling repairs require a new freeze
 1. Integrate all approved preparation, resolve known blockers and freeze one
    clean source commit/tree. Record its manifest, four lock, generated-artifact
    and package-inventory SHA-256 identities, resource IDs/environment, lease/run
-   ID and command in an immutable candidate lock. The publication verifier computes
-   source/tree and package-projection identities; the full resource, manifest and
-   inventory lock remains owner-authored and must be compared before invoking the runner.
+   ID and command in an immutable candidate lock. Use
+   `scripts/check-release-candidate --identity` to compute the source/tree and
+   package-projection identities; the full resource, manifest and inventory lock
+   remains owner-authored and must be compared before invoking the runner.
    A branch name or this self-referential contract is not that immutable lock.
 2. From a detached worktree of that exact locked commit, complete the resource
    preflight and exact dependency installation; run `./scripts/check` once for
