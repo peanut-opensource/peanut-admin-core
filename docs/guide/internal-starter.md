@@ -99,7 +99,9 @@ Create a project in an empty directory:
 ```
 
 The command copies the fixed host, committed dependency lock files, and complete
-local version `0.1.0` package snapshots, including migrations and schemas. The generated manifests use Composer path
+local candidate version `0.1.0-alpha.13` package snapshots, including migrations
+and schemas. These repository-local snapshots do not prove Registry publication
+or downstream-adoption approval. The generated manifests use Composer path
 repositories and a pnpm workspace; they do not contain a source-repository
 absolute path.
 

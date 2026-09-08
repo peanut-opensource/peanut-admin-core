@@ -5,7 +5,7 @@ Document ID: `core-doc-status-alpha13-publication-candidate-contract`
 ```text
 task: CORE-ALPHA13-CANDIDATE
 mode: Development
-state: workspace static-analysis repair prepared; failed-group retry pending
+state: D05 review repairs prepared; affected-gate verification pending
 prerequisite: 2901732c6f722a91186b46c40725ed6cfc60339c
 composer_package: peanut-admin/core@0.1.0-alpha.13
 npm_package: @peanut-admin/admin@0.1.0-alpha.13
@@ -39,6 +39,8 @@ The alpha.13 source includes these already committed changes:
   commands in `MemberAdminService`, including the directly owned assertions.
 - `4b89dd1`: MySQL 8.4 integration-boundary repair for ArtifactRevision parent
   lineage, native-PDO Workflow placeholders and EntitlementQuota failure replay.
+- `1c86fa6`: serialize every tenant-owner removal path on the tenant row and add
+  a deterministic two-transaction MySQL regression for the final-owner invariant.
 
 These are source facts, not new qualification claims. Storage SDKs remain
 optional Composer suggestions under the accepted storage dependency decision.
@@ -136,6 +138,28 @@ applied to those exact two files without changing behavior, assertions or rules.
 Because formatting is a mechanical gate repair, Workspace may verify the exact
 new identity once more. The final repository-contract group remains unexecuted
 until Workspace passes.
+
+That exact Workspace retry passed all stages: `688` tests / `3,741` assertions,
+PHPStan zero errors, Deptrac zero violations/uncovered, PHP-CS-Fixer `935` files,
+Web lint/typecheck, `56` files / `231` tests, production Web and documentation
+builds, and Compose validation. The final repository-contract group also passed.
+Package-content inspection then passed for the same fixed tree: Composer contains
+`728` files and 13 Runtime PSR-4 roots; npm contains `73` packed files and 14
+exports, with its dry-run and tarball file lists identical. Digests are recorded
+outside the source tree in the immutable candidate lock.
+
+The first fixed-commit D05 review found two inherited issues rather than approving
+them away. Low-context review found Starter documentation still naming alpha.2
+or generic 0.1.0 while all candidate manifests and locks use alpha.13; the two
+public pages now name `0.1.0-alpha.13` as an unpublished, unapproved local
+candidate. Authorization review found standalone `replaceRoles()` did not take
+the tenant row lock before checking the final-owner invariant. All owner-removal
+paths now use tenant-before-member lock order, and the focused MySQL regression
+proved two concurrent role removals produce one success, one
+`LAST_ACTIVE_OWNER_REQUIRED`, and one remaining active Owner (`9` tests / `61`
+assertions). These repairs supersede the reviewed identity. Only their affected
+documentation, Integration/static gates and fixed-commit D05 delta review may be
+carried out for the new candidate; prior unaffected Q01 groups are not repeated.
 
 The existing license generator initially encountered a missing pnpm package
 index for `@playwright/test@1.61.1` in the registered cache. Q01 installed the
