@@ -5,7 +5,7 @@ Document ID: `core-doc-status-alpha13-publication-candidate-contract`
 ```text
 task: CORE-ALPHA13-CANDIDATE
 mode: Development
-state: coordinated release identity prepared; immutable qualification lock pending
+state: integration-boundary repair prepared; failed-group retry pending
 prerequisite: 2901732c6f722a91186b46c40725ed6cfc60339c
 composer_package: peanut-admin/core@0.1.0-alpha.13
 npm_package: @peanut-admin/admin@0.1.0-alpha.13
@@ -37,6 +37,8 @@ The alpha.13 source includes these already committed changes:
   filesystem contract hardening, object-key checks and Qcloud correction.
 - `2901732c6f722a91186b46c40725ed6cfc60339c`: atomic administrator form
   commands in `MemberAdminService`, including the directly owned assertions.
+- `4b89dd1`: MySQL 8.4 integration-boundary repair for ArtifactRevision parent
+  lineage, native-PDO Workflow placeholders and EntitlementQuota failure replay.
 
 These are source facts, not new qualification claims. Storage SDKs remain
 optional Composer suggestions under the accepted storage dependency decision.
@@ -78,12 +80,28 @@ it invalidates that candidate identity. The new fixed candidate reruns only the
 affected documentation-governance and architecture groups before continuing the
 still-unexecuted Q01 groups.
 
-The existing license generator encountered a missing pnpm package index for
-`@playwright/test@1.61.1` in the registered cache. One focused diagnosis
-confirmed that installation prerequisite. The inventory therefore projects only
-the Core version row mechanically; unchanged third-party lock entries preserve
-the prior inventory. Full regeneration is deferred until exact dependency
-installation in fixed qualification; no passing license-generation claim is made.
+That continuation passed OpenAPI, Runtime coverage, third-party inventory,
+secret scanning, supply-chain checks, PHP unit (`311 tests / 4,097 assertions`)
+and Web (`56 files / 231 tests`). Its first Integration execution then exposed
+three pre-existing implementation defects now reachable through the corrected
+aggregate entry point: MySQL rejected a CHECK that referenced an AUTO_INCREMENT
+column, native PDO rejected repeated named parameters in ArtifactRevision and
+Workflow statements, and EntitlementQuota interpreted MySQL JSON key order and
+the text `SQLSTATE` as domain state. The repair keeps database-enforced parent
+lineage by storing the parent revision number and binding it through an exact
+composite foreign key plus a strictly-earlier CHECK; it also uses distinct PDO
+parameters and exact order-independent replay fields. The candidate identity is
+therefore invalidated again. Q01 may now rerun only the failed Integration group
+once; Security, browser, recovery, performance, Starter and workspace groups
+remain unexecuted until it passes. Four warning details were not persisted from
+the first run and must be recorded verbatim by the retry rather than guessed.
+
+The existing license generator initially encountered a missing pnpm package
+index for `@playwright/test@1.61.1` in the registered cache. Q01 installed the
+exact frozen dependency set from the registered pnpm store; the full generated
+inventory and subsequent supply-chain check then passed without changing a
+third-party resolution. This is candidate-local qualification state, not a
+Registry publication claim.
 
 Docs-impact classifications are architecture-decision, technical,
 developer-site and generated because package and governance paths route there.
