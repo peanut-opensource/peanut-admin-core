@@ -19,6 +19,7 @@ This map identifies the fact owner. Core documentation explains and projects the
 | Runtime, toolchain, qualification and publication resources and CI stage triggers | `resources/project-resources.json` plus the consuming workflow event, immutable candidate input and job environment | testing guide |
 | Architecture and dependency decisions | accepted records in `docs/decisions/`, manifests and enforced dependency graph | architecture/concepts pages |
 | Qualification or release evidence | fixed-commit review/release records | evidence pages, not current implementation authority by themselves |
+| Source-tag qualification binding | `scripts/check-release-candidate`, `.github/workflows/release.yml`, `docs/releases/qualifications/<version>.json` and its committed evidence files | [Release qualification binding](../guide/release-qualification.md) |
 | Alpha.13 candidate preparation | `docs/status/alpha13-publication-candidate-contract.md`, package/lock identities and Alpha.13 entries in `resources/project-resources.json` | status index; preparation is not qualification or publication |
 | Documentation identity and lifecycle | `docs/content-status.json` | generated catalog and indexes |
 | Documentation impact | `docs/document-impact-map.json` | docs-impact policy |

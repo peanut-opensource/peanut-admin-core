@@ -14,8 +14,6 @@ jobs:
     name: Publish npm package and GitHub Release
     runs-on: ubuntu-24.04
     environment: npm-release
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout immutable tag
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -33,7 +31,17 @@ jobs:
       - name: Set up Node and pnpm
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 24.18.0
+          node-version: 24.13.0
+
+      - name: Select qualified pnpm toolchain
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.13.0 --activate
+          test "$(node --version)" = v24.13.0
+          test "$(pnpm --version)" = 11.13.0
+
+      - name: Require fixed candidate qualification and package digests
+        run: node scripts/check-release-candidate "$GITHUB_REF_NAME"
 
       - name: Verify immutable package identities
         shell: bash
@@ -44,7 +52,6 @@ jobs:
           [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
           jq -e --arg version "$version" '.version == $version' packages/php/composer.json >/dev/null
           jq -e --arg version "$version" '.version == $version' packages/web/package.json >/dev/null
-          test -n "$NPM_TOKEN"
           if npm view "@peanut-admin/admin@$version" version --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
             echo "npm version already exists: $version" >&2
             exit 1
@@ -75,16 +82,19 @@ jobs:
           diff -ru "$RUNNER_TEMP/composer-projection" "$split"
 
       - name: Publish npm package
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         shell: bash
         run: |
           set -Eeuo pipefail
+          test -n "$NPM_TOKEN"
           npm_config_userconfig="$RUNNER_TEMP/npmrc"
           trap 'rm -f "$npm_config_userconfig"' EXIT
           printf 'registry=https://registry.npmjs.org/\n//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" > "$npm_config_userconfig"
           export NPM_CONFIG_USERCONFIG="$npm_config_userconfig"
-          npm_tarball="$(npm pack ./packages/web --pack-destination "$RUNNER_TEMP" --json | jq -r '.[0].filename')"
+          npm_tarball="$(npm pack ./packages/web --ignore-scripts --pack-destination "$RUNNER_TEMP" --json | jq -r '.[0].filename')"
           test -n "$npm_tarball" -a -f "$RUNNER_TEMP/$npm_tarball"
-          npm publish "$RUNNER_TEMP/$npm_tarball" --access public --provenance --tag alpha
+          npm publish "$RUNNER_TEMP/$npm_tarball" --ignore-scripts --access public --provenance --tag alpha
           mv "$RUNNER_TEMP/$npm_tarball" "$RUNNER_TEMP/peanut-admin-admin-${GITHUB_REF_NAME}.tgz"
 
       - name: Create GitHub Release

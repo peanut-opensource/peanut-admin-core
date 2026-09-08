@@ -9,6 +9,10 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 
 ## Current facts
 
+- Source publication requires the [committed qualification binding](../guide/release-qualification.md).
+  The Alpha.13 record is pending; its null candidate and evidence fields do not
+  authorize a tag or publication. The historical Alpha.5 executable preflight is retired.
+
 - Core remains a product-neutral package and contract repository; Peanut Admin
   Application owns product Modules, deployment and product capability status.
 - The current Runtime operation inventory and executable test ownership are in

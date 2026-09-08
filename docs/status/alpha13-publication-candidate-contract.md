@@ -211,12 +211,20 @@ qualification; there is no implicit replacement service, port, browser or mock.
 
 ## The One Qualification And Publication Sequence
 
+The machine-readable record at
+`docs/releases/qualifications/0.1.0-alpha.13.json` is pending and deliberately
+contains no candidate identity or passing evidence. Final publication additionally
+requires the [source-tag qualification gate](../guide/release-qualification.md).
+The tag may identify a later evidence-only commit; every intervening change must
+meet its fixed allowlist and both package subtrees must match the qualified
+candidate exactly. Runtime, test or release-tooling repairs require a new freeze.
+
 1. Integrate all approved preparation, resolve known blockers and freeze one
    clean source commit/tree. Record its manifest, four lock, generated-artifact
    and package-inventory SHA-256 identities, resource IDs/environment, lease/run
-   ID and command in an immutable candidate lock. This repository currently has
-   no dedicated candidate-lock generator/verifier; the qualification owner must
-   record and compare those exact identities before invoking the existing runner.
+   ID and command in an immutable candidate lock. The publication verifier computes
+   source/tree and package-projection identities; the full resource, manifest and
+   inventory lock remains owner-authored and must be compared before invoking the runner.
    A branch name or this self-referential contract is not that immutable lock.
 2. From a detached worktree of that exact locked commit, complete the resource
    preflight and exact dependency installation; run `./scripts/check` once for

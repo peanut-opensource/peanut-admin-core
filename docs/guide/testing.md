@@ -5,6 +5,11 @@ behavior it changes; a fixed milestone candidate proves the repository as a
 whole. This keeps feedback fast without weakening fail-closed security,
 qualification, or release evidence.
 
+Source-tag publication additionally requires the committed fixed-candidate,
+Q01, D05 and projection binding described in
+[Release qualification binding](./release-qualification.md). Its isolated Git
+regression is a focused publication-tooling check, not a full qualification run.
+
 ## Development Task Verification
 
 For ordinary, reversible, bounded work:

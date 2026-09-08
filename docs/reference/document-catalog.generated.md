@@ -37,6 +37,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-guide-installation` | `docs/guide/installation.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-internal-starter` | `docs/guide/internal-starter.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-module-development` | `docs/guide/module-development.md` | `current` | `guide` | `Peanut Admin maintainers` |
+| `core-doc-guide-release-qualification` | `docs/guide/release-qualification.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-testing` | `docs/guide/testing.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-troubleshooting` | `docs/guide/troubleshooting.md` | `current` | `guide` | `Peanut Admin maintainers` |
 | `core-doc-guide-upgrade` | `docs/guide/upgrade.md` | `current` | `guide` | `Peanut Admin maintainers` |

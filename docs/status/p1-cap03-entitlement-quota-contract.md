@@ -184,6 +184,10 @@ After it commits, one CAP03 implementation candidate may change only:
 
 ### CAP03-C — existing projection wiring only
 
+The Alpha.5 script named in this historical whitelist is now retired; see
+[Release qualification binding](../guide/release-qualification.md) for its Git
+history and the current publication gate.
+
 - root `composer.json` for EntitlementQuota source/test dev autoload;
 - `packages/php/composer.json` for the thirteenth Alpha.5 PSR-4 root;
 - `deptrac.yaml` for EntitlementQuota depending only on Kernel;

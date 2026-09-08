@@ -205,6 +205,10 @@ After it commits, one combined `CAP02-I` candidate may change only:
 
 ### CAP02-C — existing projection wiring only
 
+The Alpha.5 script named in this historical whitelist is now retired; see
+[Release qualification binding](../guide/release-qualification.md) for its Git
+history and the current publication gate.
+
 - root `composer.json` for ArtifactRevision source/test dev autoload;
 - `packages/php/composer.json` for the twelfth Alpha.5 PSR-4 root;
 - `deptrac.yaml` for an ArtifactRevision layer depending on Kernel/Workflow;

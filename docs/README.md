@@ -13,6 +13,7 @@ This directory is the technical and public developer documentation source for th
 | Look up schema, targets or packages | `reference/` | current/generated |
 | Inspect API | [API contract](api/index.md) | current projection of OpenAPI |
 | Inspect qualification/history | `status/`, `reviews/`, `releases/` | plan/evidence; not primary navigation |
+| Validate a source release tag | [Release qualification binding](guide/release-qualification.md) | current publication gate and evidence contract |
 | Change documentation | [Lifecycle](governance/document-lifecycle.md) and [docs-impact](governance/docs-impact.md) | authoritative governance |
 
 The generated [document catalog](reference/document-catalog.generated.md) is the complete discoverability layer. `docs/content-status.json` is the only document registry.
