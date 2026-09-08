@@ -103,9 +103,14 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
+          release_flags=()
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            release_flags+=(--prerelease)
+          fi
           gh release create "$GITHUB_REF_NAME" \
             --repo "$GITHUB_REPOSITORY" \
             --title "Peanut Admin Core ${GITHUB_REF_NAME}" \
             --generate-notes \
+            "${release_flags[@]}" \
             "$RUNNER_TEMP/peanut-admin-core-${GITHUB_REF_NAME}.tar.gz" \
             "$RUNNER_TEMP/peanut-admin-admin-${GITHUB_REF_NAME}.tgz"
