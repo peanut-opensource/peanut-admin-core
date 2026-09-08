@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "review_id": "CORE-ALPHA13-D05",
+  "version": "0.1.0-alpha.13",
+  "status": "pending-final-evidence-review",
+  "candidate": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+  "candidate_tree": "f935360a9ff2ead2b102ce458c81283956dfe61c",
+  "mode": "nine-role-fixed-commit-delta-review",
+  "review_protocol": "Initial adversarial review findings were repaired; independent reviewers then checked the exact final candidate and its tree without altering either. A role passes only when no P0-P3 blocking finding remains in that role.",
+  "roles": [
+    {
+      "id": 1,
+      "name": "business-and-product",
+      "status": "pass",
+      "reviewer_tier": "terra-medium",
+      "attack_questions": [
+        "Can the bounded administrator role API, candidate record or vendor adapters be mistaken for broader product completion or a published release?"
+      ],
+      "evidence": [
+        "docs/api/schemas/member.yaml binds role_ids to 100 unique items",
+        "MemberController and MemberAdminService reject the same boundary",
+        "the qualification record was pending during review and the status page denied publication",
+        "the Alpha.13 contract assigns provider SDK, credential, audit and real-provider acceptance to the selecting Host"
+      ],
+      "closed_findings": [],
+      "residual_risks": [
+        "The 100-item service contract is not a UI usability or production sizing claim.",
+        "Vendor adapters being present does not prove a real provider account has passed qualification."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "saas-and-tenant-architecture",
+      "status": "pass",
+      "reviewer_tier": "gpt-6-high",
+      "attack_questions": [
+        "Can evidence-only commits smuggle a Runtime or workflow change after qualification?",
+        "Can a storage driver select credentials or tenant ownership implicitly?"
+      ],
+      "evidence": [
+        "scripts/check-release-candidate checks every post-candidate commit and every merge parent against a fixed evidence allowlist",
+        "the verifier compares both package subtrees and content projections to the fixed candidate",
+        "Local, Aliyun, Qcloud and Qiniu dependencies are supplied by the Host; driver constructors contain no default credentials"
+      ],
+      "closed_findings": [
+        "The previous tag workflow accepted any matching manifest version; cc261b1 now binds tag, candidate, evidence and projections."
+      ],
+      "residual_risks": [
+        "Storage object ownership and tenant authorization remain an upstream Host responsibility by design.",
+        "Real cloud service configuration is outside this source qualification."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "identity-and-security",
+      "status": "pass",
+      "reviewer_tier": "gpt-6-high",
+      "attack_questions": [
+        "Can repeated role IDs bypass the bound and cause an expensive transaction or SQL?",
+        "Can a qualification record substitute another candidate or tamper with its evidence?"
+      ],
+      "evidence": [
+        "the three public MemberAdminService commands count the raw array before deduplication, transaction start or SQL",
+        "HTTP rejects the same input before service construction",
+        "focused tests require PDO transaction and statement methods never to run on rejection and cover 101 duplicate IDs",
+        "the release gate requires exact candidate/tree, Q01 and D05 evidence digests and package projection digests"
+      ],
+      "closed_findings": [
+        "Unbounded administrator role arrays were closed by 6120124 and 13 tests / 77 assertions."
+      ],
+      "residual_risks": [
+        "The 100-item domain bound does not replace Host request-size and authentication controls.",
+        "Committed evidence is a controlled maintainer attestation, not an external cryptographic signature of every execution."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "functional-and-data-authorization",
+      "status": "pass",
+      "reviewer_tier": "gpt-6-high",
+      "attack_questions": [
+        "Can concurrent administrator mutations remove the final active Owner?",
+        "Does the role bound change empty replacement or tenant scoping semantics?"
+      ],
+      "evidence": [
+        "aggregate update, role replacement and status transition all lock tenant before member",
+        "the final-Owner count remains tenant-bound and is read after the tenant FOR UPDATE lock",
+        "a deterministic two-connection MySQL test observed a real data-lock wait and then one success, one LAST_ACTIVE_OWNER_REQUIRED and one remaining active Owner",
+        "focused tests preserve legal 100-item and empty-array replacement semantics"
+      ],
+      "closed_findings": [
+        "The standalone replaceRoles owner race was closed by 1c86fa6 and the real-MySQL 9-test / 61-assertion regression."
+      ],
+      "residual_risks": [
+        "The dynamic race test covers two replaceRoles calls; mixed command safety relies on the now-uniform lock order.",
+        "Direct database writes outside MemberAdminService remain outside the protected contract."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "database-and-performance",
+      "status": "pass",
+      "reviewer_tier": "luna-max",
+      "attack_questions": [
+        "Do owner serialization, raw role-array validation and storage operations remain bounded before expensive database work?",
+        "Did the repaired MySQL persistence paths preserve real integration and registered performance thresholds?"
+      ],
+      "evidence": [
+        "role_ids over 100 are rejected before transaction or SQL, including duplicate IDs",
+        "tenant-before-member row locking serializes final-Owner removal and was observed through performance_schema.data_lock_waits",
+        "the corrected Integration retry passed 303 tests / 2937 assertions",
+        "all seven registered local performance regression targets passed below their thresholds"
+      ],
+      "closed_findings": [
+        "MySQL CHECK, native PDO placeholder and JSON replay defects were closed by 4b89dd1.",
+        "Unserialized final-Owner removal and unbounded role input were closed by 1c86fa6 and 6120124."
+      ],
+      "residual_risks": [
+        "The local regression baseline is not a production SLO, capacity or cloud-latency claim.",
+        "The role bound does not prove user-interface ergonomics at the 100-role edge."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "backend-module-architecture",
+      "status": "pass",
+      "reviewer_tier": "luna-max",
+      "attack_questions": [
+        "Do the four storage implementations remain low-level product-neutral drivers with explicit Host dependencies?",
+        "Can the release evidence commit alter a Module, Runtime boundary or package projection?"
+      ],
+      "evidence": [
+        "Local, Aliyun, Qcloud and Qiniu drivers implement the FileMedia storage contract without importing Peanut Admin product models",
+        "optional provider SDK classes are isolated in the accepted StorageProviderSdks dependency layer",
+        "scripts/check-release-candidate rejects Runtime, workflow, verifier, lock or package changes after the candidate",
+        "final package inspection found 728 Composer files across 13 Runtime PSR-4 roots and 73 npm packed files with 14 exports"
+      ],
+      "closed_findings": [
+        "The optional vendor SDK dependency boundary was explicitly classified by 23ec256."
+      ],
+      "residual_risks": [
+        "The drivers deliberately do not own tenant authorization, credentials or audit policy.",
+        "Application adoption is a separate downstream lock and Host-wiring qualification."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "frontend-and-admin-ux",
+      "status": "pass",
+      "reviewer_tier": "terra-medium",
+      "attack_questions": [
+        "Did the browser repair weaken assertions or replace business readiness with a longer URL timeout?"
+      ],
+      "evidence": [
+        "the Reference Codes flow awaits and asserts login, tenant selection and the real menus request at HTTP 200 before checking the requested workspace",
+        "the router completes context and navigation loading before successful entry",
+        "the focused browser retry passed 46/46"
+      ],
+      "closed_findings": [
+        "The five-second URL race was replaced by explicit tenant-workspace readiness in ec504c1."
+      ],
+      "residual_risks": [
+        "Final fixed-commit review did not repeat the unaffected browser matrix.",
+        "A non-blocking production bundle-size warning remains."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "open-source-maintainability",
+      "status": "pending",
+      "reviewer_tier": "luna-max",
+      "attack_questions": [
+        "Can a maintainer reproduce the package boundary and release decision without private paths, stale version-specific scripts or mutable tag assumptions?",
+        "Do dependency, license and vendor-support declarations remain explicit and reviewable?"
+      ],
+      "evidence": [
+        "the generic release verifier has 17 isolated real-Git regression cases and replaced the stale Alpha.5 executable path",
+        "Composer and npm projections are content-hashed from the fixed candidate and package dry-run/tar lists agree",
+        "license inventory, dependency audit, secret scan and clean Starter gates passed in the continuation",
+        "provider SDKs remain optional suggestions and selecting Hosts own installation, credentials and acceptance"
+      ],
+      "closed_findings": [
+        "The stale Alpha.5 preflight entry points were retired by cc261b1.",
+        "Starter documentation was aligned to the unpublished Alpha.13 candidate by 212cc15."
+      ],
+      "residual_risks": [
+        "Local npm credentials were not used as release evidence; registry publication depends on the protected GitHub environment.",
+        "Packagist maintainer refresh and clean public consumers remain post-tag publication checks.",
+        "Historical Alpha.2 manual projection entry points remain tracked outside the current release path and may confuse maintainers; retire or mark them explicitly historical after Alpha.13."
+      ]
+    },
+    {
+      "id": 9,
+      "name": "low-context-delivery",
+      "status": "pass",
+      "reviewer_tier": "terra-medium",
+      "attack_questions": [
+        "Can a constrained maintainer distinguish an unpublished fixture, a qualified candidate and a released package, and execute the exact gate?"
+      ],
+      "evidence": [
+        "Starter README and the internal Starter guide identify 0.1.0-alpha.13 as a local unpublished candidate",
+        "the release qualification guide documents candidate freeze, evidence-only commits, the exact record fields and verifier commands",
+        "a pending record always rejects and all source-tag publication steps run the committed verifier"
+      ],
+      "closed_findings": [
+        "Starter pages that named Alpha.2 or generic 0.1.0 were corrected by 212cc15."
+      ],
+      "residual_risks": [
+        "The Starter remains a fixed internal fixture, not a public configurable generator.",
+        "Publication and downstream adoption are still separate states after this review."
+      ]
+    }
+  ],
+  "closed_findings": [
+    {
+      "severity": "P2",
+      "summary": "Concurrent standalone owner-role removal could leave no active Owner.",
+      "repair_commit": "1c86fa693b679e85ce703c4a6ab249e42be47f0e"
+    },
+    {
+      "severity": "P2",
+      "summary": "Administrator role arrays were not consistently bounded before transaction and SQL.",
+      "repair_commit": "61201242e5ff6bbbfeae8f4ceb51bec6aeaeca52"
+    },
+    {
+      "severity": "P1",
+      "summary": "The source tag workflow was not cryptographically bound to fixed Q01/D05 evidence and package projections.",
+      "repair_commit": "cc261b1899662e7f0410a0de8ca4295cf2b832d9"
+    },
+    {
+      "severity": "P1",
+      "summary": "Starter documentation exposed stale package identities.",
+      "repair_commit": "212cc15b47afda9e88d8a8f642c8e57d297cdf40"
+    }
+  ],
+  "open_blocking_findings": [
+    {
+      "severity": "P1",
+      "summary": "Q01/D05 evidence and the passing qualification record must be committed and reviewed before the maintainability role can pass.",
+      "disposition": "procedural stop line; close only in a later evidence-only commit"
+    }
+  ],
+  "review_limitations": [
+    "This review approves the fixed source candidate for the Alpha.13 publication gate; it does not itself prove Registry publication or downstream adoption.",
+    "Real Aliyun, Qcloud and Qiniu credentials and provider endpoints were not exercised.",
+    "Production sizing, observability, backup objectives and application deployment remain Host responsibilities."
+  ]
+}

@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "qualification_id": "CORE-ALPHA13-Q01",
+  "version": "0.1.0-alpha.13",
+  "status": "pass",
+  "candidate": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+  "candidate_tree": "f935360a9ff2ead2b102ce458c81283956dfe61c",
+  "command": "./scripts/check",
+  "execution_mode": "no-repeat-continuation",
+  "environment": "qualification",
+  "lease_owner": "codex-root",
+  "resource_ids": [
+    "peanut-admin-core-mysql84-alpha13-qualification",
+    "peanut-admin-core-valkey91-alpha13-qualification",
+    "peanut-admin-core-playwright-chromium-alpha13-qualification",
+    "peanut-admin-core-compose-alpha13-qualification",
+    "peanut-admin-core-alpha13-qualification-output",
+    "peanut-admin-core-alpha13-compose-backend-port",
+    "peanut-admin-core-alpha13-compose-frontend-port",
+    "peanut-admin-core-alpha13-browser-backend",
+    "peanut-admin-core-alpha13-browser-frontend",
+    "peanut-admin-core-alpha13-starter-backend",
+    "peanut-admin-core-alpha13-starter-frontend"
+  ],
+  "toolchain": {
+    "php": "8.3.24",
+    "composer": "2.10.2",
+    "node": "24.13.0",
+    "pnpm": "11.13.0"
+  },
+  "continuation_rule": "A failed group was repaired once and only that affected group plus its direct static contracts was rerun. Earlier passing groups are inherited only where later commits did not change their scope; final fixed-commit reviews and package projection inspection checked that inheritance.",
+  "groups": [
+    {
+      "id": "documentation-and-architecture",
+      "status": "pass",
+      "actual_candidate": "23ec2569acdebaaf9908eee1822b63b1e70741e0",
+      "provenance": "aggregate continuation after one operator PATH correction and the StorageProviderSdks classification repair",
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later changes do not alter the accepted storage SDK dependency classification; final documentation governance was rerun after release-gate repairs"
+    },
+    {
+      "id": "openapi-runtime-coverage-third-party-secret-and-supply-chain",
+      "status": "pass",
+      "actual_candidate": "23ec2569acdebaaf9908eee1822b63b1e70741e0",
+      "provenance": "aggregate continuation",
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later OpenAPI role_ids change was checked by the focused contract suite and final delta review; package inventory was re-inspected on the final candidate"
+    },
+    {
+      "id": "php-unit",
+      "status": "pass",
+      "actual_candidate": "23ec2569acdebaaf9908eee1822b63b1e70741e0",
+      "counts": {
+        "tests": 311,
+        "assertions": 4097
+      },
+      "provenance": "aggregate continuation",
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later Runtime changes have their own focused suites"
+    },
+    {
+      "id": "web-unit",
+      "status": "pass",
+      "actual_candidate": "23ec2569acdebaaf9908eee1822b63b1e70741e0",
+      "counts": {
+        "files": 56,
+        "tests": 231
+      },
+      "provenance": "aggregate continuation",
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "no later frontend Runtime change"
+    },
+    {
+      "id": "integration",
+      "status": "pass",
+      "actual_candidate": "824b64018515364845b8696f06f5ee28a05e31aa",
+      "counts": {
+        "tests": 303,
+        "assertions": 2937,
+        "phpunit_deprecations": 8
+      },
+      "provenance": "failed-group retry after 4b89dd1 persistence repairs and 824b640 evidence freeze",
+      "external_log": {
+        "path_at_qualification": "/private/tmp/peanut-admin-core-alpha13-integration-retry.log",
+        "sha256": "0a759bbf3f719d5a9112cdfb369f2dd2cf44da8241974993d566d72c1ef24773",
+        "identity_limitation": "the raw log does not contain a candidate header; commit attribution is supplied by the qualification contract and operator session"
+      },
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later owner and role-limit changes were rerun in focused real-MySQL suites"
+    },
+    {
+      "id": "security",
+      "status": "pass",
+      "actual_candidate": "824b64018515364845b8696f06f5ee28a05e31aa",
+      "counts": {
+        "suites": [
+          "25 tests / 209 assertions",
+          "31 tests / 258 assertions",
+          "38 tests / 397 assertions",
+          "120 tests / 3693 assertions"
+        ],
+        "skipped": 0
+      },
+      "external_log": {
+        "path_at_qualification": "/private/tmp/peanut-admin-core-alpha13-security.log",
+        "sha256": "ac6626fcc80fdc7315e345a2d8d60bf02680ae7701e08c8df2b58f1e34286408",
+        "identity_limitation": "the raw log does not contain a candidate header"
+      },
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later authorization changes were covered by focused integration tests and fixed-commit Security/Authorization review"
+    },
+    {
+      "id": "browser",
+      "status": "pass",
+      "actual_candidate": "ec504c1e38495a4970c6e48b1e4e5479960c2df2",
+      "counts": {
+        "tests": 46,
+        "passed": 46
+      },
+      "provenance": "failed-group retry after trace-based tenant workspace readiness repair",
+      "external_log": {
+        "path_at_qualification": "/private/tmp/peanut-admin-core-alpha13-browser-retry.log",
+        "sha256": "4dcc7764d63be908af41b1fe265a448884b3e033be70130af0175ab3ce1faadc",
+        "identity_limitation": "the raw log does not contain a candidate header"
+      },
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "no later browser or frontend Runtime change"
+    },
+    {
+      "id": "recovery-and-clean-install",
+      "status": "pass",
+      "actual_candidate": "ec504c1e38495a4970c6e48b1e4e5479960c2df2",
+      "counts": {
+        "contract": "2 tests / 17 assertions",
+        "clean_install_seconds": 4,
+        "restore": "2 tests / 27 assertions"
+      },
+      "external_log": {
+        "path_at_qualification": "/private/tmp/peanut-admin-core-alpha13-recovery.log",
+        "sha256": "79dd625d912db2e9ce93b71c1945b3a258fbf00981b2494bc0371ecd894a0680",
+        "identity_limitation": "the raw log does not contain a candidate header"
+      },
+      "report": {
+        "path_at_qualification": "/tmp/peanut-admin-recovery-report.json",
+        "sha256": "65a3e43741e99c61aae8c43146a620ad3904edb3dacae5e0d8ff4f6a592386fa"
+      },
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later changes do not alter installation or recovery implementation"
+    },
+    {
+      "id": "performance",
+      "status": "pass",
+      "actual_candidate": "ec504c1e38495a4970c6e48b1e4e5479960c2df2",
+      "counts": {
+        "registered_targets": 7,
+        "threshold_failures": 0
+      },
+      "external_log": {
+        "path_at_qualification": "/private/tmp/peanut-admin-core-alpha13-performance.log",
+        "sha256": "bbb376329ed51400d7c7286df6bdb69c3d1e26a6aa64c150b6bf55f3bb97479c",
+        "identity_limitation": "the raw log does not contain a candidate header"
+      },
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later bounded-input and release-governance changes do not widen measured Runtime paths"
+    },
+    {
+      "id": "independent-starter",
+      "status": "pass",
+      "actual_candidate": "ec504c1e38495a4970c6e48b1e4e5479960c2df2",
+      "external_log": {
+        "path_at_qualification": "/private/tmp/peanut-admin-core-alpha13-starter.log",
+        "sha256": "2b9762828ec263e1a048f71c2693297fe88e86e93d93261082c3c84c518ddcb9",
+        "identity_limitation": "the raw log does not contain a candidate header"
+      },
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later documentation correction aligned the fixture identity and was independently reviewed"
+    },
+    {
+      "id": "workspace-and-repository-contracts",
+      "status": "pass",
+      "actual_candidate": "9394c53dc06e16186f279a492030338e5be900aa",
+      "counts": {
+        "php_aggregate_discovered": 688,
+        "php_assertions": 3741,
+        "integration_tests_statically_skipped_in_workspace_stage": 303,
+        "phpstan_errors": 0,
+        "deptrac_violations": 0,
+        "deptrac_uncovered": 0,
+        "php_cs_fixer_files": 935,
+        "web_files": 56,
+        "web_tests": 231
+      },
+      "provenance": "final successful workspace and repository-contract output was observed in the operator session and summarized in the committed candidate contract; no separate successful raw workspace log was retained",
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "unchanged_scope": "later Runtime and release-gate edits were covered by their focused suites, package inspection, documentation checks and nine-role delta review"
+    },
+    {
+      "id": "owner-concurrency-repair",
+      "status": "pass",
+      "actual_candidate": "1c86fa693b679e85ce703c4a6ab249e42be47f0e",
+      "counts": {
+        "tests": 9,
+        "assertions": 61
+      },
+      "provenance": "focused real-MySQL regression confirms two concurrent owner removals serialize and preserve one active Owner",
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3"
+    },
+    {
+      "id": "member-role-limit-repair",
+      "status": "pass",
+      "actual_candidate": "61201242e5ff6bbbfeae8f4ceb51bec6aeaeca52",
+      "counts": {
+        "tests": 13,
+        "assertions": 77
+      },
+      "provenance": "focused HTTP/Core/OpenAPI and real-MySQL regression; over-limit rejection occurs before transaction or SQL, including duplicate IDs",
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3"
+    },
+    {
+      "id": "release-candidate-gate",
+      "status": "pass",
+      "actual_candidate": "cc261b1899662e7f0410a0de8ca4295cf2b832d9",
+      "counts": {
+        "isolated_git_tests": 17,
+        "passed": 17
+      },
+      "provenance": "focused release-gate regression plus YAML, documentation governance, documentation impact and diff checks",
+      "inherited_to": "a949a77728f2940153c6cfd76b104d5d8bb183e3"
+    },
+    {
+      "id": "final-package-content-inspection",
+      "status": "pass",
+      "actual_candidate": "a949a77728f2940153c6cfd76b104d5d8bb183e3",
+      "counts": {
+        "composer_files": 728,
+        "composer_psr4_roots": 13,
+        "npm_packed_files": 73,
+        "npm_exports": 14
+      },
+      "result": {
+        "path_at_qualification": "/private/tmp/peanut-admin-core-alpha13-package-inspection-a949a77/result.json",
+        "sha256": "8128de5755b2f317f6c32b35c3a966d1fad37f8e5bd2415e8e251af064cc5a6d",
+        "composer_archive_sha256": "2e2e526c92daca35c24b15ae394c1c7da73c7e417717d498d9dd8717a21f59c0",
+        "npm_tarball_sha256": "9c979d91765b6a0c83721d4418d6ca1817728f8b16ec0a3716eb14ca69449861"
+      }
+    }
+  ],
+  "candidate_lock": {
+    "path_at_qualification": "/private/tmp/peanut-admin-core-alpha13-candidate-lock.json",
+    "sha256": "81580e403bfcede5bee8370e788cbe5dbcf6035d954ac1706a74e056b280e1f5",
+    "verified_final_file_digests": 26
+  },
+  "failure_history": [
+    "The first documentation invocation omitted the registered Docker path; the same group passed after the operator PATH was corrected.",
+    "Architecture first exposed an unclassified optional provider SDK boundary; 23ec256 added the narrow classification and the affected gates passed.",
+    "Integration exposed three real persistence defects; 4b89dd1 repaired them and the failed group passed.",
+    "Browser first exposed one readiness race; the retained Playwright trace guided ec504c1 and the failed group passed 46/46.",
+    "Workspace first exposed one missing PHPStan iterable type and then formatter-only layout; a989bf7 and 9394c53 repaired those exact failures.",
+    "D05 found owner-removal concurrency, unbounded role input, Starter identity documentation and an insufficient source-release gate; 1c86fa6, 212cc15, 6120124 and cc261b1 repaired them and the affected gates and fixed-commit reviews passed."
+  ],
+  "warnings": [
+    "The Integration pass reports eight non-failing PHPUnit deprecations.",
+    "Four warning details from the first failed Integration run were not persisted and are not reconstructed here.",
+    "The frontend production build reports a non-blocking large-chunk warning."
+  ],
+  "evidence_limitations": [
+    "This is a continuation record, not a claim that every group was rerun at the final candidate SHA.",
+    "External logs are transient qualification artifacts and most do not embed their Git identity; attribution comes from the committed candidate contract and operator session.",
+    "The retained /private/tmp/peanut-admin-core-alpha13-workspace.log is the earlier PHPStan failure and is deliberately not cited as passing evidence.",
+    "The candidate lock did not embed the recovery report digest; this record supplies the independently calculated digest.",
+    "Qualification does not prove real cloud-provider credentials, production RTO/RPO, registry publication, downstream adoption or resource cleanup."
+  ],
+  "projections": {
+    "composer": {
+      "path": "packages/php",
+      "sha256": "b23cba13041910e48fc0a86a88af05ded2546ba41023f9c654b04193de366a69"
+    },
+    "npm": {
+      "path": "packages/web",
+      "sha256": "26e01070a1527ec7c4c2309b473b1e76aaeb3a49479011fb1eb5f5a15dfd8f31"
+    }
+  }
+}
