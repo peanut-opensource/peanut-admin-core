@@ -96,6 +96,22 @@ once; Security, browser, recovery, performance, Starter and workspace groups
 remain unexecuted until it passes. Four warning details were not persisted from
 the first run and must be recorded verbatim by the retry rather than guessed.
 
+The Integration retry passed `303 tests / 2,937 assertions`; its earlier warning
+and risky counts did not recur, while PHPUnit reported eight non-failing
+framework deprecations without details. The PHP Security group then passed four
+suites (`25/209`, `31/258`, `38/397`, `120/3,693`) with zero skips. The first
+Browser invocation stopped before Playwright because the operator PATH omitted
+the registered pnpm executable. With the exact Node 24.13.0/pnpm 11.13.0 path,
+the first real Browser execution passed 45 of 46 tests and retained a trace for
+the sole failure. That trace proves tenant selection returned 200 and the SPA
+rendered the requested workspace, while the test's five-second URL assertion
+expired as the real `/api/v1/menus` readiness request completed. The focused
+repair makes the existing Reference Codes helper await and assert login, Tenant
+selection, menu readiness and the requested workspace identity; it does not
+increase a timeout, intercept a request or weaken an assertion. This test-only
+repair invalidates the candidate identity and permits one Browser failed-group
+retry. Recovery and later groups remain unexecuted.
+
 The existing license generator initially encountered a missing pnpm package
 index for `@playwright/test@1.61.1` in the registered cache. Q01 installed the
 exact frozen dependency set from the registered pnpm store; the full generated
