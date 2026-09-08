@@ -13,6 +13,17 @@
 
 An account may join several tenants through separate `TenantMember` records. Login first authenticates the account, then resolves the selected active tenant and active membership. Switching tenants creates a new trusted tenant session; a client-supplied `tenant_id` never establishes authority.
 
+`MemberAdminService::createAdministrator()` and `updateAdministrator()` own one PDO transaction
+for an administrator form: account and credential creation where applicable, member profile and
+department, role assignment, status transition, revision increments and success audits commit
+together. The host supplies the authorized tenant actor; Core enforces tenant activity, scoped
+relations, the expected member revision and the final active owner guard. Any exception rolls
+back the complete command. These commands require a connection without an ambient transaction;
+they do not join or commit a caller's transaction. Existing member lifecycle commands remain
+independently transactional. Disabled creation stays pending, and editing never changes account
+credentials. Consumers must lock a Core version containing these commands before adopting them;
+source implementation alone is not package or downstream qualification.
+
 ## Tenant And Business Targets
 
 A tenant may manage many categories and many instances in each category: several projects, stores, warehouses, suppliers, or domain-specific targets. These objects belong to their modules and do not enter the Kernel as a universal subject table.
