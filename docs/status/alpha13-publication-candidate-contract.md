@@ -127,9 +127,15 @@ assertions, eight non-failing framework deprecations). PHPStan then reported one
 missing iterable value type on the private test helper
 `AdminAccessServiceTest::administrationState()`. The focused repair documents
 the exact nested table-snapshot shape; it changes no Runtime, assertion, skip or
-analysis rule. This test-only type declaration invalidates the candidate
-identity and permits one Workspace failed-group retry after a focused PHPStan
-check. The final repository-contract group remains unexecuted until it passes.
+analysis rule. This test-only type declaration invalidated the candidate
+identity and permitted one Workspace failed-group retry after a focused PHPStan
+check. That retry passed PHPStan with zero errors and then reached the formatter
+for the first time, which reported only pre-existing multiline layout in the
+atomic administrator implementation and its test. The repository formatter was
+applied to those exact two files without changing behavior, assertions or rules.
+Because formatting is a mechanical gate repair, Workspace may verify the exact
+new identity once more. The final repository-contract group remains unexecuted
+until Workspace passes.
 
 The existing license generator initially encountered a missing pnpm package
 index for `@playwright/test@1.61.1` in the registered cache. Q01 installed the
