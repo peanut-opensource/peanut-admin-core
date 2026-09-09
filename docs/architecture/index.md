@@ -1,6 +1,6 @@
 # Architecture
 
-Peanut Admin P0 is a modular monolith in one public monorepo. It uses PHP 8.3 and ThinkPHP 8 for the reference backend and supported PHP runtime, Vue 3 and TypeScript for Admin Web, MySQL 8 for persistence, and a replaceable cache adapter. The Application/Core runtime direction is recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`; Alpha.13 PDO paths are transitional implementation facts, not a framework-neutral support promise.
+Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. The current Core package still exposes PDO-backed persistence and atomic-command contracts. Converging those contracts on ThinkPHP Model/Query/Db/Transaction is an accepted future direction recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. The 3.1.0 identity alignment does not implement that migration or create a framework-neutral support promise.
 
 ## Repository Layers
 

@@ -137,18 +137,24 @@ default. Module discovery, Tenant enablement, permissions, and route guards
 remain separate authorities. Core and Application both target ThinkPHP 8. Core
 does not read mutable Host configuration from business services; the single
 ThinkPHP composition root supplies configuration, provider selection, SDK
-instances and execution context. See the cross-repository [Core ThinkPHP 8
-runtime direction ADR (`repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`).
+instances and execution context. The accepted direction is recorded in
+`repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
+The remaining PDO-backed Runtime contracts below have not yet migrated.
 
 ## 7. Compose An Atomic Command
 
 An external Module owns its domain callable and, when needed, its outbox
 schema. Peanut Admin provides the transaction, idempotency, and audit
 primitives; it does not own the Module's domain tables or outbox table. The
-Alpha.13 example below is a legacy PDO implementation fact retained for
-source-history and migration planning. New work must use the ThinkPHP 8
-bootstrap, Model/Query/Db/Transaction boundary, and injected services; it must
-not add another PDO adapter or caller-owned PDO public contract.
+current `ExternalOperationHost::command()` and `AtomicOperationAdapter` pass
+one transaction-owned PDO to the handler, guard and optional outbox. That
+contract is still present in the coordinated 3.1.0 candidate. Every write in
+one command must use that same connection to preserve atomicity.
+
+The following diagram describes the accepted future ThinkPHP migration. It
+is not an API implemented by renumbering the package. New architecture must
+target this boundary without adding another PDO abstraction; adoption of a
+changed public command contract waits for its implementation and qualification.
 
 ```text
 ThinkPHP bootstrap
@@ -160,9 +166,10 @@ ThinkPHP bootstrap
 ```
 
 The atomicity invariant remains: idempotency acquisition, domain writes,
-audit, outbox and terminal completion share one ThinkPHP transaction and one
-execution context. Creating a second connection or bypassing the bootstrap is
-outside the supported contract.
+audit, outbox and terminal completion share one transaction and one execution
+context. The current implementation uses the passed PDO; the future migration
+must preserve this invariant through ThinkPHP transactions. Creating a second
+connection inside a handler breaks the existing guarantee.
 
 The host must store only a safe, redacted terminal response. It must not store
 credentials, secrets, SQL, stack traces, raw authorization input, or hidden
@@ -231,12 +238,13 @@ host path and method
 ```
 
 The request body, query, route parameters, and headers cannot establish a
-Tenant context. A command callable runs inside the supported ThinkPHP 8 Host
-bootstrap and returns an `ExternalOperationResult` containing only its safe
-response and redacted audit evidence. Domain writes, idempotency, audit and an
-optional application-owned outbox share the formal ThinkPHP transaction
-boundary. Missing context, Module, permission, target declaration, Provider, or
-operation fails closed and maps to a stable Problem Details response.
+Tenant context. The current command callable receives the transaction-owned
+PDO and returns an `ExternalOperationResult` containing only its safe response
+and redacted audit evidence. Domain writes, idempotency, audit and an optional
+application-owned outbox share that same connection. The planned ThinkPHP
+transaction migration is described above; it has not changed this callable
+signature. Missing context, Module, permission, target declaration, Provider,
+or operation fails closed and maps to a stable Problem Details response.
 
 The executable fictional example is under `examples/external-host`. It proves
 five explicit operations and is not a generic repository, CRUD engine, route
