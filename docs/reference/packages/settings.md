@@ -1,5 +1,10 @@
 # Settings Package
 
+> Alpha.13 still contains the `PdoSettingRepository` implementation and same-
+> transaction wording below as a migration-before source fact. The accepted
+> runtime direction is ThinkPHP 8 Model/Query/Db/Transaction; do not add new
+> public PDO consumers. See `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
+
 The Settings namespace inside `peanut-admin/core` provides reusable,
 Module-owned typed setting definitions, encrypted values, optimistic
 concurrency, and deterministic effective resolution.

@@ -13,7 +13,7 @@
 
 An account may join several tenants through separate `TenantMember` records. Login first authenticates the account, then resolves the selected active tenant and active membership. Switching tenants creates a new trusted tenant session; a client-supplied `tenant_id` never establishes authority.
 
-`MemberAdminService::createAdministrator()` and `updateAdministrator()` own one PDO transaction
+`MemberAdminService::createAdministrator()` and `updateAdministrator()` currently own one PDO transaction
 for an administrator form: account and credential creation where applicable, member profile and
 department, role assignment, status transition, revision increments and success audits commit
 together. The host supplies the authorized tenant actor; Core enforces tenant activity, scoped
@@ -22,7 +22,10 @@ back the complete command. These commands require a connection without an ambien
 they do not join or commit a caller's transaction. Existing member lifecycle commands remain
 independently transactional. Disabled creation stays pending, and editing never changes account
 credentials. Consumers must lock a Core version containing these commands before adopting them;
-source implementation alone is not package or downstream qualification.
+source implementation alone is not package or downstream qualification. The
+PDO transaction is a migration-before fact; the accepted supported runtime is
+ThinkPHP 8 and the eventual implementation must use the formal ThinkPHP
+transaction boundary without changing the atomicity or Tenant contract.
 
 ## Tenant And Business Targets
 

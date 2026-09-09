@@ -134,61 +134,35 @@ The registry validates the declared interface and implementation classes,
 rejects unknown or duplicate keys, and requires an exact version match. An
 invalid application override fails startup; it never falls back to the package
 default. Module discovery, Tenant enablement, permissions, and route guards
-remain separate authorities. Core code stays independent of ThinkPHP and does
-not read Host configuration directly.
+remain separate authorities. Core and Application both target ThinkPHP 8. Core
+does not read mutable Host configuration from business services; the single
+ThinkPHP composition root supplies configuration, provider selection, SDK
+instances and execution context. See the cross-repository [Core ThinkPHP 8
+runtime direction ADR (`repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`).
 
 ## 7. Compose An Atomic Command
 
 An external Module owns its domain callable and, when needed, its outbox
 schema. Peanut Admin provides the transaction, idempotency, and audit
-primitives; it does not own the Module's domain tables or outbox table. Pass
-one caller-owned PDO through the whole command so every state change shares
-one commit boundary:
+primitives; it does not own the Module's domain tables or outbox table. The
+Alpha.13 example below is a legacy PDO implementation fact retained for
+source-history and migration planning. New work must use the ThinkPHP 8
+bootstrap, Model/Query/Db/Transaction boundary, and injected services; it must
+not add another PDO adapter or caller-owned PDO public contract.
 
-```php
-$transactions = new PdoTransactionManager($pdo);
-$idempotency = new PdoIdempotencyRepository($pdo);
-$audit = new PdoAuditRepository($pdo);
-
-$result = $transactions->run(function () use ($request, $moduleCommand, $outbox, $idempotency, $audit) {
-    $lease = $idempotency->beginTenant(
-        $request->tenantId,
-        $request->memberId,
-        $request->operationKey,
-        $request->idempotencyKey,
-        $request->requestHash,
-        $request->idempotencyExpiresAt,
-    );
-
-    if ($lease->replayable()) {
-        return [$lease->responseStatus, $lease->responseBody];
-    }
-    if (!$lease->acquiredForExecution()) {
-        throw new RuntimeException('IDEMPOTENCY_REQUEST_PROCESSING');
-    }
-
-    $domainResult = $moduleCommand->execute($request);
-    $audit->appendTenantMember(
-        $request->context,
-        $request->eventType,
-        $request->operationKey,
-        metadata: $domainResult->redactedAuditMetadata(),
-        outcome: AuditOutcome::Success,
-    );
-    $outbox->append($domainResult->events());
-    $idempotency->completeTenant(
-        $lease->id,
-        $domainResult->responseStatus(),
-        $domainResult->safeResponseBody(),
-    );
-
-    return $domainResult->response();
-});
+```text
+ThinkPHP bootstrap
+  -> trusted ExecutionContext and Module lifecycle guard
+  -> injected Module command/query
+  -> ThinkPHP transaction boundary
+  -> Model/Query writes, audit and idempotency in one commit
+  -> finally clear context, locks and lease
 ```
 
-The repository objects above all receive the same PDO. The application-owned
-command and outbox adapter must retain that PDO as well; creating another
-connection inside either callable breaks the atomicity guarantee.
+The atomicity invariant remains: idempotency acquisition, domain writes,
+audit, outbox and terminal completion share one ThinkPHP transaction and one
+execution context. Creating a second connection or bypassing the bootstrap is
+outside the supported contract.
 
 The host must store only a safe, redacted terminal response. It must not store
 credentials, secrets, SQL, stack traces, raw authorization input, or hidden
@@ -257,12 +231,12 @@ host path and method
 ```
 
 The request body, query, route parameters, and headers cannot establish a
-Tenant context. A command callable receives the caller-owned PDO from the Host
-kit and returns an `ExternalOperationResult` containing only its safe response
-and redacted audit evidence. An optional application-owned outbox callable
-receives the same PDO. Missing context, Module, permission, target declaration,
-Provider, or operation fails closed and maps to a stable Problem Details
-response.
+Tenant context. A command callable runs inside the supported ThinkPHP 8 Host
+bootstrap and returns an `ExternalOperationResult` containing only its safe
+response and redacted audit evidence. Domain writes, idempotency, audit and an
+optional application-owned outbox share the formal ThinkPHP transaction
+boundary. Missing context, Module, permission, target declaration, Provider, or
+operation fails closed and maps to a stable Problem Details response.
 
 The executable fictional example is under `examples/external-host`. It proves
 five explicit operations and is not a generic repository, CRUD engine, route

@@ -1,5 +1,10 @@
 # Reference Codes PHP Package
 
+> Alpha.13 still contains the `PdoReferenceCodeRepository` implementation and
+> same-connection wording below as a migration-before source fact. The accepted
+> runtime direction is ThinkPHP 8 Model/Query/Db/Transaction; do not add new
+> public PDO consumers. See `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
+
 The Reference Codes namespace inside `peanut-admin/core` provides neutral,
 reusable reference-code set definitions and Tenant-owned, immutable code
 identities with append-only versions. Its Admin contribution is exported as
