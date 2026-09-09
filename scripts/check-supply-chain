@@ -8,7 +8,14 @@ composer_report="$(mktemp "${TMPDIR:-/tmp}/peanut-admin-composer-audit.XXXXXX")"
 pnpm_report="$(mktemp "${TMPDIR:-/tmp}/peanut-admin-pnpm-audit.XXXXXX")"
 trap 'rm -f "$composer_report" "$pnpm_report"' EXIT
 
-composer audit --locked --format=json > "$composer_report"
+if composer audit --locked --format=json > "$composer_report"; then
+  :
+else
+  audit_status=$?
+  printf 'ERROR: Composer audit failed (exit %s); original report follows\n' "$audit_status" >&2
+  cat "$composer_report" >&2
+  exit "$audit_status"
+fi
 php -r '
 $report = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
 if (($report["advisories"] ?? null) !== [] || ($report["abandoned"] ?? null) !== []) {
@@ -17,7 +24,14 @@ if (($report["advisories"] ?? null) !== [] || ($report["abandoned"] ?? null) !==
 }
 ' "$composer_report"
 
-pnpm audit --audit-level high --json > "$pnpm_report"
+if pnpm audit --audit-level high --json > "$pnpm_report"; then
+  :
+else
+  audit_status=$?
+  printf 'ERROR: pnpm audit failed (exit %s); original report follows\n' "$audit_status" >&2
+  cat "$pnpm_report" >&2
+  exit "$audit_status"
+fi
 php -r '
 $report = json_decode((string) file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
 $counts = $report["metadata"]["vulnerabilities"] ?? null;

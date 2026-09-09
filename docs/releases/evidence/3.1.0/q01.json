@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "qualification_id": "CORE-PRODUCT-310-Q01",
+  "version": "3.1.0",
+  "status": "failed",
+  "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
+  "candidate_tree": "cf89827a54e05730794ca7d6304bc77a0d24d993",
+  "command": "./scripts/check",
+  "attempts": [
+    {
+      "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
+      "result": "failed",
+      "group": "supply-chain",
+      "subcommand": "unknown",
+      "log_sha256": "c09a89bdd541d2b98b3a609ea6259270df51ef798b44ae448f7986130b54d666",
+      "candidate_lock_sha256": "f9ce024445ee3263b104efcfb02e27096717921eb714c250a16aa02eb278e28c"
+    },
+    {
+      "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
+      "result": "failed",
+      "group": "supply-chain",
+      "subcommand": "unknown",
+      "log_sha256": "7cf7609073427536a900955dc895de9f976b65add28eb7a63a009570988ab6f0",
+      "candidate_lock_sha256": "791da29d0e61d8568b7d5ff0cabf0da434ac04848f0fa0f40f8fe2dbb80286bc"
+    }
+  ],
+  "passed_on_final_candidate": [
+    "documentation governance",
+    "Module manifest and documentation examples",
+    "generated Starter validation",
+    "documentation build",
+    "dependency decisions",
+    "architecture and Deptrac",
+    "OpenAPI",
+    "Runtime operation coverage"
+  ],
+  "not_started": [
+    "PHP unit",
+    "integration",
+    "security",
+    "browser",
+    "recovery",
+    "performance",
+    "workspace",
+    "final repository checks"
+  ],
+  "diagnosis": {
+    "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
+    "command": "composer audit --locked --format=json",
+    "exit_code": 0,
+    "advisories": [],
+    "abandoned": [],
+    "report_sha256": "3d68c4566587606c21e4bcd82b55d322ddb79158f657d9fb90bf0d24ab5bccdf",
+    "limitation": "The failed aggregate could instead have exited in pnpm audit. A successful Composer diagnostic neither identifies the original failure nor establishes qualification."
+  },
+  "stop_line": "The same aggregate group failed on the one permitted qualification retry. No third qualification run was performed. Failure-report retention is repaired separately without changing audit thresholds or exit status.",
+  "cleanup": {
+    "status": "verified",
+    "lease_released": true,
+    "new_310_containers_networks_volumes": 0,
+    "eight_registered_listeners": 0,
+    "three_fixed_outputs": 0,
+    "scope": "Only the claimed 3.1.0 resources; historical Alpha.13 resources and preserved evidence retained."
+  },
+  "preparation_deviations": [
+    "A zsh path variable shadowed PATH during a read-only preflight; corrected before resource claim or qualification.",
+    "Direct Composer install in source starter/backend failed because its path repository is valid only in the generated Starter; no lock change or qualification pass was claimed.",
+    "The targeted integration test before database startup skipped eight items and is not counted as a pass."
+  ],
+  "evidence_retention": "Raw logs and candidate locks remain in the local fact-audit evidence directory; this committed record preserves exact hashes and bounded results, not credentials or full logs."
+}

@@ -4,13 +4,13 @@ Document ID: `core-doc-status-product-310-publication-candidate-contract`
 
 ```text
 task: CORE-PRODUCT-310-CANDIDATE
-mode: Development preparation
-state: package identity and qualification resources prepared; immutable candidate not frozen
+mode: Development blocked after qualification retry
+state: package identity prepared; Q01 failed twice in supply-chain; no publication
 composer_package: peanut-admin/core@3.1.0
 npm_package: @peanut-admin/admin@3.1.0
-candidate_commit: pending clean freeze
+candidate_commit: b51c7ce64fdf5bdf4c6295e098a938869c7ffd53 (failed Q01; not the later verifier repair)
 deferred_verification: CORE-PRODUCT-310-Q01
-qualification: pending one immutable-candidate run and fixed-commit nine-role review
+qualification: Q01 failed; nine-role D05 passed for the named candidate
 publication: authorized only after fresh Q01/D05 qualification and immutable registry preflight
 downstream_adoption: false
 ```
@@ -28,12 +28,40 @@ The public Composer and npm package manifests and their repository consumers use
 number does not replace the immutable source, package projection, qualification
 or downstream-consumption identities.
 
-The pending record is
+The failed qualification record is
 [`docs/releases/qualifications/3.1.0.json`](../releases/qualifications/3.1.0.json).
-Its null identities and evidence fields are deliberate. They must be replaced
-only with evidence from the same clean, fixed candidate after Q01 and the
-nine-role D05 review pass. The source-tag verifier remains the authority for the
-record schema and evidence-only path between candidate and tag.
+It preserves the exact failed candidate, both aggregate attempts and the
+separate passing nine-role review. It must not be changed to pass using the
+single successful Composer diagnostic. The source-tag verifier remains the
+authority for the record schema and evidence-only path between candidate and tag.
+
+## Current stop and recovery condition
+
+The initial `ff3a58088d93ba08a3382dfdc941a92b22ba02ce` attempt and the permitted
+retry at the candidate above both stopped in `check-supply-chain`. The old gate
+removed its temporary audit JSON, and both Composer and pnpm can exit silently;
+the failing subcommand and root cause are unknown. Earlier Composer/network
+attribution is withdrawn. Unit, integration, security, browser, recovery,
+performance, workspace and final repository groups did not start.
+
+The two public PHP package version constants and their existing assertion were
+corrected before the retry; Module manifests remained unchanged. All nine D05
+roles passed the fixed three-file delta review. This is not Q01 qualification.
+
+After the second failure, execution stopped. The gate now emits the failed audit
+name, original exit status and report before cleanup; thresholds and failure
+semantics are unchanged. Only shell syntax and diff validation cover this later
+verifier repair. No third audit or qualification was run. A resumed publication
+must diagnose the retained audit output, close the actual cause in Development
+mode, and qualify a new clean candidate under the existing contract. The failed
+candidate, its passing earlier groups and D05 are not inherited as new Q01 pass.
+
+All newly claimed 3.1.0 containers, networks, volumes, eight listeners and three
+fixed output paths were removed and checked absent; the lease was released.
+Historical Alpha.13 resources and preserved evidence were retained. Application
+3.1.0 lock adoption and the coordinated release remain blocked on real Core
+qualification and publication. Prepared development source may be integrated
+only with this failed/unpublished status intact.
 
 The historical Alpha.13 lock evidence remains immutable and is no longer used as
 the hash authority for current workspace locks. `scripts/check-workspace` still
