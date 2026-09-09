@@ -39,6 +39,10 @@ This public repository owns its execution and resource rules. Historical
   `docs/architecture/storage-driver-boundary.md`; Core owns product-neutral storage mechanisms and
   explicit technical state, while the application owns provider assembly, credentials, authorization,
   object ledger, compensation and product lifecycle.
+- The accepted Core/Application ThinkPHP 8 Runtime direction is projected in
+  `docs/architecture/index.md#accepted-thinkphp-8-runtime-direction`. Existing PDO public APIs are
+  migration-before facts, not a framework-neutral support promise; runtime migration requires a
+  separately authorized atomic domain batch and must not weaken tests or leave dual paths.
 - New or materially changed classes and methods need concise responsibility comments. Complex methods
   document tenant/authorization prerequisites, side effects, exceptions and stream or temporary-file
   ownership; standard CRUD, accessors and constructor-only injection may omit method comments while

@@ -53,15 +53,19 @@ The manifest must pass the versioned JSON Schema. A minimal capability declares 
 Host Application; `frontend.routes` remains a valid build-time frontend
 contribution.
 
-Every provider implements `bindings()` and returns an associative map of
-contract class to implementation class or startup factory closure. Empty
-contributions return `[]`. `ModuleProviderBindings::collect()` validates class
-compatibility, accepts closures as opaque Host factories, sorts the result, and
-rejects duplicate contracts before the Host changes its container. The Host
-composition root is the only code that invokes and applies those bindings;
-business services still receive dependencies through constructors and do not
-resolve them from a container. `lifecycle.protected` remains deployment policy
-and does not change this startup contract.
+Every provider implements `bindings()` and normally returns a direct associative
+map of contract class to implementation class. Empty contributions return `[]`.
+A startup factory closure and explicit container `make()` are allowed only when
+primitive configuration, Edition/provider selection, a vendor SDK, a framework
+callback, or mutable Worker/lease/registry state cannot be expressed as a class
+binding; document that reason beside the binding. `ModuleProviderBindings::collect()`
+validates class compatibility, accepts those narrow Host factories, sorts the
+result, and rejects duplicate contracts before the Host changes its container.
+The Host composition root is the only code that invokes and applies bindings.
+Business services use constructor injection and do not locate services through
+the container. See the [accepted ThinkPHP 8 Runtime direction](../architecture/index.md#accepted-thinkphp-8-runtime-direction).
+`lifecycle.protected` remains deployment policy and does not change this startup
+contract.
 
 Run:
 
@@ -137,9 +141,9 @@ default. Module discovery, Tenant enablement, permissions, and route guards
 remain separate authorities. Core and Application both target ThinkPHP 8. Core
 does not read mutable Host configuration from business services; the single
 ThinkPHP composition root supplies configuration, provider selection, SDK
-instances and execution context. The accepted direction is recorded in
-`repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
-The remaining PDO-backed Runtime contracts below have not yet migrated.
+instances and execution context. The [accepted Runtime direction](../architecture/index.md#accepted-thinkphp-8-runtime-direction)
+projects the canonical cross-repository decision. The remaining PDO-backed
+Runtime contracts below have not yet migrated.
 
 ## 7. Compose An Atomic Command
 

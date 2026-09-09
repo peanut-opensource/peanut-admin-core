@@ -116,7 +116,8 @@
         "package.json",
         "deptrac.yaml",
         "packages/php",
-        "packages/web"
+        "packages/web",
+        "repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md"
       ],
       "owner_domain": "core-architecture",
       "scope": [

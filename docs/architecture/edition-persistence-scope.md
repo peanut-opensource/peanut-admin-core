@@ -15,6 +15,13 @@ database side effect. The repository never infers a scope from Schema, skips val
 driver or falls back to another mode. Cross-mode data conversion belongs to the host because it changes
 ownership and recovery semantics.
 
+That paragraph describes the current Alpha.13 PDO implementation, not the
+long-term persistence API. Under the [accepted ThinkPHP 8 Runtime direction](./index.md#accepted-thinkphp-8-runtime-direction),
+the same scope and trusted-context invariants move to the owning ThinkPHP Models,
+Queries and TenantScope. A migration batch must preserve both physical schemas
+and remove its corresponding repository/PDO path atomically; it may not emulate
+an Edition with a scope bypass or keep a second persistence implementation.
+
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
 Import/Export, and [`P1-ED01-R01`](../status/p1-ed01-r01-settings-persistence-scope-contract.md) for

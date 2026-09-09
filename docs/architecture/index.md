@@ -19,6 +19,83 @@ Hosts install the two public packages and compose their explicit APIs. Internal
 domains do not depend on host internals, and a host must not deep-import a
 domain's private files.
 
+## Accepted ThinkPHP 8 Runtime Direction
+
+The Application and Core supported PHP runtime is ThinkPHP 8. There is no
+supported non-ThinkPHP production consumer, and Core is not pursuing
+framework-neutral persistence. The canonical cross-repository decision is
+`repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
+This section is Core's current projection of that decision; it does not claim
+that the source migration has happened.
+
+The source audit is fixed to Application
+`9781ce0de5588f1ea3afaaf46023b20c49911b4a` and Core
+`6aeeb52789fb49a2113bb6bab541629374dc6803`:
+
+| Area | Audited current fact |
+| --- | --- |
+| Application data access | 31 `TenantOwnedModel` subclasses and broad Model/Query/TenantScope use coexist with 87 production files that mention PDO. `AppService` obtains the ThinkPHP connection as PDO and binds it into the container. |
+| Application composition | 10 ModuleProviders declare 55 bindings: 5 class mappings and 50 closures. Providers contain 105 explicit `make()` calls; the production source contains 202 explicit container `make()` calls, 23 Repository, 5 Adapter, 15 Factory and 7 `RuntimeFactory` declarations. |
+| Application Commands/Queries | 20 Command and 8 Query contract files do not expose PDO or Models. Only contracts with real cross-Module or Host consumers remain long term. |
+| Core package persistence | `packages/php/*/src` contains 555 PHP files; 60 mention PDO, 35 are `Pdo*` files, and 26 of 47 Repository files are `Pdo*Repository`. Publishable source currently has no ThinkPHP imports, Model, `Db::` or container `make()` use. |
+| Core Commands/Queries | A name scan finds 15 `*Command*`/`*Query*` files, mixing Host contracts, query services, constraints/compilers, DTOs and PDO implementations rather than one uniform CQRS layer. Retention is decided by semantics and real consumers, not names. |
+| Reference host and starter | 85 production files reference ThinkPHP while 66 still reference PDO; 12 RuntimeFactory classes and 18 concrete ModuleProviders hand-assemble much of the PDO graph. HTTP enters ThinkPHP, but installation, upgrade, health and worker paths have not yet converged on one data/bootstrap path. |
+
+The target is one ThinkPHP composition and data model: Core and Application
+each own their tables and Models; tenant-owned ordinary business access uses
+ThinkPHP Model, Query and the registered TenantScope; writes use the formal
+ThinkPHP Db/Transaction boundary. HTTP, CLI, Worker, Cron, installation,
+migration and seed execution all enter the same ThinkPHP bootstrap. Standalone
+physical schemas, platform scope and the minimum empty-schema installation
+context remain narrow governed boundaries, not ordinary TenantScope bypasses.
+
+| Existing abstraction | Decision |
+| --- | --- |
+| Public PDO parameters and `Pdo*Repository` | Replace by domain and delete from public Runtime APIs; do not add a compatibility bridge, dual implementation or dual write. |
+| `PdoTransactionManager` | Preserve atomicity, savepoint, rollback and concurrency semantics through ThinkPHP Transaction/Db, then delete the PDO manager. |
+| Repository/Adapter | Delete persistence interfaces that only mirror the single ThinkPHP implementation; keep real cross-Module business contracts and external-system adapters. |
+| RuntimeFactory | Replace repeated PDO/service-graph factories with constructor injection and the single Host composition root; keep only factories with real lifecycle or dynamic selection value. |
+| Commands/Queries/Contracts | Keep real cross-Module or Host business capabilities without PDO, Model or private table leakage; remove unused mirror contracts with their callers. |
+| ExecutionContext | Keep the trusted context semantics and establish/clear them at every shared bootstrap entry; an unused duplicate type is not protected merely by its name. |
+| ModuleProvider | Ordinary dependencies are `Interface::class => Implementation::class`. Closures and explicit `make()` are limited to primitive configuration, Edition/provider selection, vendor SDKs, framework callbacks and mutable Worker/lease/registry state, with the reason documented. |
+| Vendor SDK, HTTP transport, Storage Driver | Keep as genuine replaceable external boundaries. Application owns credentials, authorization, object ledger, compensation and product lifecycle. |
+
+Migration order is fixed and must not be reordered by an implementation task:
+
+1. ModuleProvider simplification.
+2. Core ThinkPHP data boundary.
+3. ReferenceCodes.
+4. Settings.
+5. ArtifactRevision.
+6. EntitlementQuota / Workflow.
+7. Notification.
+8. TaskJob.
+9. ImportExport, using the existing stable FileMedia business contract without reaching into its private tables.
+10. FileMedia, retaining and qualifying Storage Drivers.
+11. DataPermission.
+12. Kernel Identity / Tenant / RBAC.
+
+Each domain batch replaces its implementation, actual callers, public contract
+and composition atomically, then deletes that domain's old PDO path. It must not
+leave a long-lived bridge, second implementation, dual write or mirror API.
+Repository-wide regular-expression replacement is prohibited. Existing test
+assertions remain real: no assertion weakening, skips, early-exit scripts or
+`PASSED` placeholders may be used to claim completion.
+
+Qualification for every batch must prove tenant isolation, transaction rollback,
+savepoint and concurrent claim/lock/idempotency behavior, and deterministic
+Standalone/Multi-tenant behavior from the same frozen source. Missing trusted
+context, a scope bypass, a second connection, a weakened test or Edition drift
+stops that batch.
+
+Removing Core's public PDO constructors, repositories or transaction contracts
+is a breaking source change. An independent Core `0.2.0-alpha.1` line is
+rejected because accepted product identity aligns Application, Core PHP/Web and
+both Editions. If convergence lands before the first coordinated 3.1.0 release,
+the whole product must freeze a new coordinated 3.1.0 prerelease. If a
+PDO-preserving 3.1.0 is released first, the whole product selects its next
+breaking version later. The failed current 3.1.0 candidate must not be reused.
+
 ## Isolation Order
 
 Every tenant operation follows this order:
