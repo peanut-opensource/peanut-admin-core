@@ -39,8 +39,9 @@ cannot be widened by a qualification record.
 The committed record has `schema_version: 1`, the exact unprefixed package
 `version`, and `status: pass`. `candidate` and `candidate_tree` are complete
 40-character lowercase Git object identities. A pending record has null evidence
-and identities and is always rejected. Alpha.13 currently reserves only such a
-pending record; filling it requires final qualification and review.
+and identities and is always rejected. Alpha.13's committed record now contains
+passing qualification and review evidence; its earlier pending state remains
+historical. A new version requires its own candidate and evidence.
 
 `q01` must contain `status: pass`, the same `candidate`, `command: ./scripts/check`,
 and `evidence_path` / `evidence_sha256`. `d05` must contain the same status,

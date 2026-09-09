@@ -59,9 +59,9 @@ export default defineConfig({
       },
     ],
     search: { provider: 'local' },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/peanut-opensource/peanut-admin' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/peanut-opensource/peanut-admin-core' }],
     editLink: {
-      pattern: 'https://github.com/peanut-opensource/peanut-admin/edit/dev/docs/:path',
+      pattern: 'https://github.com/peanut-opensource/peanut-admin-core/edit/dev/docs/:path',
       text: 'Edit this page on GitHub',
     },
     footer: {

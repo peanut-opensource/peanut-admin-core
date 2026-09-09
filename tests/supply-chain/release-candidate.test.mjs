@@ -7,7 +7,7 @@ import { dirname, join, resolve } from 'node:path'
 import test from 'node:test'
 
 const source = resolve('scripts/check-release-candidate')
-const version = '0.1.0-alpha.13'
+const version = '3.1.0'
 const recordPath = `docs/releases/qualifications/${version}.json`
 const hash = bytes => createHash('sha256').update(bytes).digest('hex')
 

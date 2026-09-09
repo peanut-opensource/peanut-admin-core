@@ -11,6 +11,7 @@ This map identifies the fact owner. Core documentation explains and projects the
 | Fact | Authoritative upstream | Documentation projection |
 | --- | --- | --- |
 | Package identity and dependencies | root/package manifests, lock files and accepted dependency decisions | architecture and package reference |
+| Product, Core, Edition, Module and customer Instance versions | [Product version identity](../architecture/product-version-identity.md), exact manifests, immutable tags and consumer locks | architecture and release guides; matching numbers do not prove qualification or deployment |
 | Module identity, lifecycle and startup bindings | each `module.json`, `packages/php/kernel/resources/module-manifest.schema.json`, `ModuleProvider` and `ModuleProviderBindings` | Module guide and architecture |
 | Kernel data structure | KernelSchema implementation and owned migrations | Kernel Schema reference |
 | HTTP contract | `docs/api/openapi.yaml`, route/handler and generated artifacts | API reference |
@@ -20,7 +21,7 @@ This map identifies the fact owner. Core documentation explains and projects the
 | Architecture and dependency decisions | accepted records in `docs/decisions/`, manifests and enforced dependency graph | architecture/concepts pages |
 | Qualification or release evidence | fixed-commit review/release records | evidence pages, not current implementation authority by themselves |
 | Source-tag qualification binding | `scripts/check-release-candidate`, `.github/workflows/release.yml`, `docs/releases/qualifications/<version>.json` and its committed evidence files | [Release qualification binding](../guide/release-qualification.md) |
-| Alpha.13 candidate preparation | `docs/status/alpha13-publication-candidate-contract.md`, package/lock identities and Alpha.13 entries in `resources/project-resources.json` | status index; preparation is not qualification or publication |
+| Historical Alpha.13 publication | immutable source/split tags, Registry metadata and `docs/releases/qualifications/0.1.0-alpha.13.json` | status index; the archived preparation contract retains its original time scope |
 | Documentation identity and lifecycle | `docs/content-status.json` | generated catalog and indexes |
 | Documentation impact | `docs/document-impact-map.json` | docs-impact policy |
 

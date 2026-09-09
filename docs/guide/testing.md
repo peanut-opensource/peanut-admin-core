@@ -10,6 +10,8 @@ Q01, D05 and projection binding described in
 [Release qualification binding](./release-qualification.md). Its isolated Git
 regression is a focused publication-tooling check, not a full qualification run.
 
+The [coordinated version contract](../architecture/product-version-identity.md) requires a new fixed qualification even when a Core release changes only its product identity. Historical passing records remain scoped to their original candidate. Stable versions publish to npm `latest`; prerelease versions publish to `alpha`, as selected by the source-tag workflow after its qualification gate passes.
+
 ## Development Task Verification
 
 For ordinary, reversible, bounded work:

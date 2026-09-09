@@ -75,11 +75,14 @@ Release, Packagist and npm identities agree, and clean Composer consumption has
 been verified. Domain source directories remain private inside the two public
 packages and are not independently publishable.
 
-Current manifests prepare coordinated `0.1.0-alpha.13` from the converged
-Runtime head `2901732c6f722a91186b46c40725ed6cfc60339c`. Its
-[candidate contract](docs/status/alpha13-publication-candidate-contract.md)
-records the new Auth, storage and administrator-command scope. Alpha.13 is
-not yet qualified, published or approved for downstream consumption.
+The latest published package identity is
+[`0.1.0-alpha.13`](https://github.com/peanut-opensource/peanut-admin-core/releases/tag/v0.1.0-alpha.13),
+qualified at `a949a77728f2940153c6cfd76b104d5d8bb183e3` and tagged at
+`9e63054850f5e2f5270485ba7e62ea42bb6e9afb`. Application v3.0.14 consumes it.
+The [candidate contract](docs/status/alpha13-publication-candidate-contract.md)
+preserves preparation history. Future shared product numbering and independent
+Module/Instance versions follow the [version decision](docs/architecture/product-version-identity.md);
+a new coordinated target is not a published package.
 
 ## Principles
 

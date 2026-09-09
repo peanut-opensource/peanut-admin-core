@@ -44,6 +44,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-index` | `docs/index.md` | `current` | `index` | `Peanut Admin maintainers` |
 | `core-doc-operations-backup-and-recovery` | `docs/operations/backup-and-recovery.md` | `current` | `reference` | `Peanut Admin maintainers` |
 | `core-doc-performance-p0-baseline` | `docs/performance/p0-baseline.md` | `current` | `reference` | `Peanut Admin maintainers` |
+| `core-doc-product-version-identity` | `docs/architecture/product-version-identity.md` | `current` | `architecture` | `product-architecture` |
 | `core-doc-readme` | `docs/README.md` | `authoritative` | `index` | `Peanut Admin maintainers` |
 | `core-doc-reference-document-catalog-generated` | `docs/reference/document-catalog.generated.md` | `generated` | `generated` | `Peanut Admin maintainers` |
 | `core-doc-reference-kernel-schema` | `docs/reference/kernel-schema.md` | `current` | `reference` | `Peanut Admin maintainers` |
@@ -64,7 +65,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-security-p0-baseline` | `docs/security/p0-baseline.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-standards-dependency-policy` | `docs/standards/dependency-policy.md` | `current` | `architecture` | `Peanut Admin maintainers` |
 | `core-doc-standards-index` | `docs/standards/index.md` | `current` | `architecture` | `Peanut Admin maintainers` |
-| `core-doc-status-alpha13-publication-candidate-contract` | `docs/status/alpha13-publication-candidate-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
+| `core-doc-status-alpha13-publication-candidate-contract` | `docs/status/alpha13-publication-candidate-contract.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 | `core-doc-status-index` | `docs/status/index.md` | `authoritative` | `index` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-b03-minimal-settings-contract` | `docs/status/p1-b03-minimal-settings-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-b04-minimal-reference-codes-contract` | `docs/status/p1-b04-minimal-reference-codes-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
@@ -124,6 +125,7 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-status-p1-w01-protected-transport-origin-contract` | `docs/status/p1-w01-protected-transport-origin-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-w03-workspace-shell-contract` | `docs/status/p1-w03-workspace-shell-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-wf01-configurable-workflow-runtime-contract` | `docs/status/p1-wf01-configurable-workflow-runtime-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
+| `core-doc-status-product-310-publication-candidate-contract` | `docs/status/product-310-publication-candidate-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-starter-v1-c02-file-media-contract` | `docs/status/starter-v1-c02-file-media-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-starter-v1-c02-file-media-delivery-handoff` | `docs/status/starter-v1-c02-file-media-delivery-handoff.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 

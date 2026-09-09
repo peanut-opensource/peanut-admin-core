@@ -8,7 +8,10 @@ Read the current task and relevant implementation first. Use `README.md` for ori
 `docs/README.md` and `docs/content-status.json` for documentation changes;
 `docs/status/index.md` and `docs/status/runtime-operation-coverage.json` for status or coverage decisions;
 and `docs/status/p1-execution-baseline.md` for P1 Runtime work.
-Read applicable `company-rules/` files when that internally synchronized directory exists.
+The application-owned product/version decision is indexed by
+`docs/architecture/product-version-identity.md`. Historical CompanyOS task
+instructions are trace-only; they do not reintroduce external governance or
+resource dependencies into current Core work.
 
 The versioned runtime-resource authority is
 `resources/project-resources.json`. Before a task connects to, starts, tests,
@@ -19,11 +22,13 @@ port, credential, host, service, or fallback may be guessed.
 
 `docs/content-status.json` is also the unique documentation registry: it records stable document IDs and lifecycle, while its metadata groups record audience, type, upstream facts, owner domain, scope, relations, public projection and validation. `docs/document-impact-map.json` maps changed facts/code to the minimum documentation closure. These files classify documentation and do not replace manifests, KernelSchema, OpenAPI, dependency decisions or Runtime coverage. Use `./scripts/core-docs-governance check` for the static documentation gate.
 
-`company-rules/` is synchronized by CompanyOS for internal work and is intentionally Git-ignored in this public repository. External clones remain governed by this public `AGENTS.md` when that local directory is absent.
+This public repository owns its execution and resource rules. Historical
+`company-rules/` references are not a current dependency.
 
 ## Current Boundary
 
-- Work only on an explicitly assigned P0 or P1 task.
+- Work only within the current user-authorized task; historical P0/P1 identifiers
+  do not prohibit independently authorized documentation or release work.
 - Keep each write task in one independently reviewable commit.
 - Do not create runtime code before its task is approved.
 - Do not copy code, Git history, schemas, or documents from any legacy framework repository.

@@ -275,6 +275,7 @@
       ],
       "exclude": [
         "docs/status/index.md",
+        "docs/status/alpha13-publication-candidate-contract.md",
         "docs/status/p1-cap01-r01-quality-process-termination-contract.md",
         "docs/status/p1-cap01-r02-hidden-phpunit-findings-contract.md",
         "docs/status/p1-cap01-r03-final-pr-gates-remediation-contract.md",
@@ -346,6 +347,7 @@
       "include": [
         "docs/reviews/*.md",
         "docs/releases/*.md",
+        "docs/status/alpha13-publication-candidate-contract.md",
         "docs/status/p1-cap01-r01-quality-process-termination-contract.md",
         "docs/status/p1-cap01-r02-hidden-phpunit-findings-contract.md",
         "docs/status/p1-cap01-r03-final-pr-gates-remediation-contract.md",
@@ -372,12 +374,25 @@
         "docs/status/starter-v1-c02-file-media-delivery-handoff.md"
       ],
       "exclude": [],
-      "audience": ["maintainer", "architect", "ai"],
+      "audience": [
+        "maintainer",
+        "architect",
+        "ai"
+      ],
       "content_type": "evidence",
-      "canonical_sources": ["docs/status/runtime-operation-coverage.json", "docs/status/index.md"],
+      "canonical_sources": [
+        "docs/status/runtime-operation-coverage.json",
+        "docs/status/index.md"
+      ],
       "owner_domain": "qualification",
-      "scope": ["core"],
-      "related": ["runtime-status", "qualification", "release"],
+      "scope": [
+        "core"
+      ],
+      "related": [
+        "runtime-status",
+        "qualification",
+        "release"
+      ],
       "site_projections": [],
       "validation": "./scripts/core-docs-governance check"
     },
@@ -425,6 +440,14 @@
       "id": "core-doc-status-alpha13-publication-candidate-contract",
       "path": "docs/status/alpha13-publication-candidate-contract.md",
       "title": "Alpha.13 Publication Candidate Contract",
+      "status": "archived",
+      "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-status-product-310-publication-candidate-contract",
+      "path": "docs/status/product-310-publication-candidate-contract.md",
+      "title": "Product 3.1.0 Publication Candidate Contract",
       "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
@@ -1379,6 +1402,14 @@
       "title": "Document Catalog",
       "status": "generated",
       "owner": "Peanut Admin maintainers",
+      "replacement": null
+    },
+    {
+      "id": "core-doc-product-version-identity",
+      "path": "docs/architecture/product-version-identity.md",
+      "title": "Product and Instance version identity",
+      "status": "current",
+      "owner": "product-architecture",
       "replacement": null
     }
   ]

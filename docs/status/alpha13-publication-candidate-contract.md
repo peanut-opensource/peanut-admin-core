@@ -2,6 +2,12 @@
 
 Document ID: `core-doc-status-alpha13-publication-candidate-contract`
 
+> Historical candidate contract. Alpha.13 was subsequently qualified and
+> [published](https://github.com/peanut-opensource/peanut-admin-core/releases/tag/v0.1.0-alpha.13).
+> The pending fields below preserve the preparation-time state and are not an
+> active execution queue. See [current status](index.md) and the committed
+> [qualification record](../releases/qualifications/0.1.0-alpha.13.json).
+
 ```text
 task: CORE-ALPHA13-CANDIDATE
 mode: Development

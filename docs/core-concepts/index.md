@@ -56,6 +56,8 @@ Operations declare how targets may be used:
 
 ## Product Profiles And Modules
 
+Product versions and customer release sequences are distinct: see [Product version identity](../architecture/product-version-identity.md). A customer Instance keeps an independent `instance_version` and an explicit `source_product_version`; that instance number does not select Core packages or Module migrations.
+
 A `ProductProfile` is a version-controlled installation recipe. It can select modules, initial menu contributions, and optional setup such as a default root department. It is not an authorization record and is not stored as a P0 runtime table.
 
 A `Module` owns a reusable capability. `TenantModule` records whether a deployed module is open for a tenant. Effective access requires all three conditions: the module is installed, the tenant has it open, and the member has the required functional and data permissions.

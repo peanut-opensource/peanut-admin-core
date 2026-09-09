@@ -9,6 +9,15 @@
   },
   "rules": [
     {
+      "id": "product-version-identity",
+      "paths": ["docs/architecture/product-version-identity.md", "packages/php/composer.json", "packages/web/package.json"],
+      "classifications": ["architecture-decision", "technical", "developer-site"],
+      "upstream": ["accepted coordinated product version decision and immutable package identities"],
+      "technical_docs": ["docs/architecture/product-version-identity.md", "docs/status/index.md"],
+      "site_docs": ["docs/core-concepts/index.md", "docs/guide/release-qualification.md"],
+      "generated": []
+    },
+    {
       "id": "internal-refactor",
       "paths": ["packages/php/**/*.php", "packages/web/src/**/*", "backend/app/**/*.php", "frontend/src/**/*"],
       "classifications": ["none"],

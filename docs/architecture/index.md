@@ -4,6 +4,8 @@ Peanut Admin P0 is a modular monolith in one public monorepo. It uses PHP 8.3 an
 
 ## Repository Layers
 
+The [version identity contract](./product-version-identity.md) aligns Core PHP/Web, the Peanut Admin product Application and both Editions for new releases. Module versions and customer Instance versions remain independent; immutable source and package digests identify the actual artifacts.
+
 | Layer | Responsibility |
 | --- | --- |
 | `packages/php` | The `peanut-admin/core` Composer package; internal directories preserve Kernel and domain ownership. |

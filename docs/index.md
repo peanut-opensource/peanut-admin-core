@@ -6,6 +6,7 @@ Peanut Admin Core provides product-neutral PHP and Web packages, a reference Hos
 
 - **First adoption:** [install the reference Runtime](./guide/installation.md), then verify the exact package identity you intend to consume.
 - **Understand the model:** read [Core concepts](./core-concepts/) and [architecture](./architecture/).
+- **Understand versions:** read [Product, Core, Module and Instance identities](./architecture/product-version-identity.md); a prepared version is not a published package.
 - **Build a Module:** follow [Module development](./guide/module-development.md), including manifest, data owner, Tenant and permission boundaries.
 - **Build Admin UI:** use [Admin Web composition](./guide/admin-web.md) after the backend contract is fixed.
 - **Validate and deliver:** use [testing](./guide/testing.md), [upgrade](./guide/upgrade.md) and [troubleshooting](./guide/troubleshooting.md).
