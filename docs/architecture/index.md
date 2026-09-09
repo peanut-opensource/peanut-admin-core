@@ -29,17 +29,17 @@ This section is Core's current projection of that decision; it does not claim
 that the source migration has happened.
 
 The source audit is fixed to Application
-`9781ce0de5588f1ea3afaaf46023b20c49911b4a` and Core
-`6aeeb52789fb49a2113bb6bab541629374dc6803`:
+`ea9bc3a1dfaa844a8481b01d0341aa1ad749faa9` and Core
+`61546084e1e07f1c41df8d2383dbbe1d77a83b16`:
 
 | Area | Audited current fact |
 | --- | --- |
-| Application data access | 31 `TenantOwnedModel` subclasses and broad Model/Query/TenantScope use coexist with 87 production files that mention PDO. `AppService` obtains the ThinkPHP connection as PDO and binds it into the container. |
-| Application composition | 10 ModuleProviders declare 55 bindings: 5 class mappings and 50 closures. Providers contain 105 explicit `make()` calls; the production source contains 202 explicit container `make()` calls, 23 Repository, 5 Adapter, 15 Factory and 7 `RuntimeFactory` declarations. |
+| Application data access | 31 `TenantOwnedModel` subclasses and broad Model/Query/TenantScope use coexist with 97 production files that mention PDO. `AppService` obtains the ThinkPHP connection as PDO and binds it into the container. |
+| Application composition | 10 ModuleProviders declare 55 bindings: 11 class mappings and 44 closures after the first provider convergence batch. Providers contain 99 explicit `make()` calls; the production source contains 223 explicit container `make()` calls, 23 Repository, 5 Adapter, 15 Factory and 7 `RuntimeFactory` declarations. |
 | Application Commands/Queries | 20 Command and 8 Query contract files do not expose PDO or Models. Only contracts with real cross-Module or Host consumers remain long term. |
-| Core package persistence | `packages/php/*/src` contains 555 PHP files; 60 mention PDO, 35 are `Pdo*` files, and 26 of 47 Repository files are `Pdo*Repository`. Publishable source currently has no ThinkPHP imports, Model, `Db::` or container `make()` use. |
+| Core package persistence | `packages/php/*/src` contains 555 PHP files; 82 mention PDO, 35 are `Pdo*` files, and 26 of 47 Repository files are `Pdo*Repository`. Publishable source currently has no ThinkPHP imports, Model, `Db::` or container `make()` use. |
 | Core Commands/Queries | A name scan finds 15 `*Command*`/`*Query*` files, mixing Host contracts, query services, constraints/compilers, DTOs and PDO implementations rather than one uniform CQRS layer. Retention is decided by semantics and real consumers, not names. |
-| Reference host and starter | 85 production files reference ThinkPHP while 66 still reference PDO; 12 RuntimeFactory classes and 18 concrete ModuleProviders hand-assemble much of the PDO graph. HTTP enters ThinkPHP, but installation, upgrade, health and worker paths have not yet converged on one data/bootstrap path. |
+| Reference host and starter | 106 production files reference ThinkPHP while 89 still reference PDO; 12 RuntimeFactory classes and 19 concrete ModuleProviders hand-assemble much of the PDO graph. HTTP enters ThinkPHP, but installation, upgrade, health and worker paths have not yet converged on one data/bootstrap path. |
 
 The target is one ThinkPHP composition and data model: Core and Application
 each own their tables and Models; tenant-owned ordinary business access uses
