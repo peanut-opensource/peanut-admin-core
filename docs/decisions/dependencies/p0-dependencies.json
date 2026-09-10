@@ -421,7 +421,7 @@
       "alternatives": ["Orval", "openapi-generator"],
       "adapter": "Generated output is wrapped by admin-core clients and never hand-edited",
       "exit_plan": "Regenerate equivalent types with another generator while preserving admin-core interfaces",
-      "security_status": "Official npm metadata and TypeScript 5 peer requirement reviewed 2026-07-15",
+      "security_status": "Official npm metadata and TypeScript 5 peer requirement reviewed 2026-07-15; the audited transitive js-yaml@4 resolution was remediated from 4.3.1 to 4.3.2 for GHSA-2883-xcg3-v3hh and passed the focused 2026-09-11 high/critical audit, without changing this direct dependency or its interface",
       "official_sources": ["https://www.npmjs.com/package/openapi-typescript", "https://openapi-ts.dev/"]
     },
     {

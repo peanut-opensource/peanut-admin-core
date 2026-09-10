@@ -150,6 +150,34 @@
           "pnpm-lock.yaml",
           "starter/pnpm-lock.yaml"
         ]
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-cr02-pnpm-isolated-store-development",
+        "purpose": "CR02-exclusive pnpm store for controlled preparation and offline regeneration of the audited root workspace lock",
+        "environments": [
+          "development"
+        ],
+        "owner": "CR02 coordinated release owner",
+        "host": "registry.npmjs.org",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "/private/tmp/peanut-cr02-pnpm-store.SNVH4p",
+        "service_type": "isolated pnpm v11 content-addressable store with controlled public npm registry preparation",
+        "version": "Node 24.13.0; pnpm 11.13.0; root pnpm-lock.yaml sha256 4c92a38b5b26d58cbf477b494b839f4da88312562be48a94add5d96ec32c3890; starter/pnpm-lock.yaml sha256 39f184f2d70344f0e4389fd68f5503f129667e1f2fe675dce646d0980c1bbae6",
+        "credential_ref": null,
+        "data_source": "current exact root and starter lock resolutions plus https://registry.npmjs.org/js-yaml/-/js-yaml-4.3.2.tgz; js-yaml registry metadata integrity sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==",
+        "freshness_requirement": "the controlled network preparation may fetch only the current two lock resolution sets and the js-yaml@4.3.2 patch; pnpm verifies tarball integrity during retrieval, then all lock regeneration and validation run with this exact store and --offline",
+        "health_check": "pnpm 11.13.0 --store-dir /private/tmp/peanut-cr02-pnpm-store.SNVH4p store path returns the registered namespace; after preparation, the offline root lock regeneration completes without a cache miss",
+        "fallback": "none; preparation is an explicit network action and offline lock validation never enables network fallback",
+        "lifecycle": "single CR02 Development resource; the isolated store and its /private/tmp/peanut-cr02-pnpm-store.SNVH4p preparation logs live only through CR02 lock verification",
+        "cleanup_responsibility": "CR02 owner removes only /private/tmp/peanut-cr02-pnpm-store.SNVH4p after CR02 lock verification; it never reads, deletes or restructures the shared pnpm store",
+        "consumers": [
+          "pnpm-workspace.yaml override js-yaml@4",
+          "pnpm-lock.yaml",
+          "starter/pnpm-lock.yaml offline preparation",
+          "scripts/check-third-party-licenses via explicit PNPM_STORE_DIR"
+        ]
       }
     ],
     "databases": [

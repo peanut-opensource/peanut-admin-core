@@ -46,7 +46,13 @@ try {
         512,
         JSON_THROW_ON_ERROR,
     );
-    $pnpm = commandJson(['pnpm', 'licenses', 'list', '--json']);
+    $pnpmCommand = ['pnpm'];
+    $pnpmStoreDir = getenv('PNPM_STORE_DIR');
+    if (is_string($pnpmStoreDir) && $pnpmStoreDir !== '') {
+        $pnpmCommand[] = '--config.store-dir=' . $pnpmStoreDir;
+    }
+    $pnpmCommand = [...$pnpmCommand, 'licenses', 'list', '--json'];
+    $pnpm = commandJson($pnpmCommand);
 } catch (Throwable $exception) {
     fwrite(STDERR, 'ERROR: ' . $exception->getMessage() . "\n");
     exit(1);

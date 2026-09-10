@@ -4,8 +4,8 @@ Document ID: `core-doc-status-product-310-publication-candidate-contract`
 
 ```text
 task: CORE-PRODUCT-310-CANDIDATE
-mode: Development blocked after qualification retry
-state: package identity prepared; Q01 failed twice in supply-chain; no publication
+mode: Development remediation complete; replacement candidate not yet qualified
+state: supply-chain root cause repaired in Development; Q01/D05 and publication remain pending for a new clean candidate
 composer_package: peanut-admin/core@3.1.0
 npm_package: @peanut-admin/admin@3.1.0
 candidate_commit: b51c7ce64fdf5bdf4c6295e098a938869c7ffd53 (failed Q01; not the later verifier repair)
@@ -34,6 +34,37 @@ It preserves the exact failed candidate, both aggregate attempts and the
 separate passing nine-role review. It must not be changed to pass using the
 single successful Composer diagnostic. The source-tag verifier remains the
 authority for the record schema and evidence-only path between candidate and tag.
+
+## Development supply-chain remediation
+
+The 2026-09-11 Development diagnosis retained the original failed Q01 identity
+and found the actual failing command: pnpm audit reported high advisory
+`GHSA-2883-xcg3-v3hh` through
+`openapi-typescript -> @redocly/openapi-core -> js-yaml@4.3.1`.
+The root workspace major-scoped override and lock now resolve `js-yaml@4` to
+`4.3.2`; no direct dependency, Starter lock, package export, Runtime behavior,
+audit threshold or supported-provider contract changed. The root lock change
+was generated offline from a CR02-exclusive store after a separately recorded
+controlled public-registry preparation. The preparation store is not a release
+registry credential and does not relax offline validation.
+
+The current Development lock digests are `composer.lock`
+`eeef7fc7dd8adaeb774e79cb692dab8f2dd6bbed5ff74032e166b029a767a00e`,
+`pnpm-lock.yaml`
+`6fe0c15cbb1799548bceeb1dee3b4237cc17de024cc39269aefbbce47ec2e0f4`,
+`starter/backend/composer.lock`
+`9afb7a1fc51e618067fe42eb762bcbd49692934bb3d9e6ee4a8bf28a402590c1`, and
+`starter/pnpm-lock.yaml`
+`39f184f2d70344f0e4389fd68f5503f129667e1f2fe675dce646d0980c1bbae6`.
+Focused evidence is pnpm audit with zero high/critical findings, the regenerated
+license inventory, secret scan and `tests/supply-chain` (`2 tests, 17
+assertions`). Three moderate pnpm findings remain; they are not described as a
+zero-vulnerability result and require ordinary candidate risk review.
+
+This Development result is not Q01, D05, a package publication, a tag, or
+permission for Application lock adoption. A new clean candidate still must
+repeat the existing fixed-candidate contract with its registered qualification
+resources and immutable registry preflight.
 
 ## Current stop and recovery condition
 

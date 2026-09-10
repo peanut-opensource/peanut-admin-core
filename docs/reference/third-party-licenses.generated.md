@@ -409,7 +409,7 @@ Packages recorded: **561**.
 | pnpm | `js-cookie` | `3.0.8` | `MIT` |
 | pnpm | `js-levenshtein` | `1.1.6` | `MIT` |
 | pnpm | `js-tokens` | `4.0.0` | `MIT` |
-| pnpm | `js-yaml` | `4.3.1` | `MIT` |
+| pnpm | `js-yaml` | `4.3.2` | `MIT` |
 | pnpm | `jsesc` | `3.1.0` | `MIT` |
 | pnpm | `json-buffer` | `3.0.1` | `MIT` |
 | pnpm | `json-schema-traverse` | `0.4.1` | `MIT` |
