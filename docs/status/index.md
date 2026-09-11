@@ -9,13 +9,16 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 
 ## Current facts
 
-- Product 3.1.0 preparation is integrated as **unqualified and unpublished**.
+- Product 3.1.0 is **qualified and unpublished** on fixed candidate
+  `985ee420b486a97325cdd0bb87412a76346aeb93` (tree
+  `e00f644b07c8e5218d1fa3779e373338adac7366`).
   Its [candidate contract](./product-310-publication-candidate-contract.md)
-  records two supply-chain failures, the passing fixed-commit nine-role review,
-  verified cleanup and the exact recovery condition. The later audit-output
-  retention repair has only static validation; no third qualification was run.
-  The [failed qualification record](../releases/qualifications/3.1.0.json)
-  prevents a source release. Application dependency adoption is still blocked.
+  records the repaired supply-chain failure and fixed resources. The
+  [qualification record](../releases/qualifications/3.1.0.json) binds the fresh
+  full Q01 and same-candidate nine-perspective D05 evidence, both package
+  projections, and verified Q01 resource cleanup. Source/split tags, registry
+  publication, GitHub Release and Application dependency adoption remain
+  separate states and are not implied by qualification.
 
 - Source publication requires the [committed qualification binding](../guide/release-qualification.md).
   Alpha.13 Q01 and the nine-role D05 review pass for fixed candidate
