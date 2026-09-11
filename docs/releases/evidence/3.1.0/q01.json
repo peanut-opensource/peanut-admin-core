@@ -66,5 +66,29 @@
     "fixed_outputs_remaining": 0,
     "candidate_worktree_removed": true
   },
+  "post_qualification_deviation": {
+    "part_of_q01": false,
+    "command": "./scripts/check-docs",
+    "result": "failed after the already-passing core-docs-governance check; MYSQL_PORT was required for starter verification",
+    "observed_before_failure": [
+      "Module manifest check passed",
+      "documentation PHPUnit group passed with 6 tests and 18 assertions",
+      "a second PHPUnit group passed with 2 tests and 13 assertions",
+      "Docker Compose created and started container peanut-admin-mysql-1 in default project peanut-admin",
+      "the container mounted named volume peanut-admin_mysql-data; whether that volume predated this invocation was not established"
+    ],
+    "cleanup": [
+      "inspected the exact container labels and mount before cleanup",
+      "removed only the newly created peanut-admin-mysql-1 container",
+      "verified that exact container was absent"
+    ],
+    "preserved_unknown_ownership": [
+      "peanut-admin_mysql-data",
+      "default peanut-admin network",
+      "pre-existing orphan containers named in the Compose warning"
+    ],
+    "unknown_impact": "No pre-state snapshot exists for the mounted named volume, so possible test writes inside that volume are not claimed absent. The volume and unrelated default-project resources were deliberately not deleted.",
+    "qualification_effect": "This extra command occurred after Q01 completed and is neither a Q01 failure nor additional qualification evidence."
+  },
   "evidence_retention": "The committed record preserves hashes and bounded results without credentials or raw logs; exact successful raw artifacts remain in local CR02 temporary evidence copies."
 }

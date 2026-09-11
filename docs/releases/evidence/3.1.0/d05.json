@@ -6,6 +6,20 @@
   "candidate": "985ee420b486a97325cdd0bb87412a76346aeb93",
   "candidate_tree": "e00f644b07c8e5218d1fa3779e373338adac7366",
   "mode": "fresh fixed-commit nine-role review on the same candidate as Q01",
+  "execution": {
+    "reviewer_thread": "01a08d8e-fe57-7733-ab0a-da5cc1bdc922",
+    "reviewer_model": "gpt-5.6-sol",
+    "reasoning": "medium",
+    "review_method": "One implementation owner performed a structured nine-perspective review. The nine roles are review lenses, not nine independent agents; no sub-agent review is claimed.",
+    "root_review": "The root task independently checked the Q01 log identity, final success marker, candidate-to-evidence allowlist, projection stability, and this D05 evidence correction.",
+    "fresh_evidence": [
+      "git object SHA-256 for root, Composer-package, and npm-package LICENSE files: all cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "node scripts/check-release-candidate --identity 985ee420b486a97325cdd0bb87412a76346aeb93: candidate, tree, and both projections matched",
+      "git diff 2ed77f38ca26472d685cfeb81674a66ba23eadb4..985ee420b486a97325cdd0bb87412a76346aeb93 -- packages/php packages/web: empty",
+      "all four lock SHA-256 identities matched the frozen candidate record",
+      "candidate package manifests matched peanut-admin/core@3.1.0 and @peanut-admin/admin@3.1.0 with Apache-2.0"
+    ]
+  },
   "scope": {
     "base": "2ed77f38ca26472d685cfeb81674a66ba23eadb4",
     "package_runtime_change": false,
@@ -26,7 +40,7 @@
   "package_inspection": {
     "composer": {"name": "peanut-admin/core", "version": "3.1.0", "license": "Apache-2.0", "source_files": 728, "psr4_roots": 13},
     "npm": {"name": "@peanut-admin/admin", "version": "3.1.0", "license": "Apache-2.0", "source_files": 134, "packed_files": 73, "exports": 14, "tarball_sha256": "9199f9699e9030680f105842a278fa73a71f84b7aa798c052795fbfcd376487b"},
-    "license_file_sha256": "cfc7749b9696f97e8643e58ef436d13323df2cc9fa45ebcb526cbb4dfb23d30",
+    "license_file_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
     "forbidden_sensitive_files": 0,
     "credential_pattern_findings": 0
   },

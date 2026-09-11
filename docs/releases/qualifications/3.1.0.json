@@ -9,13 +9,13 @@
     "candidate": "985ee420b486a97325cdd0bb87412a76346aeb93",
     "command": "./scripts/check",
     "evidence_path": "docs/releases/evidence/3.1.0/q01.json",
-    "evidence_sha256": "3877a7f17379a1048f82e4220aa798f4d8043b0038c19de094ef7b845b20365e"
+    "evidence_sha256": "630254fb619a38019175f282441f9d6cf72a973efe2db9bbe3411cb416e7b6a1"
   },
   "d05": {
     "status": "pass",
     "candidate": "985ee420b486a97325cdd0bb87412a76346aeb93",
     "evidence_path": "docs/releases/evidence/3.1.0/d05.json",
-    "evidence_sha256": "2a37e448add7f4c3dfd241370701e3b2339e9718a78595029d731523b373b1a1",
+    "evidence_sha256": "d32e5135d752485f4495d2ee0684ea467fc59deb679e22c644402bb542189d3c",
     "roles": [
       {"id": 1, "status": "pass"},
       {"id": 2, "status": "pass"},
