@@ -21,6 +21,7 @@ first="$workdir/first"
 second="$workdir/second"
 backend_pid=''
 frontend_pid=''
+composer_bin="${PEANUT_COMPOSER:-composer}"
 pnpm_install_args=(--frozen-lockfile)
 if [[ -n "${PNPM_STORE_DIR:-}" ]]; then
   pnpm_install_args+=(--store-dir "$PNPM_STORE_DIR" --offline)
@@ -129,13 +130,13 @@ if grep -R -n -i -E --exclude=LICENSE '(^|[^[:alnum:]_])DCS([^[:alnum:]_]|$)|Fin
   exit 1
 fi
 
-composer install \
+"$composer_bin" install \
   --working-dir "$first/backend" \
   --no-interaction \
   --prefer-dist
 pnpm --dir "$first" install "${pnpm_install_args[@]}"
 
-composer install \
+"$composer_bin" install \
   --working-dir "$second/backend" \
   --no-interaction \
   --prefer-dist
