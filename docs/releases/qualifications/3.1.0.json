@@ -1,68 +1,35 @@
 {
   "schema_version": 1,
   "version": "3.1.0",
-  "status": "failed",
-  "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
-  "candidate_tree": "cf89827a54e05730794ca7d6304bc77a0d24d993",
+  "status": "pass",
+  "candidate": "985ee420b486a97325cdd0bb87412a76346aeb93",
+  "candidate_tree": "e00f644b07c8e5218d1fa3779e373338adac7366",
   "q01": {
-    "status": "failed",
-    "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
+    "status": "pass",
+    "candidate": "985ee420b486a97325cdd0bb87412a76346aeb93",
     "command": "./scripts/check",
     "evidence_path": "docs/releases/evidence/3.1.0/q01.json",
-    "evidence_sha256": "5f8514324ff81e0ddcf483c73c29f5e16e19b4c5bafc0499573d6a3bb06e8d07"
+    "evidence_sha256": "3877a7f17379a1048f82e4220aa798f4d8043b0038c19de094ef7b845b20365e"
   },
   "d05": {
     "status": "pass",
-    "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
+    "candidate": "985ee420b486a97325cdd0bb87412a76346aeb93",
     "evidence_path": "docs/releases/evidence/3.1.0/d05.json",
-    "evidence_sha256": "e19387d6945acf14f89c8789c05b14c1f1afc90096dd0f4638b45b41106b999b",
+    "evidence_sha256": "2a37e448add7f4c3dfd241370701e3b2339e9718a78595029d731523b373b1a1",
     "roles": [
-      {
-        "id": 1,
-        "status": "pass"
-      },
-      {
-        "id": 2,
-        "status": "pass"
-      },
-      {
-        "id": 3,
-        "status": "pass"
-      },
-      {
-        "id": 4,
-        "status": "pass"
-      },
-      {
-        "id": 5,
-        "status": "pass"
-      },
-      {
-        "id": 6,
-        "status": "pass"
-      },
-      {
-        "id": 7,
-        "status": "pass"
-      },
-      {
-        "id": 8,
-        "status": "pass"
-      },
-      {
-        "id": 9,
-        "status": "pass"
-      }
+      {"id": 1, "status": "pass"},
+      {"id": 2, "status": "pass"},
+      {"id": 3, "status": "pass"},
+      {"id": 4, "status": "pass"},
+      {"id": 5, "status": "pass"},
+      {"id": 6, "status": "pass"},
+      {"id": 7, "status": "pass"},
+      {"id": 8, "status": "pass"},
+      {"id": 9, "status": "pass"}
     ]
   },
   "projections": {
-    "composer": {
-      "path": "packages/php",
-      "sha256": "7aaaa8fdde9dfbca5c0126daa8658d28e2c1bd65d753a2e167d2e1cd3f6eb91d"
-    },
-    "npm": {
-      "path": "packages/web",
-      "sha256": "d78f81705c1a3e66340861bc299989e0f9683ea76917b7a186b773b5d045a218"
-    }
+    "composer": {"path": "packages/php", "sha256": "7aaaa8fdde9dfbca5c0126daa8658d28e2c1bd65d753a2e167d2e1cd3f6eb91d"},
+    "npm": {"path": "packages/web", "sha256": "d78f81705c1a3e66340861bc299989e0f9683ea76917b7a186b773b5d045a218"}
   }
 }

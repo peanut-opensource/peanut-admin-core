@@ -3,597 +3,102 @@
   "qualification_id": "CORE-PRODUCT-310-D05",
   "version": "3.1.0",
   "status": "pass",
-  "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
-  "candidate_tree": "cf89827a54e05730794ca7d6304bc77a0d24d993",
-  "mode": "Fixed-commit review, followed by explicitly scoped three-file delta reviews. This does not establish Q01.",
+  "candidate": "985ee420b486a97325cdd0bb87412a76346aeb93",
+  "candidate_tree": "e00f644b07c8e5218d1fa3779e373338adac7366",
+  "mode": "fresh fixed-commit nine-role review on the same candidate as Q01",
+  "scope": {
+    "base": "2ed77f38ca26472d685cfeb81674a66ba23eadb4",
+    "package_runtime_change": false,
+    "composer_projection_sha256": "7aaaa8fdde9dfbca5c0126daa8658d28e2c1bd65d753a2e167d2e1cd3f6eb91d",
+    "npm_projection_sha256": "d78f81705c1a3e66340861bc299989e0f9683ea76917b7a186b773b5d045a218",
+    "reviewed_delta": [
+      "docs/decisions/dependencies/p0-dependencies.json",
+      "docs/reference/third-party-licenses.generated.md",
+      "docs/status/product-310-publication-candidate-contract.md",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "resources/project-resources.json",
+      "scripts/check-third-party-licenses",
+      "scripts/check-workspace",
+      "scripts/verify-internal-starter"
+    ]
+  },
+  "package_inspection": {
+    "composer": {"name": "peanut-admin/core", "version": "3.1.0", "license": "Apache-2.0", "source_files": 728, "psr4_roots": 13},
+    "npm": {"name": "@peanut-admin/admin", "version": "3.1.0", "license": "Apache-2.0", "source_files": 134, "packed_files": 73, "exports": 14, "tarball_sha256": "9199f9699e9030680f105842a278fa73a71f84b7aa798c052795fbfcd376487b"},
+    "license_file_sha256": "cfc7749b9696f97e8643e58ef436d13323df2cc9fa45ebcb526cbb4dfb23d30",
+    "forbidden_sensitive_files": 0,
+    "credential_pattern_findings": 0
+  },
   "roles": [
-    {
-      "id": 1,
-      "status": "pass"
-    },
-    {
-      "id": 2,
-      "status": "pass"
-    },
-    {
-      "id": 3,
-      "status": "pass"
-    },
-    {
-      "id": 4,
-      "status": "pass"
-    },
-    {
-      "id": 5,
-      "status": "pass"
-    },
-    {
-      "id": 6,
-      "status": "pass"
-    },
-    {
-      "id": 7,
-      "status": "pass"
-    },
-    {
-      "id": 8,
-      "status": "pass"
-    },
-    {
-      "id": 9,
-      "status": "pass"
-    }
+    {"id": 1, "status": "pass"}, {"id": 2, "status": "pass"}, {"id": 3, "status": "pass"},
+    {"id": 4, "status": "pass"}, {"id": 5, "status": "pass"}, {"id": 6, "status": "pass"},
+    {"id": 7, "status": "pass"}, {"id": 8, "status": "pass"}, {"id": 9, "status": "pass"}
   ],
   "reviews": [
     {
-      "delta_report_sha256": "c45567420bff6910aacea0ac71a2dd665892c287c0e96801d3a1334dcd9e3f38",
-      "delta_report": {
-        "schema_version": 1,
-        "review_id": "CORE-PRODUCT-310-D05-ROLES-1-8-9-B51C7CE-DELTA",
-        "fixed_candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
-        "fixed_tree": "cf89827a54e05730794ca7d6304bc77a0d24d993",
-        "delta_base": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-        "prior_reviews": [
-          "core-310-d05-roles-1-8-9.json (prior full scoped review: fail)",
-          "core-310-d05-final-roles-1-8-9.json (two-page Runtime-fact delta: pass)"
-        ],
-        "delta_scope": [
-          "packages/php/artifact-revision/src/Package.php",
-          "packages/php/entitlement-quota/src/Package.php",
-          "packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php"
-        ],
-        "status": "pass",
-        "roles": [
-          {
-            "id": 1,
-            "name": "business-and-product",
-            "status": "pass",
-            "attack_questions": [
-              "Does the identity-only delta leave a public Package version that contradicts the prepared coordinated 3.1.0 product identity?",
-              "Does it alter Module semantics or present an unqualified 3.1.0 release claim?"
-            ],
-            "reviewed_paths": [
-              "b51c7ce:packages/php/artifact-revision/src/Package.php:7-15",
-              "b51c7ce:packages/php/entitlement-quota/src/Package.php:7-18",
-              "b51c7ce:packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php:89-92"
-            ],
-            "blocking_findings": [],
-            "nonblocking_risks": [
-              "This only aligns two exposed PHP constants and their existing assertion; qualification, publication, and Application adoption remain separately pending."
-            ]
-          },
-          {
-            "id": 8,
-            "name": "open-source-maintainability",
-            "status": "pass",
-            "attack_questions": [
-              "Are source-level package identity and its regression assertion aligned without touching package declarations, legal metadata, or release controls?"
-            ],
-            "reviewed_paths": [
-              "b51c7ce^..b51c7ce: exactly the three declared files",
-              "b51c7ce:packages/php/artifact-revision/src/Package.php:9-10",
-              "b51c7ce:packages/php/entitlement-quota/src/Package.php:9-10",
-              "b51c7ce:packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php:89-92"
-            ],
-            "blocking_findings": [],
-            "nonblocking_risks": [
-              "No package-content, license, lock, registry, or release-workflow verification was repeated for this limited delta."
-            ]
-          },
-          {
-            "id": 9,
-            "name": "low-context-delivery",
-            "status": "pass",
-            "attack_questions": [
-              "Can a low-context maintainer see that the two constants and existing assertion use 3.1.0, without inferring a completed release?"
-            ],
-            "reviewed_paths": [
-              "b51c7ce:packages/php/artifact-revision/src/Package.php:7-15",
-              "b51c7ce:packages/php/entitlement-quota/src/Package.php:7-18",
-              "b51c7ce:packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php:89-92"
-            ],
-            "blocking_findings": [],
-            "nonblocking_risks": [
-              "The result relies on the prior fixed-candidate reports for all unchanged documentation and public adoption guidance; no full rescan is claimed."
-            ]
-          }
-        ],
-        "review_limitations": [
-          "Read-only comparison of b51c7ce against ff3a580 only; no test, Q01, resource, network, working-tree, or publication check was run.",
-          "Unchanged package constants outside the three-file delta were not reviewed."
-        ]
-      },
-      "prior_report_sha256": "dd5bf86aad7640415315a3f8715123174fc46a57b969a9bb46bc7d22610534ea",
-      "prior_report": {
-        "schema_version": 1,
-        "review_id": "CORE-PRODUCT-310-D05-ROLES-1-8-9-DELTA",
-        "fixed_candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-        "fixed_tree": "6dd7c920b9d709fbbde8e8ce79cee501b7550f26",
-        "delta_base_candidate": "34b4ea7c11086fb90ce581df5fcf428de723bf49",
-        "delta_scope": [
-          "docs/architecture/index.md",
-          "docs/guide/module-development.md"
-        ],
-        "status": "pass",
-        "closed_findings": [
-          {
-            "id": "D05-310-P1-RUNTIME-FACT",
-            "severity": "P1",
-            "disposition": "closed",
-            "evidence": [
-              "ff3a5808:docs/architecture/index.md:3 now distinguishes the ThinkPHP reference backend from the current Core PDO-backed persistence/atomic-command contracts, and explicitly says 3.1.0 identity alignment does not implement the migration.",
-              "ff3a5808:docs/guide/module-development.md:140-172 identifies the Core Runtime as not yet migrated, states the current PDO callable/connection contract, and labels the ThinkPHP diagram as future architecture requiring implementation and qualification.",
-              "ff3a5808:docs/guide/module-development.md:241-247 now describes ExternalOperationHost current PDO behavior and says the planned ThinkPHP migration has not changed the callable signature.",
-              "The former malformed Markdown authority reference at 34b4ea7c:docs/guide/module-development.md:140-141 is replaced with the repository URI convention used by the documentation source map at ff3a5808:docs/guide/module-development.md:140-142."
-            ]
-          }
-        ],
-        "roles": [
-          {
-            "id": 1,
-            "name": "business-and-product",
-            "status": "pass",
-            "attack_questions": [
-              "Does the repaired adoption path distinguish prepared 3.1.0 identity work from Runtime implementation and publication?",
-              "Can a Module adopter distinguish current PDO atomicity from the future ThinkPHP direction?"
-            ],
-            "reviewed_paths": [
-              "ff3a5808:docs/architecture/index.md:1-20",
-              "ff3a5808:docs/guide/module-development.md:137-172,240-247"
-            ],
-            "blocking_findings": [],
-            "nonblocking_risks": [
-              "This delta confirms wording only; Q01, publication, Application adoption, and any future Runtime migration remain outside this review."
-            ]
-          },
-          {
-            "id": 8,
-            "name": "open-source-maintainability",
-            "status": "pass",
-            "attack_questions": [
-              "Does the two-page correction make the actual runtime boundary maintainable and keep its cross-repository authority identifiable?",
-              "Did the focused change introduce a new source/package/legal or release-gate claim?"
-            ],
-            "reviewed_paths": [
-              "ff3a5808:docs/architecture/index.md:1-20",
-              "ff3a5808:docs/guide/module-development.md:133-172,240-247",
-              "ff3a5808^..ff3a5808: only the two declared documentation paths"
-            ],
-            "blocking_findings": [],
-            "nonblocking_risks": [
-              "The repository URI is an intentionally non-clickable cross-repository reference convention; its availability is governed by the Application owner, not this delta."
-            ]
-          },
-          {
-            "id": 9,
-            "name": "low-context-delivery",
-            "status": "pass",
-            "attack_questions": [
-              "Can a constrained maintainer now tell what is current, planned, and unimplemented without treating package renumbering as a runtime migration?",
-              "Does external-host guidance preserve the actual callable and transaction boundary?"
-            ],
-            "reviewed_paths": [
-              "ff3a5808:docs/guide/module-development.md:146-172,240-247",
-              "ff3a5808:docs/architecture/index.md:3"
-            ],
-            "blocking_findings": [],
-            "nonblocking_risks": [
-              "Readers still need the separately governed qualification and publication records before any 3.1.0 release action."
-            ]
-          }
-        ],
-        "review_limitations": [
-          "Only the declared two-file diff was reviewed; no broad rescan, test, Q01 output, resource, network, or working-tree evidence was used.",
-          "The prior fail record remains unchanged at core-310-d05-roles-1-8-9.json."
-        ]
-      }
+      "id": 1, "role": "business-and-product", "status": "pass",
+      "attack_questions": ["Could the candidate overstate release or deployment readiness?", "Could an old failed qualification be mistaken for the current result?"],
+      "findings": ["The current candidate is explicitly bound to fresh Q01 and D05 evidence.", "Source publication, App adoption, deployment, and production readiness remain distinct gates."],
+      "disposition": "No blocking product-claim ambiguity remains in the reviewed candidate.",
+      "residual_risks": ["Registry publication and downstream App adoption are not proved by this review."]
     },
     {
-      "delta_report_sha256": "019453b1104a98a42061bfe3faaa863606f7fe6dc4054dcfeac4edf8509c71ee",
-      "delta_report": {
-        "schema_version": 1,
-        "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
-        "candidate_tree": "cf89827a54e05730794ca7d6304bc77a0d24d993",
-        "mode": "fixed-commit delta review; prior review retained, not a repeated whole-source scan",
-        "prior_review": {
-          "path": "core-310-d05-final-roles-2-3-4-5.json",
-          "sha256": "79864045b0f6edafe5aba59900dd89018101daf32be89a6e4ef00cd1473f41e2",
-          "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce"
-        },
-        "reviewed_delta": [
-          "packages/php/artifact-revision/src/Package.php",
-          "packages/php/entitlement-quota/src/Package.php",
-          "packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php"
-        ],
-        "delta_evidence": [
-          "Exact git diff contains only two public package VERSION literals and their existing direct assertion changing Alpha.13 to 3.1.0.",
-          "Module keys and operation constants are unchanged. No authentication, authorization, schema, transaction, toolchain, dependency, resource, gate or performance threshold changes.",
-          "Prior role 2 description of package subtree changes as manifests-only applies only to ff3a580. The final candidate also includes these two package identity constants."
-        ],
-        "roles": [
-          {
-            "id": 2,
-            "name": "saas-and-tenant-architecture",
-            "status": "pass",
-            "basis": "Prior role evidence remains applicable with the explicit delta above. New Q01 is separately required.",
-            "blocking_findings": [],
-            "residual_risks": [
-              "Application/Edition adoption needs its own fixed L2; this source review does not establish it."
-            ]
-          },
-          {
-            "id": 3,
-            "name": "identity-and-security",
-            "status": "pass",
-            "basis": "Prior role evidence remains applicable with the explicit delta above. New Q01 is separately required.",
-            "blocking_findings": [],
-            "residual_risks": [
-              "Maintainer-attested evidence is not an external execution signature. npm publication remains conditional on the registered environment and provenance capability."
-            ]
-          },
-          {
-            "id": 4,
-            "name": "functional-and-data-authorization",
-            "status": "pass",
-            "basis": "Prior role evidence remains applicable with the explicit delta above. New Q01 is separately required.",
-            "blocking_findings": [],
-            "residual_risks": [
-              "Direct Host SQL or another connection remains outside the atomic command guarantee; real customer integrations require their own validation."
-            ]
-          },
-          {
-            "id": 5,
-            "name": "database-and-performance",
-            "status": "pass",
-            "basis": "Prior role evidence remains applicable with the explicit delta above. New Q01 is separately required.",
-            "blocking_findings": [],
-            "residual_risks": [
-              "This review does not itself prove performance, RTO/RPO or cleanup. Fresh Q01 results and residual checks must be recorded before qualification passes."
-            ]
-          }
-        ]
-      },
-      "prior_report_sha256": "79864045b0f6edafe5aba59900dd89018101daf32be89a6e4ef00cd1473f41e2",
-      "prior_report": {
-        "schema_version": 1,
-        "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-        "candidate_tree": "6dd7c920b9d709fbbde8e8ce79cee501b7550f26",
-        "mode": "fresh fixed-commit role review; runtime delta comparison to immutable Alpha.13; Q01 is separate",
-        "roles": [
-          {
-            "id": 2,
-            "name": "saas-and-tenant-architecture",
-            "status": "pass",
-            "reviewer": "primary agent; gpt-6-astra/high; fixed-commit source review",
-            "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-            "attack_questions": [
-              "Can product version alignment silently change Edition persistence or Tenant ownership?",
-              "Does an independent Instance version select Core or Schema identity?"
-            ],
-            "reviewed_paths": [
-              "packages/php/kernel/src/Host/ExternalOperationHost.php",
-              "docs/architecture/product-version-identity.md",
-              "docs/architecture/index.md"
-            ],
-            "evidence": [
-              "Package Runtime, Schema, tenant-scope contracts and Host code are byte-identical to the published Alpha.13 baseline; the only package subtree changes are manifest versions.",
-              "The version decision separates product/Core/Edition from Module and Instance sequences, and does not claim SaaS commercialization or deployment."
-            ],
-            "blocking_findings": [],
-            "residual_risks": [
-              "Application/Edition adoption needs its own fixed L2; this source review does not establish it."
-            ]
-          },
-          {
-            "id": 3,
-            "name": "identity-and-security",
-            "status": "pass",
-            "reviewer": "primary agent; gpt-6-astra/high; fixed-commit source review",
-            "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-            "attack_questions": [
-              "Can stable publication bypass source-tag qualification or broaden credential exposure?",
-              "Can a matching version conceal altered package bytes?"
-            ],
-            "reviewed_paths": [
-              ".github/workflows/release.yml",
-              "scripts/check-release-candidate",
-              "docs/releases/qualifications/3.1.0.json",
-              "packages/php/kernel/src/Membership/Application/MemberAdminService.php"
-            ],
-            "evidence": [
-              "The immutable gate still binds an annotated source tag to candidate/tree, two projection digests, distinct committed Q01/D05 evidence and exactly nine review roles.",
-              "The pending record remains fail-closed. The workflow changes stable/prerelease presentation and npm dist-tag only; credential references retain the existing environment and no values enter repository files.",
-              "Authentication and membership source are unchanged against Alpha.13. Runtime safety is still subject to the fresh Q01 aggregate."
-            ],
-            "blocking_findings": [],
-            "residual_risks": [
-              "Maintainer-attested evidence is not an external execution signature. npm publication remains conditional on the registered environment and provenance capability."
-            ]
-          },
-          {
-            "id": 4,
-            "name": "functional-and-data-authorization",
-            "status": "pass",
-            "reviewer": "primary agent; gpt-6-astra/high; fixed-commit source review",
-            "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-            "attack_questions": [
-              "Does renumbering affect authorization paths or Module enablement?",
-              "Does current guidance still distinguish desired transaction behavior from actual call signatures?"
-            ],
-            "reviewed_paths": [
-              "packages/php/kernel/src/Host/ExternalOperationHost.php",
-              "packages/php/kernel/src/Host/AtomicOperationAdapter.php",
-              "packages/php/kernel/src/Membership/Application/MemberAdminService.php",
-              "docs/guide/module-development.md"
-            ],
-            "evidence": [
-              "External Host still validates audience, trusted context, Module availability, permission and typed targets before dispatch; its command handler, guard and outbox receive the same PDO. No authorization source changes occur in this candidate.",
-              "The former documentation claim that this was already a ThinkPHP transaction was corrected before Q01. The final guide states both actual PDO signature and unimplemented future migration."
-            ],
-            "blocking_findings": [],
-            "residual_risks": [
-              "Direct Host SQL or another connection remains outside the atomic command guarantee; real customer integrations require their own validation."
-            ]
-          },
-          {
-            "id": 5,
-            "name": "database-and-performance",
-            "status": "pass",
-            "reviewer": "primary agent; gpt-6-astra/high; fixed-commit source review",
-            "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-            "attack_questions": [
-              "Can the new qualification consume old data/output or another project resource?",
-              "Were performance thresholds or database assertions relaxed for a passing result?"
-            ],
-            "reviewed_paths": [
-              "resources/project-resources.json",
-              "docs/status/product-310-publication-candidate-contract.md",
-              "scripts/check",
-              "scripts/test-performance",
-              "compose.yaml"
-            ],
-            "evidence": [
-              "The new namespace, database and eight ports are explicitly registered for qualification with fresh-data and no-fallback requirements. Historical output is preserved separately and cannot be reused as 3.1.0 evidence.",
-              "Database, recovery, browser and performance executables plus Compose are unchanged from Alpha.13; no threshold, assertion, skip or performance baseline is changed.",
-              "Current lock consistency and fixed-candidate manifest/lock digests replace the invalid use of the immutable Alpha.13 lock-evidence file as a moving current-lock checksum."
-            ],
-            "blocking_findings": [],
-            "residual_risks": [
-              "This review does not itself prove performance, RTO/RPO or cleanup. Fresh Q01 results and residual checks must be recorded before qualification passes."
-            ]
-          }
-        ]
-      }
+      "id": 2, "role": "saas-and-tenant-architecture", "status": "pass",
+      "attack_questions": ["Did the remediation alter tenancy boundaries?", "Could qualification reuse an unregistered service or store?"],
+      "findings": ["Neither package projection nor runtime tenancy code changed.", "Q01 used the registered fixed database, cache, ports, outputs, and isolated pnpm store; tenant integration checks passed."],
+      "disposition": "No blocking tenancy or resource-boundary regression was found.",
+      "residual_risks": ["Edition-specific adoption remains an App-side gate."]
     },
     {
-      "delta_report_sha256": "49e5d35e73db9cd59e11597899648c7b9e09f509ec3cdd6a04bf15d8c2cec1a3",
-      "delta_report": {
-        "schema_version": 1,
-        "review": "CORE-PRODUCT-310-D05-delta-roles-6-7",
-        "mode": "immutable-candidate-read-only-delta-review",
-        "candidate": {
-          "commit": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
-          "tree": "cf89827a54e05730794ca7d6304bc77a0d24d993",
-          "parent": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce"
-        },
-        "retained_review": {
-          "path": "/tmp/peanut-fact-audit-20260909/core-310-d05-final-roles-6-7.json",
-          "sha256": "cc536021421d5d6aa3e1182b7f0bdec0129e9f3b1e4b14ac488b84857e968ffd",
-          "reuse_boundary": "All evidence is retained except the prior role-6 finding about two public PHP Package::VERSION constants and its directly owned assertion."
-        },
-        "delta": {
-          "files": [
-            "packages/php/artifact-revision/src/Package.php",
-            "packages/php/entitlement-quota/src/Package.php",
-            "packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php"
-          ],
-          "summary": "Exactly three one-line replacements change the two public package constants and the existing assertion from 0.1.0-alpha.13 to 3.1.0.",
-          "unexpected_paths": []
-        },
-        "roles": [
-          {
-            "role": 6,
-            "name": "backend-module-architecture",
-            "attack_questions": [
-              "Did the new candidate change exactly the three paths required to remove the prior public PHP identity contradiction?",
-              "Do both public constants and the directly owned assertion now agree with peanut-admin/core@3.1.0?",
-              "Did the repair alter Module manifest versions, Kernel compatibility, public signatures, or Runtime behavior?"
-            ],
-            "evidence_paths": [
-              "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53:packages/php/artifact-revision/src/Package.php:10",
-              "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53:packages/php/entitlement-quota/src/Package.php:10",
-              "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53:packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php:97",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce..b51c7ce64fdf5bdf4c6295e098a938869c7ffd53"
-            ],
-            "findings": [],
-            "resolved_findings": [
-              {
-                "previous_severity": "high",
-                "previous_blocking": true,
-                "title": "Two public PHP Package version constants still report Alpha.13 in the 3.1.0 candidate",
-                "resolution": "Both constants now equal 3.1.0 and the existing EntitlementQuota public-surface assertion requires 3.1.0. The delta contains no other path or semantic change."
-              }
-            ],
-            "retained_evidence": [
-              "Composer public manifest, root/backend/starter consumers and both locks remain at exact 3.1.0.",
-              "Module manifests and Kernel compatibility axes remain unchanged and independent.",
-              "The current PDO command API and its documentation remain unchanged."
-            ],
-            "residual_risks": [
-              "The Core owner must run the complete Q01 once against this new exact commit/tree; this delta review is not Q01 evidence.",
-              "Package projection and immutable lock digests remain subject to the new candidate's Q01/freeze evidence."
-            ],
-            "verdict": "pass"
-          },
-          {
-            "role": 7,
-            "name": "frontend-and-admin-ux",
-            "attack_questions": [
-              "Did the delta touch the npm manifest, exports, frontend consumers, locks, admin Runtime, or UX surface?"
-            ],
-            "evidence_paths": [
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce..b51c7ce64fdf5bdf4c6295e098a938869c7ffd53:packages/web/**",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce..b51c7ce64fdf5bdf4c6295e098a938869c7ffd53:frontend/**",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce..b51c7ce64fdf5bdf4c6295e098a938869c7ffd53:package.json,pnpm-lock.yaml,starter/frontend/package.json,starter/pnpm-lock.yaml"
-            ],
-            "findings": [],
-            "retained_evidence": [
-              "The delta is empty for all role-7 evidence paths, so the prior passing review of the 14 exports, file targets, consumer specifiers, locks, and unchanged admin behavior remains applicable."
-            ],
-            "residual_risks": [
-              "The Core owner must run the new candidate's npm projection, build, and browser groups within Q01."
-            ],
-            "verdict": "pass"
-          }
-        ],
-        "overall_verdict": "pass",
-        "blocking_finding_count": 0,
-        "verification": [
-          "Candidate commit and tree exactly match the assigned identities.",
-          "The parent is the previously reviewed ff3a580 candidate.",
-          "The delta contains exactly three expected files and three one-line replacements.",
-          "git diff --check passed for the delta.",
-          "Q01 was not run; no source, gate, resource, tag, release, or dependency state was modified."
-        ]
-      },
-      "prior_report_sha256": "cc536021421d5d6aa3e1182b7f0bdec0129e9f3b1e4b14ac488b84857e968ffd",
-      "prior_report": {
-        "schema_version": 1,
-        "review": "CORE-PRODUCT-310-D05-final-roles-6-7",
-        "mode": "immutable-candidate-read-only-review",
-        "candidate": {
-          "commit": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-          "tree": "6dd7c920b9d709fbbde8e8ce79cee501b7550f26",
-          "comparisons": [
-            "v0.1.0-alpha.13",
-            "06386cafc1ccc64ccc81849a726ab8d876885e39"
-          ]
-        },
-        "scope": {
-          "read_only": true,
-          "automated_qualification_run": false,
-          "runtime_resources_used": false
-        },
-        "roles": [
-          {
-            "role": 6,
-            "name": "backend-module-architecture",
-            "attack_questions": [
-              "Do the public Composer manifest, every in-repository backend consumer, and both Composer locks identify the same 3.1.0 package?",
-              "Did the coordinated product renumbering accidentally change Module versions or the Kernel compatibility axis?",
-              "Does check-workspace validate the current manifests and locks instead of comparing current locks with immutable Alpha.13 hashes?",
-              "Do public PHP source facts exposed by Package constants agree with the 3.1.0 public package identity?",
-              "Do current docs describe the actually implemented PDO command API rather than claiming the planned ThinkPHP migration already exists?"
-            ],
-            "evidence_paths": [
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:packages/php/composer.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:composer.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:backend/composer.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:starter/backend/composer.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:composer.lock",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:starter/backend/composer.lock",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:scripts/check-workspace",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:backend/app/Modules/**/module.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:starter/backend/src/Modules/**/module.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:packages/php/artifact-revision/src/Package.php:10",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:packages/php/entitlement-quota/src/Package.php:10",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php:97",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:packages/php/kernel/src/Host/ExternalOperationHost.php:45",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:packages/php/kernel/src/Host/AtomicOperationAdapter.php:31",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:docs/guide/module-development.md",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:docs/architecture/product-version-identity.md"
-            ],
-            "findings": [
-              {
-                "severity": "high",
-                "blocking": true,
-                "title": "Two public PHP Package version constants still report Alpha.13 in the 3.1.0 candidate",
-                "detail": "The candidate changes peanut-admin/core and every Composer consumer/lock to 3.1.0, but PeanutAdmin\\ArtifactRevision\\Package::VERSION and PeanutAdmin\\EntitlementQuota\\Package::VERSION remain 0.1.0-alpha.13; the existing EntitlementQuota public-surface assertion explicitly preserves that stale value. Historical Alpha.12/Alpha.13 release preparation changed these constants together with the consolidated Composer package, so they are source-visible package identity facts rather than host Application or Module manifest versions. A 3.1.0 artifact would therefore expose contradictory package identity through public classes.",
-                "evidence": [
-                  "packages/php/artifact-revision/src/Package.php:10",
-                  "packages/php/entitlement-quota/src/Package.php:10",
-                  "packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php:97",
-                  "docs/status/alpha13-publication-candidate-contract.md:59",
-                  "git show c42704a -- packages/php/artifact-revision/src/Package.php packages/php/entitlement-quota/src/Package.php"
-                ]
-              }
-            ],
-            "non_blocking_evidence": [
-              "Public Composer manifest and root/backend/starter constraints all use exact 3.1.0; both locks contain the 3.1.0 path package with updated Composer content hashes.",
-              "All backend and starter Module manifests are byte-identical to Alpha.13; their 0.1.0/1.0.0 versions and kernel_constraint ^1.0 remain independent.",
-              "No PHP/backend Runtime source differs from dev 06386caf outside manifests and locks.",
-              "check-workspace removed the historical lock-evidence digest comparison and instead enforces exact first-party identities, Composer validation/content hashes, frozen offline pnpm resolution, generated starter lock equality, and toolchain versions.",
-              "The updated Module guide now matches ExternalOperationHost::command and AtomicOperationAdapter::execute: both still pass the transaction-owned PDO; the ThinkPHP boundary is described as future work."
-            ],
-            "residual_risks": [
-              "Q01 and package projection inspection are owned by other reviewers and were not rerun here.",
-              "The candidate's four lock digests require binding in the immutable qualification record; semantic workspace validation does not itself replace candidate-lock digests."
-            ],
-            "verdict": "fail"
-          },
-          {
-            "role": 7,
-            "name": "frontend-and-admin-ux",
-            "attack_questions": [
-              "Does @peanut-admin/admin expose the same public entry points and files while changing only release identity?",
-              "Do root, reference frontend, and starter consumers resolve the intended workspace package without a stale Alpha.13 specifier?",
-              "Did the candidate introduce any admin Runtime, route, component, permission, localization, or UX behavior change?",
-              "Are source and documentation claims about the current admin surface distinguishable from future migration claims?"
-            ],
-            "evidence_paths": [
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:packages/web/package.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:package.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:frontend/package.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:starter/frontend/package.json",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:pnpm-lock.yaml",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:starter/pnpm-lock.yaml",
-              "ff3a58088d93ba08a3382dfdc941a92b22ba02ce:scripts/check-workspace",
-              "06386cafc1ccc64ccc81849a726ab8d876885e39..ff3a58088d93ba08a3382dfdc941a92b22ba02ce:frontend/**",
-              "06386cafc1ccc64ccc81849a726ab8d876885e39..ff3a58088d93ba08a3382dfdc941a92b22ba02ce:packages/web/**"
-            ],
-            "findings": [],
-            "non_blocking_evidence": [
-              "The public npm manifest changes only version from 0.1.0-alpha.13 to 3.1.0; all 14 exports, typesVersions mappings, files, dependencies, peers and sideEffects are unchanged.",
-              "Every exported import/types target exists in the fixed tree.",
-              "Root uses workspace:3.1.0, the reference frontend retains workspace:^, and the starter uses workspace:3.1.0; both lockfiles match those manifest specifiers and resolve to the local packages/web tree.",
-              "No frontend or packages/web Runtime source differs from dev 06386caf; there is no route, component, permission, locale, API-client, rendering, or interaction behavior change to assess."
-            ],
-            "residual_risks": [
-              "The npm packed projection and browser/build groups remain pending Q01 and were not executed by this independent read-only review.",
-              "The backend public-version inconsistency from role 6 blocks the combined candidate even though the frontend role itself passes."
-            ],
-            "verdict": "pass"
-          }
-        ],
-        "overall_verdict": "fail",
-        "blocking_finding_count": 1,
-        "review_notes": [
-          "git diff --check passed for both requested comparisons.",
-          "No source, gate, resource, tag, release, or dependency state was modified.",
-          "This D05 result does not reuse an earlier review and does not claim Q01 evidence."
-        ]
-      }
+      "id": 3, "role": "identity-and-security", "status": "pass",
+      "attack_questions": ["Could the dependency repair conceal a high-severity advisory or credential?", "Could publication credentials be implied by local evidence?"],
+      "findings": ["High and critical pnpm audit findings are zero after js-yaml 4.3.2 resolution.", "Secret, credential-pattern, forbidden-file, G-07, and security groups passed."],
+      "disposition": "No blocking identity or security finding remains.",
+      "residual_risks": ["Three moderate transitive advisories remain non-blocking.", "Publication authorization and protected environment checks occur only during publication."]
+    },
+    {
+      "id": 4, "role": "functional-and-data-authorization", "status": "pass",
+      "attack_questions": ["Did any functional or authorization implementation change?", "Do tests cover the relevant authorization boundaries?"],
+      "findings": ["The reviewed delta contains no runtime package implementation changes.", "Integration, security, G-07, and browser groups all passed on the fixed candidate."],
+      "disposition": "No blocking functional or data-authorization regression was found.",
+      "residual_risks": ["Real third-party customer integrations are outside this local qualification."]
+    },
+    {
+      "id": 5, "role": "database-and-performance", "status": "pass",
+      "attack_questions": ["Were database/cache identities and cleanup explicit?", "Did any registered performance threshold regress?"],
+      "findings": ["Q01 bound a dedicated database, cache, compose project, eight ports, outputs, and lease, then verified cleanup and lease release.", "All seven recorded performance observations were below their registered limits; recovery and clean-install checks passed."],
+      "disposition": "No blocking database, recovery, or performance finding remains.",
+      "residual_risks": ["Measurements are local qualification evidence and make no production latency or recovery promise."]
+    },
+    {
+      "id": 6, "role": "backend-module-architecture", "status": "pass",
+      "attack_questions": ["Could package identity or backend module exports drift?", "Does the Composer warning exception weaken validation?"],
+      "findings": ["The Composer projection is unchanged, declares 13 PSR-4 roots, and matches the fixed projection digest.", "Root, backend starter, and lock constraints remain exactly 3.1.0; workspace validation accepts only the one known exact-version warning and rejects any other warning or error."],
+      "disposition": "No blocking backend architecture or candidate-identity drift was found.",
+      "residual_risks": ["Packagist availability must be rechecked immediately before publication."]
+    },
+    {
+      "id": 7, "role": "frontend-and-admin-ux", "status": "pass",
+      "attack_questions": ["Could the web projection or export surface drift?", "Could the lock repair change visible behavior?"],
+      "findings": ["The web projection is unchanged with 14 declared exports and a 73-file packed artifact.", "Web unit, type, build, starter frontend, and 46 browser tests passed."],
+      "disposition": "No blocking frontend contract or UX regression was found.",
+      "residual_risks": ["No new UX is claimed; downstream App rendering is a separate adoption gate."]
+    },
+    {
+      "id": 8, "role": "open-source-maintainability", "status": "pass",
+      "attack_questions": ["Are license and artifact hygiene preserved?", "Did qualification mutate shared dependency state or ignore the registered toolchain?"],
+      "findings": ["Composer and npm artifacts declare Apache-2.0, contain the approved license, and passed sensitive-file and credential scans.", "The gate honored PHP 8.3.24, Composer 2.10.2, Node 24.13.0, pnpm 11.13.0, and the registered isolated pnpm store; the shared store was not changed."],
+      "disposition": "No blocking maintainability or artifact-hygiene finding remains.",
+      "residual_risks": ["Three moderate transitive advisories remain tracked.", "The temporary qualification pnpm store requires lifecycle cleanup after the coordinated release completes."]
+    },
+    {
+      "id": 9, "role": "low-context-delivery", "status": "pass",
+      "attack_questions": ["Can a new operator identify the exact candidate and evidence without prior chat context?", "Are release boundaries and remaining gates explicit?"],
+      "findings": ["Evidence records the full candidate and tree, package projections, fixed resources, toolchain, group results, report hashes, failed attempts, and cleanup state.", "The release guide separates candidate qualification, evidence commit, annotated tag, registry publication, downstream lock adoption, and deployment."],
+      "disposition": "No blocking handoff ambiguity remains for the Core qualification decision.",
+      "residual_risks": ["Actual registry identities and App locks must be recorded after publication, not inferred from this review."]
     }
   ],
-  "history_note": "Earlier role 6 failure is retained inside the prior report. Its public package identity finding was repaired in the final candidate. Earlier product-documentation findings were repaired before the prior final review."
+  "blocking_findings": []
 }

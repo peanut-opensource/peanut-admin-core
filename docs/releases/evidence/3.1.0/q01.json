@@ -2,70 +2,69 @@
   "schema_version": 1,
   "qualification_id": "CORE-PRODUCT-310-Q01",
   "version": "3.1.0",
-  "status": "failed",
-  "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
-  "candidate_tree": "cf89827a54e05730794ca7d6304bc77a0d24d993",
+  "status": "pass",
+  "candidate": "985ee420b486a97325cdd0bb87412a76346aeb93",
+  "candidate_tree": "e00f644b07c8e5218d1fa3779e373338adac7366",
   "command": "./scripts/check",
-  "attempts": [
-    {
-      "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-      "result": "failed",
-      "group": "supply-chain",
-      "subcommand": "unknown",
-      "log_sha256": "c09a89bdd541d2b98b3a609ea6259270df51ef798b44ae448f7986130b54d666",
-      "candidate_lock_sha256": "f9ce024445ee3263b104efcfb02e27096717921eb714c250a16aa02eb278e28c"
-    },
-    {
-      "candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53",
-      "result": "failed",
-      "group": "supply-chain",
-      "subcommand": "unknown",
-      "log_sha256": "7cf7609073427536a900955dc895de9f976b65add28eb7a63a009570988ab6f0",
-      "candidate_lock_sha256": "791da29d0e61d8568b7d5ff0cabf0da434ac04848f0fa0f40f8fe2dbb80286bc"
-    }
-  ],
-  "passed_on_final_candidate": [
-    "documentation governance",
-    "Module manifest and documentation examples",
-    "generated Starter validation",
-    "documentation build",
-    "dependency decisions",
-    "architecture and Deptrac",
-    "OpenAPI",
-    "Runtime operation coverage"
-  ],
-  "not_started": [
-    "PHP unit",
-    "integration",
-    "security",
-    "browser",
-    "recovery",
-    "performance",
-    "workspace",
-    "final repository checks"
-  ],
-  "diagnosis": {
-    "candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce",
-    "command": "composer audit --locked --format=json",
-    "exit_code": 0,
-    "advisories": [],
-    "abandoned": [],
-    "report_sha256": "3d68c4566587606c21e4bcd82b55d322ddb79158f657d9fb90bf0d24ab5bccdf",
-    "limitation": "The failed aggregate could instead have exited in pnpm audit. A successful Composer diagnostic neither identifies the original failure nor establishes qualification."
+  "passed_on_final_candidate": true,
+  "run": {
+    "lease": "CORE-PRODUCT-310-Q01",
+    "candidate_worktree": "/Users/xing/.codex/worktrees/cr02-core-q01",
+    "resource_registry": "resources/project-resources.json",
+    "compose_project": "peanut-admin-core-310-q01",
+    "database": "peanut_admin_310_qualification",
+    "ports": [33434, 36434, 38134, 35234, 38234, 35334, 38334, 35434],
+    "pnpm_store": "/private/tmp/peanut-cr02-q01-pnpm-store.Ggvf86",
+    "toolchain": {"php": "8.3.24", "composer": "2.10.2", "node": "24.13.0", "pnpm": "11.13.0"}
   },
-  "stop_line": "The same aggregate group failed on the one permitted qualification retry. No third qualification run was performed. Failure-report retention is repaired separately without changing audit thresholds or exit status.",
+  "results": {
+    "repository_checks": "pass",
+    "documentation_governance": "pass",
+    "architecture_and_openapi": "pass",
+    "supply_chain": "pass",
+    "php_unit": "313 tests, 4106 assertions",
+    "web_unit": "56 files, 231 tests",
+    "integration": "306 tests, 2962 assertions; 8 non-failing deprecations",
+    "security": "pass; G-07 had zero skipped tests",
+    "browser": "46 of 46 passed",
+    "recovery": "2 tests, 27 assertions; clean install passed",
+    "performance": "5 tests, 61 assertions; every registered threshold passed",
+    "starter": "deterministic creation, backend integrations, 10 frontend files and 12 tests, builds, and workspace skeleton passed",
+    "workspace": "693 tests, 3747 assertions, 306 expected no-database skips, 8 non-failing deprecations; PHPStan, Deptrac, coding style, ESLint, type checks, builds, and docs passed"
+  },
+  "performance_ms": {
+    "typed_targets_10": {"observed": 203.825, "limit": 670.160},
+    "targets_500": {"observed": 161.317, "limit": 387.670},
+    "targets_5000": {"observed": 176.547, "limit": 587.188},
+    "tenant_login": {"observed": 96.138, "limit": 377.286},
+    "refresh": {"observed": 7.530, "limit": 32.738},
+    "context": {"observed": 16.490, "limit": 132.473},
+    "shared_master": {"observed": 8.631, "limit": 117.293}
+  },
+  "reports": {
+    "qualification_log_sha256": "f5679013ff3cde45ba9bb926c6aadc46ce7097bff079e8fbd819c61c034961c4",
+    "recovery_report_sha256": "355de36ff9e7de0d775803420b069567965ff9f95b7ef2dae6cdc9ccd6ff167f",
+    "recovery_observations": "local qualification only: backup 619 ms; restore and verification 1491 ms; no production claim"
+  },
+  "attempts": [
+    {"candidate": "ff3a58088d93ba08a3382dfdc941a92b22ba02ce", "result": "failed", "group": "supply-chain", "log_sha256": "c09a89bdd541d2b98b3a609ea6259270df51ef798b44ae448f7986130b54d666"},
+    {"candidate": "b51c7ce64fdf5bdf4c6295e098a938869c7ffd53", "result": "failed", "group": "supply-chain", "log_sha256": "7cf7609073427536a900955dc895de9f976b65add28eb7a63a009570988ab6f0"},
+    {
+      "candidate": "1061dddd87d246f25791c6870905f247d58e5552",
+      "result": "failed",
+      "group": "workspace",
+      "reason": "Composer 2.10.2 strict validation rejected the deliberate exact first-party candidate constraint before the verifier learned to accept only that one known warning",
+      "log_sha256": "520b022cb399910ed1201e3387f61a6a7dd2075819a5bb2a110dc73d6f36e5f1"
+    },
+    {"candidate": "985ee420b486a97325cdd0bb87412a76346aeb93", "result": "pass", "log_sha256": "f5679013ff3cde45ba9bb926c6aadc46ce7097bff079e8fbd819c61c034961c4"}
+  ],
   "cleanup": {
     "status": "verified",
     "lease_released": true,
-    "new_310_containers_networks_volumes": 0,
-    "eight_registered_listeners": 0,
-    "three_fixed_outputs": 0,
-    "scope": "Only the claimed 3.1.0 resources; historical Alpha.13 resources and preserved evidence retained."
+    "compose_containers_networks_volumes_remaining": 0,
+    "registered_listeners_remaining": 0,
+    "fixed_outputs_remaining": 0,
+    "candidate_worktree_removed": true
   },
-  "preparation_deviations": [
-    "A zsh path variable shadowed PATH during a read-only preflight; corrected before resource claim or qualification.",
-    "Direct Composer install in source starter/backend failed because its path repository is valid only in the generated Starter; no lock change or qualification pass was claimed.",
-    "The targeted integration test before database startup skipped eight items and is not counted as a pass."
-  ],
-  "evidence_retention": "Raw logs and candidate locks remain in the local fact-audit evidence directory; this committed record preserves exact hashes and bounded results, not credentials or full logs."
+  "evidence_retention": "The committed record preserves hashes and bounded results without credentials or raw logs; exact successful raw artifacts remain in local CR02 temporary evidence copies."
 }
