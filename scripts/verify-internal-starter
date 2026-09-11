@@ -21,6 +21,10 @@ first="$workdir/first"
 second="$workdir/second"
 backend_pid=''
 frontend_pid=''
+pnpm_install_args=(--frozen-lockfile)
+if [[ -n "${PNPM_STORE_DIR:-}" ]]; then
+  pnpm_install_args+=(--store-dir "$PNPM_STORE_DIR" --offline)
+fi
 
 cleanup() {
   if [[ -n "$frontend_pid" ]]; then
@@ -129,13 +133,13 @@ composer install \
   --working-dir "$first/backend" \
   --no-interaction \
   --prefer-dist
-pnpm --dir "$first" install --frozen-lockfile
+pnpm --dir "$first" install "${pnpm_install_args[@]}"
 
 composer install \
   --working-dir "$second/backend" \
   --no-interaction \
   --prefer-dist
-pnpm --dir "$second" install --frozen-lockfile
+pnpm --dir "$second" install "${pnpm_install_args[@]}"
 
 cmp "$first/backend/composer.lock" "$second/backend/composer.lock"
 cmp "$first/pnpm-lock.yaml" "$second/pnpm-lock.yaml"

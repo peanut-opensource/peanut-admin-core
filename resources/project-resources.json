@@ -178,6 +178,36 @@
           "starter/pnpm-lock.yaml offline preparation",
           "scripts/check-third-party-licenses via explicit PNPM_STORE_DIR"
         ]
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-cr02-pnpm-store-310-qualification",
+        "purpose": "CR02-exclusive pnpm store for one immutable Core 3.1.0 Q01 candidate",
+        "environments": [
+          "qualification"
+        ],
+        "owner": "CR02 Core 3.1.0 qualification owner",
+        "host": "registry.npmjs.org",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "/private/tmp/peanut-cr02-q01-pnpm-store.Ggvf86",
+        "service_type": "isolated pnpm v11 content-addressable qualification store",
+        "version": "Node 24.13.0; pnpm 11.13.0; composer.lock sha256 eeef7fc7dd8adaeb774e79cb692dab8f2dd6bbed5ff74032e166b029a767a00e; pnpm-lock.yaml sha256 6fe0c15cbb1799548bceeb1dee3b4237cc17de024cc39269aefbbce47ec2e0f4; starter/backend/composer.lock sha256 9afb7a1fc51e618067fe42eb762bcbd49692934bb3d9e6ee4a8bf28a402590c1; starter/pnpm-lock.yaml sha256 39f184f2d70344f0e4389fd68f5503f129667e1f2fe675dce646d0980c1bbae6",
+        "credential_ref": null,
+        "data_source": "the exact root and internal Starter pnpm locks from the frozen candidate; public package metadata and tarballs from registry.npmjs.org with lock-recorded integrity",
+        "freshness_requirement": "the directory is empty before its one controlled preparation; warm only the exact frozen root and Starter lock resolutions, then require PNPM_STORE_DIR to select this store and complete both offline frozen installs and lock checks without a cache miss",
+        "health_check": "pnpm 11.13.0 resolves this exact store path; root and Starter pnpm fetch preparation exit 0; bootstrap-worktree-dependencies and check-workspace consume PNPM_STORE_DIR; check-third-party-licenses maps PNPM_STORE_DIR through pnpm --config.store-dir; offline frozen readiness exits 0",
+        "fallback": "none; network access is limited to the explicit preparation action and every qualification install or lock check is offline",
+        "lifecycle": "one fixed Core 3.1.0 Q01 candidate from preparation through evidence reduction",
+        "cleanup_responsibility": "CR02 qualification owner removes only /private/tmp/peanut-cr02-q01-pnpm-store.Ggvf86 after Q01 evidence is reduced and the lease is released; the shared and Development stores are untouched",
+        "lease_policy": "exclusive to the exact candidate commit/tree, worktree and CORE-PRODUCT-310-Q01 run ID; a candidate identity change invalidates the lease and requires a fresh registered store",
+        "consumers": [
+          "scripts/bootstrap-worktree-dependencies",
+          "scripts/check-third-party-licenses",
+          "scripts/check-supply-chain",
+          "scripts/check-workspace",
+          "scripts/verify-internal-starter"
+        ]
       }
     ],
     "databases": [

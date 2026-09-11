@@ -66,26 +66,27 @@ permission for Application lock adoption. A new clean candidate still must
 repeat the existing fixed-candidate contract with its registered qualification
 resources and immutable registry preflight.
 
-## Current stop and recovery condition
+## Historical Q01 failures and current recovery condition
 
 The initial `ff3a58088d93ba08a3382dfdc941a92b22ba02ce` attempt and the permitted
-retry at the candidate above both stopped in `check-supply-chain`. The old gate
-removed its temporary audit JSON, and both Composer and pnpm can exit silently;
-the failing subcommand and root cause are unknown. Earlier Composer/network
-attribution is withdrawn. Unit, integration, security, browser, recovery,
-performance, workspace and final repository groups did not start.
+retry at the candidate above are historical failures that both stopped in
+`check-supply-chain`. The old gate removed its temporary audit JSON, so their
+failing subcommand and root cause remain unknown. The 2026-09-11 Development
+diagnosis found a current pnpm advisory but does not retroactively prove that it
+caused either historical failure. Earlier Composer/network attribution remains
+withdrawn. Unit, integration, security, browser, recovery, performance,
+workspace and final repository groups did not start in those historical runs.
 
 The two public PHP package version constants and their existing assertion were
 corrected before the retry; Module manifests remained unchanged. All nine D05
 roles passed the fixed three-file delta review. This is not Q01 qualification.
 
-After the second failure, execution stopped. The gate now emits the failed audit
-name, original exit status and report before cleanup; thresholds and failure
-semantics are unchanged. Only shell syntax and diff validation cover this later
-verifier repair. No third audit or qualification was run. A resumed publication
-must diagnose the retained audit output, close the actual cause in Development
-mode, and qualify a new clean candidate under the existing contract. The failed
-candidate, its passing earlier groups and D05 are not inherited as new Q01 pass.
+The gate now emits the failed audit name, original exit status and report before
+cleanup; thresholds and failure semantics are unchanged. The current advisory
+has been repaired and focused Development checks passed, but no new Q01 or D05
+has run. Qualification resumes only after the replacement candidate is frozen
+and its dedicated resources are healthy and exclusively leased. The failed
+candidate, its earlier partial results and D05 are not inherited as a new pass.
 
 All newly claimed 3.1.0 containers, networks, volumes, eight listeners and three
 fixed output paths were removed and checked absent; the lease was released.
@@ -126,19 +127,24 @@ The candidate selects these `qualification` resources from
 - `peanut-admin-core-310-browser-frontend` — `127.0.0.1:35334`.
 - `peanut-admin-core-310-starter-backend` — `127.0.0.1:38334`.
 - `peanut-admin-core-310-starter-frontend` — `127.0.0.1:35434`.
+- `peanut-admin-core-cr02-pnpm-store-310-qualification` — CR02-exclusive
+  `/private/tmp/peanut-cr02-q01-pnpm-store.Ggvf86` for the exact frozen root and
+  Starter pnpm locks; all qualification installs and lock checks use it offline.
 
 The fixed persistent toolchain remains
 `peanut-admin-core-php83-alpha12-qualification`,
 `peanut-admin-core-composer-2.10.2-development`,
-`peanut-admin-core-node24-pnpm11-development` and
-`peanut-admin-core-pnpm-store-development`. Their stable IDs are retained even
-where a historical version remains in the ID; their registry environments and
-lifecycles explicitly allow the current qualification use.
+`peanut-admin-core-node24-pnpm11-development` and the dedicated
+`peanut-admin-core-cr02-pnpm-store-310-qualification`. The existing shared
+`peanut-admin-core-pnpm-store-development` is not selected for this candidate.
+Stable tool IDs are retained where their registry environments and lifecycles
+explicitly allow qualification use.
 
 The physical ports use a dedicated 3.1.0 group because an Alpha.13 port was
 still occupied during preparation. The qualification owner proves every new
 listener and the 3.1.0 Compose namespace are absent before claiming them. The lease
-must include the eleven 3.1.0 stable IDs,
+must include the eleven existing 3.1.0 stable IDs plus the dedicated CR02 pnpm
+qualification-store ID,
 all eight `port=<number>` resources, the Compose project, database, three output
 paths, worktree and fixed candidate. A conflict blocks Q01; it never selects a
 replacement port, database, cache, output or service.
@@ -164,6 +170,7 @@ export PEANUT_STARTER_BACKEND_PORT=38334 PEANUT_STARTER_FRONTEND_PORT=35434
 export MYSQL_DATABASE=peanut_admin_310_qualification
 export TMPDIR=/private/tmp/peanut-admin-core-310-q01
 export PEANUT_COMPOSER=/private/tmp/peanut-admin-core-tools/composer-2.10.2
+export PNPM_STORE_DIR=/private/tmp/peanut-cr02-q01-pnpm-store.Ggvf86
 ```
 
 Before dependency installation or any stateful gate, verify the registered PHP,
