@@ -83,10 +83,16 @@ roles passed the fixed three-file delta review. This is not Q01 qualification.
 
 The gate now emits the failed audit name, original exit status and report before
 cleanup; thresholds and failure semantics are unchanged. The current advisory
-has been repaired and focused Development checks passed, but no new Q01 or D05
-has run. Qualification resumes only after the replacement candidate is frozen
-and its dedicated resources are healthy and exclusively leased. The failed
-candidate, its earlier partial results and D05 are not inherited as a new pass.
+was repaired and focused Development checks passed. A fresh Q01 on candidate
+`1061dddd87d246f25791c6870905f247d58e5552` then reached the final workspace
+group and failed because Composer 2.10.2 strict validation rejects the root
+workspace's exact `peanut-admin/core` constraint. Its earlier passing groups are
+not inherited. The exact `3.1.0` constraint remains a deliberate first-party
+candidate invariant and is separately asserted for all three Composer
+consumers. Strict validation now accepts only that one known Composer advisory;
+any other warning or error still fails. No package projection or Runtime
+behavior changes. A new Q01 and D05 remain required on one replacement candidate
+with healthy, exclusively leased resources.
 
 All newly claimed 3.1.0 containers, networks, volumes, eight listeners and three
 fixed output paths were removed and checked absent; the lease was released.

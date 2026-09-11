@@ -232,7 +232,23 @@ for package_license in packages/php/LICENSE packages/web/LICENSE; do
   fi
 done
 
-"$composer_bin" validate --strict --no-check-publish
+composer_validate_output="$(mktemp "${TMPDIR:-/tmp}/peanut-admin-composer-validate.XXXXXX")"
+if "$composer_bin" validate --strict --no-check-publish >"$composer_validate_output" 2>&1; then
+  cat "$composer_validate_output"
+else
+  composer_validate_status=$?
+  cat "$composer_validate_output" >&2
+  exact_core_warning='- require.peanut-admin/core : exact version constraints (3.1.0) should be avoided if the package follows semantic versioning'
+  composer_warning_count="$(grep -c '^- ' "$composer_validate_output" || true)"
+  if [[ "$composer_validate_status" != '1' \
+    || "$composer_warning_count" != '1' \
+    || "$(grep -Fxc -- "$exact_core_warning" "$composer_validate_output" || true)" != '1' ]]; then
+    rm -f "$composer_validate_output"
+    exit "$composer_validate_status"
+  fi
+  echo 'Composer strict validation: accepted the single exact Core candidate warning'
+fi
+rm -f "$composer_validate_output"
 "$composer_bin" validate --working-dir starter/backend --no-check-publish
 
 if [[ -n "${PNPM_STORE_DIR:-}" ]]; then
