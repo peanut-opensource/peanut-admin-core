@@ -94,7 +94,10 @@ rejected because accepted product identity aligns Application, Core PHP/Web and
 both Editions. If convergence lands before the first coordinated 3.1.0 release,
 the whole product must freeze a new coordinated 3.1.0 prerelease. If a
 PDO-preserving 3.1.0 is released first, the whole product selects its next
-breaking version later. The failed current 3.1.0 candidate must not be reused.
+breaking version later. The published Core 3.1.0 has its own passing
+[qualification binding](../releases/qualifications/3.1.0.json); this does not
+qualify the Application or implement ThinkPHP convergence. Evidence from a
+failed candidate must never be reused as qualification for a different candidate.
 
 ## Isolation Order
 

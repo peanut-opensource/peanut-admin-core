@@ -26,8 +26,10 @@ authorizes no manifest, lockfile or Runtime change by itself.
 
 Both dependencies belong only to `@peanut-admin/admin`. PHP never interprets
 CRDT content and adds no third-party dependency: it persists bounded,
-versioned opaque update and snapshot envelopes through the already accepted PDO
-boundary. Product document schemas, editors and validation remain Host-owned.
+versioned opaque update and snapshot envelopes through the current persistence
+implementation, which remains a migration input rather than a long-term public
+PDO boundary. Product document schemas, editors and validation remain
+Host-owned.
 
 ## Host Transport Decision
 
