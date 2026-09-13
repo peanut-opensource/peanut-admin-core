@@ -33,6 +33,17 @@ that boundary in its main composition root; Application commit `e67acd72`
 uses the repository's local-Core Composer workflow to verify full startup,
 container resolution, shared ThinkPHP/PDO connection state, nested transaction
 handling and failure rollback against the registered development database.
+
+The architecture gate distinguishes Host framework integration from direct
+ThinkPHP database consumption. `ThinkPhpDatabase` contains only the locked
+connection, query and database-exception types. Direct dependencies on those
+types are limited to explicitly collected per-domain persistence roles, the
+DataPermission ThinkPHP boundary, narrow test support, the Kernel transaction
+adapter, and Host/Module wiring. Parent business layers remain separate, while
+ThinkPHP HTTP and container APIs remain in `Framework` and are not allowed in
+persistence roles. The gate keeps uncovered dependencies fatal and records no
+skipped violations.
+
 Core commits `e0102fc` and `cab7415` then inject the transaction boundary into
 atomic operations and migrate ReferenceCodes plus its HTTP/install/upgrade
 composition to the shared ThinkPHP connection. The former

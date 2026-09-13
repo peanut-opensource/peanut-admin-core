@@ -20,8 +20,17 @@ deptrac:
   layers:
     - name: Framework
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^think\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^think\\db\\(?:ConnectionInterface|PDOConnection|Query|exception\\PDOException)$#'
+    - name: ThinkPhpDatabase
+      collectors:
         - type: classNameRegex
-          value: '#^think\\#'
+          value: '#^think\\db\\(?:ConnectionInterface|PDOConnection|Query|exception\\PDOException)$#'
     - name: RuntimeLibraries
       collectors:
         - type: classNameRegex
@@ -36,44 +45,134 @@ deptrac:
           value: '#^PeanutAdmin\\Kernel\\#'
     - name: ArtifactRevision
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\ArtifactRevision\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\ArtifactRevision\\Persistence\\.+Store$#'
+    - name: ArtifactRevisionThinkPhpPersistence
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\ArtifactRevision\\#'
+          value: '#^PeanutAdmin\\ArtifactRevision\\Persistence\\.+Store$#'
     - name: EntitlementQuota
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\EntitlementQuota\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\EntitlementQuota\\Persistence\\.+Store$#'
+    - name: EntitlementQuotaThinkPhpPersistence
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\EntitlementQuota\\#'
+          value: '#^PeanutAdmin\\EntitlementQuota\\Persistence\\.+Store$#'
     - name: DataPermission
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\DataPermission\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\DataPermission\\(?:Application\\DataPolicyAdminService|(?:Catalog|Policy)\\.+Store|Provider\\ThinkPhp.+Provider|Runtime\\DataPermissionModuleProvider)$#'
+    - name: DataPermissionThinkPhpBoundary
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\DataPermission\\#'
+          value: '#^PeanutAdmin\\DataPermission\\(?:Application\\DataPolicyAdminService|(?:Catalog|Policy)\\.+Store|Provider\\ThinkPhp.+Provider|Runtime\\DataPermissionModuleProvider)$#'
     - name: Settings
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\Settings\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\Settings\\Persistence\\.+Store$#'
+    - name: SettingsThinkPhpPersistence
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\Settings\\#'
+          value: '#^PeanutAdmin\\Settings\\Persistence\\.+Store$#'
     - name: ReferenceCodes
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\ReferenceCodes\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\ReferenceCodes\\Persistence\\.+Store$#'
+    - name: ReferenceCodesThinkPhpPersistence
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\ReferenceCodes\\#'
+          value: '#^PeanutAdmin\\ReferenceCodes\\Persistence\\.+Store$#'
     - name: FileMedia
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\FileMedia\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\FileMedia\\Persistence\\.+Store$#'
+    - name: FileMediaThinkPhpPersistence
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\FileMedia\\#'
+          value: '#^PeanutAdmin\\FileMedia\\Persistence\\.+Store$#'
     - name: Testing
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\Testing\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\Testing\\Authorization\\.+Fixture$#'
+    - name: TestingThinkPhpSupport
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\Testing\\#'
+          value: '#^PeanutAdmin\\Testing\\Authorization\\.+Fixture$#'
     - name: TaskJob
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\TaskJob\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\TaskJob\\Persistence\\.+Store$#'
+    - name: TaskJobThinkPhpPersistence
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\TaskJob\\#'
+          value: '#^PeanutAdmin\\TaskJob\\Persistence\\.+Store$#'
     - name: NotificationSms
       collectors:
-        - type: classNameRegex
-          value: '#^PeanutAdmin\\NotificationSms\\#'
-    - name: ImportExport
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\NotificationSms\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\NotificationSms\\Persistence\\.+Store$#'
+    - name: NotificationSmsThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\ImportExport\\#'
+          value: '#^PeanutAdmin\\NotificationSms\\Persistence\\.+Store$#'
+    - name: ImportExport
+      collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\ImportExport\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\ImportExport\\Persistence\\.+Store$#'
+    - name: ImportExportThinkPhpPersistence
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\ImportExport\\Persistence\\.+Store$#'
     - name: OpsConsole
       collectors:
         - type: classNameRegex
@@ -84,8 +183,17 @@ deptrac:
           value: '#^PeanutAdmin\\IntegrationSecurity\\#'
     - name: Workflow
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\Workflow\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\Workflow\\Persistence\\.+Store$#'
+    - name: WorkflowThinkPhpPersistence
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\Workflow\\#'
+          value: '#^PeanutAdmin\\Workflow\\Persistence\\.+Store$#'
     - name: Backend
       collectors:
         - type: classNameRegex
@@ -104,33 +212,85 @@ deptrac:
           value: '#^PeanutAdmin\\App\\Modules\\(?!.*\\Contracts\\)#'
   ruleset:
     Kernel:
-      - Framework
+      - ThinkPhpDatabase
     ArtifactRevision:
+      - Kernel
+      - Workflow
+    ArtifactRevisionThinkPhpPersistence:
+      - ThinkPhpDatabase
+      - ArtifactRevision
       - Kernel
       - Workflow
     EntitlementQuota:
       - Kernel
+    EntitlementQuotaThinkPhpPersistence:
+      - ThinkPhpDatabase
+      - EntitlementQuota
+      - Kernel
     DataPermission:
+      - Kernel
+    DataPermissionThinkPhpBoundary:
+      - ThinkPhpDatabase
+      - DataPermission
       - Kernel
     Settings:
       - RuntimeLibraries
       - Kernel
-    ReferenceCodes:
-      - Framework
+      - SettingsThinkPhpPersistence
+    SettingsThinkPhpPersistence:
+      - ThinkPhpDatabase
       - RuntimeLibraries
+      - Settings
+      - Kernel
+    ReferenceCodes:
+      - RuntimeLibraries
+      - Kernel
+      - ReferenceCodesThinkPhpPersistence
+    ReferenceCodesThinkPhpPersistence:
+      - ThinkPhpDatabase
+      - RuntimeLibraries
+      - ReferenceCodes
       - Kernel
     FileMedia:
       - Kernel
       - StorageProviderSdks
+      - FileMediaThinkPhpPersistence
+    FileMediaThinkPhpPersistence:
+      - ThinkPhpDatabase
+      - FileMedia
+      - Kernel
     Testing:
       - Kernel
       - DataPermission
+    TestingThinkPhpSupport:
+      - ThinkPhpDatabase
+      - Testing
+      - Kernel
+      - DataPermission
+      - DataPermissionThinkPhpBoundary
     TaskJob:
+      - Kernel
+      - TaskJobThinkPhpPersistence
+    TaskJobThinkPhpPersistence:
+      - ThinkPhpDatabase
+      - TaskJob
       - Kernel
     NotificationSms:
       - Kernel
       - TaskJob
+    NotificationSmsThinkPhpPersistence:
+      - ThinkPhpDatabase
+      - NotificationSms
+      - Kernel
+      - TaskJob
     ImportExport:
+      - Kernel
+      - FileMedia
+      - TaskJob
+      - ImportExportThinkPhpPersistence
+    ImportExportThinkPhpPersistence:
+      - ThinkPhpDatabase
+      - ImportExport
       - Kernel
       - FileMedia
       - TaskJob
@@ -141,30 +301,46 @@ deptrac:
       - Kernel
     Workflow:
       - Kernel
+    WorkflowThinkPhpPersistence:
+      - ThinkPhpDatabase
+      - Workflow
+      - Kernel
     Backend:
       - Framework
+      - ThinkPhpDatabase
       - RuntimeLibraries
       - Kernel
       - DataPermission
+      - DataPermissionThinkPhpBoundary
       - ReferenceCodes
+      - ReferenceCodesThinkPhpPersistence
       - FileMedia
+      - FileMediaThinkPhpPersistence
       - Settings
+      - SettingsThinkPhpPersistence
       - ModuleContracts
       - TaskJob
+      - TaskJobThinkPhpPersistence
       - NotificationSms
+      - NotificationSmsThinkPhpPersistence
       - ImportExport
+      - ImportExportThinkPhpPersistence
       - OpsConsole
       - IntegrationSecurity
     ModuleProviderSupport:
+      - ThinkPhpDatabase
       - Kernel
       - DataPermission
+      - DataPermissionThinkPhpBoundary
     ModuleContracts:
       - Kernel
       - DataPermission
     ModuleInternals:
       - Framework
+      - ThinkPhpDatabase
       - Kernel
       - DataPermission
+      - DataPermissionThinkPhpBoundary
       - ReferenceCodes
       - FileMedia
       - Settings
