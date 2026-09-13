@@ -2,13 +2,22 @@
 
 Document ID: `core-doc-product-version-identity`
 
-Status: `current` — accepted product policy; a new coordinated release is not yet published.
+Status: `current` — Core projection of the Application-owned product policy.
 
 Peanut Admin Application, Core PHP/Core Web and the Standalone/Multi-tenant Editions share one product version in future coordinated releases, including prerelease suffixes. Each repository, package and Edition retains its own immutable source and artifact identity. A matching number does not replace qualification.
 
 Modules use independent versions and declare product compatibility. Customer Instances use independent `instance_version` values and separately record `source_product_version`, Edition and immutable source release. An instance-only business change does not increment Core or the upstream product version.
 
-The owning decision is `repo://peanut-admin/docs/architecture/product-version-identity-adr.md`. Core publishes its package identities and qualification evidence; Application owns product capability and deployment facts. The product's next coordinated target is 3.1.0, subject to fresh qualification and publication. This page does not make that version installable.
+The owning decision is
+`repo://peanut-admin/docs/architecture/product-version-identity-adr.md`.
+Core publishes package identities and qualification evidence; Application owns
+product capability, coordinated product-release, and deployment facts. This
+projection does not make a product version installable or published.
+
+Core `v3.1.0` is a fixed Core source tag and package publication. It does not
+state that Application `v3.1.0` has been released, deployed, or has adopted the
+Core packages. Read the owning Application ADR and its release facts for those
+states.
 
 ## Historical Alpha.13
 

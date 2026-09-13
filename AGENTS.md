@@ -1,116 +1,60 @@
-# Peanut Admin Agent Contract
-
-This repository is the clean implementation home for Peanut Admin.
-
-## Required Reading
-
-Read the current task and relevant implementation first. Use `README.md` for orientation;
-`docs/README.md` and `docs/content-status.json` for documentation changes;
-`docs/status/index.md` and `docs/status/runtime-operation-coverage.json` for status or coverage decisions;
-and `docs/status/p1-execution-baseline.md` for P1 Runtime work.
-The application-owned product/version decision is indexed by
-`docs/architecture/product-version-identity.md`. Historical CompanyOS task
-instructions are trace-only; they do not reintroduce external governance or
-resource dependencies into current Core work.
-
-The versioned runtime-resource authority is
-`resources/project-resources.json`. Before a task connects to, starts, tests,
-or qualifies against a database, cache, listener, container, external service,
-or other runtime resource, it must select the exact registered resource ID and
-environment. Missing or conflicting registration blocks that operation; no
-port, credential, host, service, or fallback may be guessed.
-
-`docs/content-status.json` is also the unique documentation registry: it records stable document IDs and lifecycle, while its metadata groups record audience, type, upstream facts, owner domain, scope, relations, public projection and validation. `docs/document-impact-map.json` maps changed facts/code to the minimum documentation closure. These files classify documentation and do not replace manifests, KernelSchema, OpenAPI, dependency decisions or Runtime coverage. Use `./scripts/core-docs-governance check` for the static documentation gate.
-
-This public repository owns its execution and resource rules. Historical
-`company-rules/` references are not a current dependency.
-
-## Current Boundary
-
-- Work only within the current user-authorized task; historical P0/P1 identifiers
-  do not prohibit independently authorized documentation or release work.
-- Keep each write task in one independently reviewable commit.
-- Do not create runtime code before its task is approved.
-- Do not copy code, Git history, schemas, or documents from any legacy framework repository.
-- Do not add product-specific business logic, names, tables, pages, or examples.
-- Do not install dependencies without an accepted dependency decision record.
-- Prefer mature libraries when an accepted dependency exists; do not recreate established infrastructure without a recorded reason.
-- Core/Application ownership and the planned storage extraction boundary are recorded in
-  `docs/architecture/storage-driver-boundary.md`; Core owns product-neutral storage mechanisms and
-  explicit technical state, while the application owns provider assembly, credentials, authorization,
-  object ledger, compensation and product lifecycle.
-- The accepted Core/Application ThinkPHP 8 Runtime direction is projected in
-  `docs/architecture/index.md#accepted-thinkphp-8-runtime-direction`. Existing PDO public APIs are
-  migration-before facts, not a framework-neutral support promise; runtime migration requires a
-  separately authorized atomic domain batch and must not weaken tests or leave dual paths.
-- New or materially changed classes and methods need concise responsibility comments. Complex methods
-  document tenant/authorization prerequisites, side effects, exceptions and stream or temporary-file
-  ownership; standard CRUD, accessors and constructor-only injection may omit method comments while
-  retaining class responsibility comments. Core comments are English.
-
-## P1 Execution Stop Line
-
-- P1 starts from the fixed input recorded in `docs/status/p1-execution-baseline.md`.
-- Historical plans are not executable task definitions. Every P1 Runtime task must name its prerequisite commit, exact file whitelist, schema owner, API contract, security behavior, test owner, and stop line.
-- Existing P0 operations and models are inherited. Do not rebuild them under new names or weaken their fail-closed behavior.
-- A P1 operation must be classified as `p1` in the Runtime coverage ledger and must have executable test ownership.
-- A P1 dependency may be installed only after its decision record is accepted for the exact use case.
-- Later P1 commits are not downstream-consumption baselines until a new fixed-commit aggregate qualification and review explicitly approve them.
-
-## Runtime Remediation Stop Line
-
-- The historical D04 commit `f351a21` is not a qualified P0 Runtime or a downstream-consumption baseline.
-- The remediation history contains implementation evidence through R07 and the revised documentation and recovery gates; commit subjects alone do not prove qualification.
-- A candidate is qualified only when a fresh D04 aggregate check and the fixed-commit D05 nine-role review are both recorded against the same resulting tree.
-- Do not merge a remediation candidate, publish packages, create a tag or release, or provide a downstream-consumption baseline without the required qualification evidence and separate approval.
-- The Runtime tree fixed at `d26186dfb23af34c62c58b4da94fea77bd63d724` and the D05 closure at `b010803ccd0c99179c5f7b35fb7bd89b177ea455` satisfy that evidence requirement. The 2026-07-18 approval permits promotion to `dev` and exact-commit private downstream validation only.
-- External Module hosting and isolated Tenant Clients are separately qualified for exact-commit private downstream validation at `0ab02a9b735ba9f4c23509cb366b9bf04039ebf8`; see `docs/reviews/external-host-consumption-qualification.md`.
-- That approval does not permit a tag, GitHub Release, package publication, production claim, or consumption of later unqualified Runtime changes.
-- Do not add product-specific business models, tables, pages, names, or workflows to the Kernel, reusable packages, internal starter, or fictional examples.
-
-## Safety Rules
-
-- Treat tenant isolation, authorization, audit, and module boundaries as fail-closed contracts.
-- Never add a super-user flag, tenant-scope bypass, silent fallback, or test-only production bypass.
-- Never expose passwords, tokens, cookies, secrets, private paths, or personal data in logs or commits.
-- Do not use destructive Git commands or rewrite shared history.
-- Do not skip, weaken, or remove checks to make a task pass.
-
-## Verification Policy
-
-- Ordinary changes use static review, an exact write-set check and `git diff --check`.
-  Behavior changes run one affected existing check using registered resources when required.
-  Do not add tests unless requested. Shared integration and full qualification remain assigned
-  to their stage or fixed-candidate owner; do not repeat unaffected passing groups.
-- The integration owner completes every source acceptance and shared wiring,
-  performs static review, verifies the exact write set, and fixes the final
-  tree before running any automated check. Immediately before the final stage
-  commit, it runs one consolidated round; each contracted group runs once.
-- If a group fails, collect all findings and repair them as one static batch.
-  Only that failed group may run one more time. A second failure blocks the
-  stage; never loop, widen the suite, rerun a passed group, or add a post-commit
-  confirmation run. A passing round is committed as the exact same tree.
-- `./scripts/check`, browser matrices, clean install and upgrade, backup and
-  restore, performance, and cross-platform checks belong only to the final
-  fixed-candidate qualification contract.
-- Historical task evidence is not an active instruction to rerun checks. A
-  failure from an authorized stage or qualification check is never hidden or
-  waived.
-- A performance failure blocks the affected qualification, release, or
-  downstream lock movement. It does not freeze unrelated ordinary feature work.
-
-## Task Execution
-
-1. Confirm the repository, branch, clean worktree, and prerequisite commit.
-2. Read the task whitelist and stop line.
-3. Modify only whitelisted files.
-4. Perform static review, verify the exact write set, run `git diff --check`,
-   and record the controlling stage's deferred verification identifier.
-5. Inspect the staged diff and commit only the current task.
-6. Merge the completed task branch directly into the latest local `dev`, push
-   `dev` once, then delete the task's local/remote branch and worktree.
-7. Use a pull request only for `dev` to `main`, a formal release, or when the
-   user explicitly requests review; ordinary development does not require one.
-8. Stop after the assigned task and branch cleanup.
-
-If facts conflict or the file whitelist is insufficient, stop and report the conflict instead of guessing.
+# Peanut Admin Core Agent Contract
+This repository owns reusable, product-neutral contracts and packages; work only within the user-authorized task and its stated write set.
+## Read before acting
+- Read the affected implementation and `README.md` first.
+- For documentation, read `docs/README.md`, `docs/content-status.json`, and
+  `docs/document-impact-map.json`; use `./scripts/core-docs-governance check`.
+- For status or Runtime coverage, read `docs/status/index.md` and
+  `docs/status/runtime-operation-coverage.json`.
+- For release qualification or publication, read
+  `docs/guide/release-qualification.md` and the exact immutable candidate record.
+- Product-version policy is owned by the Application ADR at
+  `repo://peanut-admin/docs/architecture/product-version-identity-adr.md` and
+  projected locally by `docs/architecture/product-version-identity.md`.
+- Product control owner, writer, recovery point, and failure budget exist only
+  in the Application private supervision contract resolved from its repository
+  root. Core keeps no mirror; independent Core work needs no private state.
+- Before any runtime action, select the exact resource and environment in
+  `resources/project-resources.json`. Missing or conflicting registration blocks
+  the operation; never guess a host, port, credential, service, or fallback.
+- Paths, hashes, diffs, JSON extraction, catalog generation, and fixed command
+  orchestration are local deterministic work, without a model.
+## Boundaries
+- Core owns product-neutral storage mechanisms and technical state. Application
+  owns provider assembly, credentials, authorization, object ledger,
+  compensation, lifecycle, product Modules, deployment, and capability status;
+  see `docs/architecture/storage-driver-boundary.md`.
+- Application, Core PHP, Core Web, and both Editions share the Application-owned
+  product version. Module and Instance versions are independent. A Core tag or
+  package publication is not an Application release, deployment, or adoption.
+- Do not add product-specific business logic, names, tables, pages, workflows,
+  or examples; copy legacy code or history; or install a dependency without its
+  accepted decision record.
+- Runtime migration follows the accepted direction in
+  `docs/architecture/index.md#accepted-thinkphp-8-runtime-direction`; it needs
+  a separately authorized bounded task and no dual paths or weakened tests.
+## Safety, validation, and delivery
+- Preserve fail-closed tenant isolation, authorization, audit, and Module
+  boundaries. Never add bypasses, silent fallbacks, test-only production paths,
+  secrets, or destructive shared-history operations.
+- Keep ordinary verification to static review, exact write-set review,
+  `git diff --check`, and one affected existing check when behavior changes.
+  Do not add tests unless requested.
+- Full repository checks, browser matrices, clean install/upgrade, recovery,
+  performance, and cross-platform checks belong only to their fixed-candidate
+  qualification contract. A candidate needs the binding in
+  `docs/guide/release-qualification.md`; historical evidence never authorizes a
+  later candidate, publication, tag, release, production claim, or downstream
+  adoption.
+- If a contracted check fails, repair the findings once and rerun only that
+  group once; a second failure blocks its dependent delivery.
+- Ordinary completed Core work integrates directly into `dev` and pushes once.
+  Use a PR only for `dev` to `main`, a formal release, or explicit review.
+- Preserve protected Git history; release, tag, or publication needs its
+  accepted decision and qualification binding.
+- Do not replace manifests, KernelSchema, OpenAPI, dependency decisions,
+  Runtime coverage, resource registry, qualification record, or immutable tag
+  as their respective source of truth. Documentation registries classify and
+  route impact only.
+- Stop when the assigned task is complete. If the task facts conflict with its
+  write set, report the conflict instead of guessing.

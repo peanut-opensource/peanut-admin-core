@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 import fnmatch
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -17,6 +19,12 @@ REGISTRY = ROOT / "docs/content-status.json"
 IMPACT = ROOT / "docs/document-impact-map.json"
 CATALOG = ROOT / "docs/reference/document-catalog.generated.md"
 NOTICE = "<!-- GENERATED: source=docs/content-status.json; command=./scripts/core-docs-governance generate -->"
+RULE_FIELDS = {"id", "kind", "authority", "scope", "status", "effective_at", "supersedes", "source", "owner", "validation"}
+RULE_STATUSES = {"proposed", "active", "superseded", "retired"}
+AUTHORITY_KINDS = {
+    "platform-system", "platform-developer", "user-decision", "user-default",
+    "project-policy", "product-contract", "observation", "projection", "method",
+}
 
 
 def load(path: Path) -> dict:
@@ -97,8 +105,119 @@ def links(path: Path) -> list[str]:
     return [match.group(1).strip() for match in re.finditer(r"(?<!!)\[[^\]]+\]\(([^)]+)\)", text)]
 
 
+def valid_effective_at(value: object) -> bool:
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00")).tzinfo is not None
+        except ValueError:
+            return False
+    if not isinstance(value, dict) or value.get("precision") != "date":
+        return False
+    try:
+        datetime.strptime(value.get("value", ""), "%Y-%m-%d")
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def local_rule_source(uri: str, locator: str, revision: str) -> bytes | None:
+    if uri != "repo://peanut-admin-core":
+        return None
+    path = Path(locator.split("#", 1)[0])
+    if path.is_absolute() or ".." in path.parts:
+        return b""
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{path.as_posix()}"],
+        cwd=ROOT, capture_output=True,
+    )
+    return result.stdout if result.returncode == 0 else b""
+
+
+def validate_rules(registry: dict) -> list[str]:
+    errors: list[str] = []
+    rules = registry.get("rules")
+    if not isinstance(rules, list) or not rules:
+        return ["docs/content-status.json: rules must be a non-empty list"]
+    ids: set[str] = set()
+    active_subjects: set[tuple[str, str]] = set()
+    edges: dict[str, set[str]] = {}
+    for rule in rules:
+        label = f"rule {rule.get('id', '<unknown>')}" if isinstance(rule, dict) else "rule <invalid>"
+        if not isinstance(rule, dict):
+            errors.append(f"{label}: must be an object")
+            continue
+        missing = RULE_FIELDS - rule.keys()
+        if missing:
+            errors.append(f"{label}: missing {sorted(missing)}")
+            continue
+        if rule["id"] in ids or not isinstance(rule["id"], str) or not rule["id"]:
+            errors.append(f"{label}: duplicate or invalid id")
+        ids.add(rule["id"])
+        authority = rule["authority"]
+        if not isinstance(authority, dict) or set(authority) != {"kind", "issuer", "decision_ref"} or authority.get("kind") not in AUTHORITY_KINDS or not all(isinstance(authority.get(key), str) and authority[key] for key in ("issuer", "decision_ref")):
+            errors.append(f"{label}: invalid authority")
+        scope = rule["scope"]
+        scope_fields = {"repository", "subject", "modes", "actions", "exclusions"}
+        if not isinstance(scope, dict) or set(scope) != scope_fields or not isinstance(scope.get("repository"), str) or not isinstance(scope.get("subject"), str) or not all(isinstance(scope.get(key), list) for key in ("modes", "actions", "exclusions")):
+            errors.append(f"{label}: invalid scope")
+        elif rule["status"] == "active":
+            key = (scope["repository"], scope["subject"])
+            if key in active_subjects:
+                errors.append(f"{label}: duplicate active subject {key[0]}/{key[1]}")
+            active_subjects.add(key)
+        if rule["status"] not in RULE_STATUSES:
+            errors.append(f"{label}: invalid status {rule['status']}")
+        if not valid_effective_at(rule["effective_at"]):
+            errors.append(f"{label}: effective_at must be RFC3339 or a date-precision object")
+        if not isinstance(rule["owner"], str) or not rule["owner"]:
+            errors.append(f"{label}: invalid owner")
+        if not isinstance(rule["validation"], str) or not rule["validation"]:
+            errors.append(f"{label}: invalid validation")
+        if "source_span" in rule:
+            span = rule["source_span"]
+            if not isinstance(span, dict) or set(span) != {"start_line", "end_line", "heading"} or not isinstance(span.get("start_line"), int) or not isinstance(span.get("end_line"), int) or span["start_line"] < 1 or span["end_line"] < span["start_line"] or not isinstance(span.get("heading"), str) or not span["heading"]:
+                errors.append(f"{label}: invalid source_span")
+        source = rule["source"]
+        source_fields = {"kind", "uri", "locator", "revision", "sha256"}
+        if not isinstance(source, dict) or set(source) != source_fields or not all(isinstance(source.get(key), str) and source[key] for key in source_fields):
+            errors.append(f"{label}: invalid source")
+        else:
+            if not re.fullmatch(r"[0-9a-f]{64}", source["sha256"]):
+                errors.append(f"{label}: source sha256 is invalid")
+            local = local_rule_source(source["uri"], source["locator"], source["revision"])
+            if local is not None:
+                if not local:
+                    errors.append(f"{label}: local source revision or locator is missing: {source['locator']}")
+                elif hashlib.sha256(local).hexdigest() != source["sha256"]:
+                    errors.append(f"{label}: local source sha256 does not match: {source['locator']}")
+        supersedes = rule["supersedes"]
+        if not isinstance(supersedes, list):
+            errors.append(f"{label}: supersedes must be a list")
+            continue
+        edges.setdefault(rule["id"], set())
+        for item in supersedes:
+            if not isinstance(item, dict) or set(item) != {"id", "revision", "scope"} or not isinstance(item.get("id"), str) or not isinstance(item.get("revision"), str) or not isinstance(item.get("scope"), list):
+                errors.append(f"{label}: invalid supersedes entry")
+                continue
+            edges[rule["id"]].add(item["id"])
+    def visit(node: str, active: set[str], seen: set[str]) -> bool:
+        if node in active:
+            return True
+        if node in seen:
+            return False
+        active.add(node)
+        cyclic = any(visit(child, active, seen) for child in edges.get(node, ()) if child in edges)
+        active.remove(node)
+        seen.add(node)
+        return cyclic
+    if any(visit(rule_id, set(), set()) for rule_id in edges):
+        errors.append("rules: supersedes graph contains a cycle")
+    return errors
+
+
 def validate(registry: dict) -> list[str]:
     errors: list[str] = []
+    errors.extend(validate_rules(registry))
     if registry.get("schema_version") != 2:
         errors.append("docs/content-status.json: schema_version must equal 2")
     enums = registry.get("enums", {})

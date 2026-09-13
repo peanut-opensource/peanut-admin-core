@@ -125,7 +125,6 @@ This file is generated from `docs/content-status.json`. Edit the registry, then 
 | `core-doc-status-p1-w01-protected-transport-origin-contract` | `docs/status/p1-w01-protected-transport-origin-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-w03-workspace-shell-contract` | `docs/status/p1-w03-workspace-shell-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-p1-wf01-configurable-workflow-runtime-contract` | `docs/status/p1-wf01-configurable-workflow-runtime-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
-| `core-doc-status-product-310-publication-candidate-contract` | `docs/status/product-310-publication-candidate-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-starter-v1-c02-file-media-contract` | `docs/status/starter-v1-c02-file-media-contract.md` | `planned` | `plan` | `Peanut Admin maintainers` |
 | `core-doc-status-starter-v1-c02-file-media-delivery-handoff` | `docs/status/starter-v1-c02-file-media-delivery-handoff.md` | `archived` | `evidence` | `Peanut Admin maintainers` |
 

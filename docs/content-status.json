@@ -1,6 +1,70 @@
 {
   "schema_version": 2,
   "authority": "This registry classifies Core documentation and does not replace package manifests, KernelSchema, OpenAPI, module manifests, dependency decisions, runtime coverage, or fixed qualification evidence.",
+  "rules": [
+    {
+      "id": "core-boundary",
+      "kind": "project-policy",
+      "authority": {"kind": "project-policy", "issuer": "core-maintainers", "decision_ref": "docs/architecture/storage-driver-boundary.md"},
+      "scope": {"repository": "peanut-admin-core", "subject": "core-application-boundary", "modes": ["development"], "actions": ["implement", "document"], "exclusions": ["application-product-assembly"]},
+      "status": "active",
+      "effective_at": {"value": "2026-09-13", "precision": "date"},
+      "supersedes": [],
+      "source": {"kind": "git-file", "uri": "repo://peanut-admin-core", "locator": "docs/architecture/storage-driver-boundary.md#core-and-application-ownership", "revision": "16f643341ea454c9ce78d22a52ad776e498e89e9", "sha256": "74cbee8c92e3a5ab7986a16a1b1ae312b739f080f40c608f28b0aab7265d4894"},
+      "owner": "core-maintainers",
+      "validation": "./scripts/core-docs-governance check"
+    },
+    {
+      "id": "core-runtime-resources",
+      "kind": "project-policy",
+      "authority": {"kind": "project-policy", "issuer": "resource-owner", "decision_ref": "resources/project-resources.json"},
+      "scope": {"repository": "peanut-admin-core", "subject": "runtime-resource-selection", "modes": ["development", "qualification"], "actions": ["connect", "start", "test", "qualify"], "exclusions": ["unregistered-resource"]},
+      "status": "active",
+      "effective_at": {"value": "2026-09-13", "precision": "date"},
+      "supersedes": [],
+      "source": {"kind": "git-file", "uri": "repo://peanut-admin-core", "locator": "resources/project-resources.json#/resources", "revision": "16f643341ea454c9ce78d22a52ad776e498e89e9", "sha256": "d2405924650704e14a6680663d62a5b1980a64d070db26d854c23533bf551a9a"},
+      "owner": "resource-owner",
+      "validation": "./scripts/core-docs-governance check"
+    },
+    {
+      "id": "core-release-qualification",
+      "kind": "product-contract",
+      "authority": {"kind": "product-contract", "issuer": "core-release-maintainers", "decision_ref": "docs/guide/release-qualification.md"},
+      "scope": {"repository": "peanut-admin-core", "subject": "release-qualification", "modes": ["qualification", "release"], "actions": ["qualify", "publish"], "exclusions": ["ordinary-development"]},
+      "status": "active",
+      "effective_at": {"value": "2026-09-13", "precision": "date"},
+      "supersedes": [],
+      "source": {"kind": "git-file", "uri": "repo://peanut-admin-core", "locator": "docs/guide/release-qualification.md#source-tag-binding", "revision": "16f643341ea454c9ce78d22a52ad776e498e89e9", "sha256": "857113bf99998be84d24d100ec7878bbdd45dd7060145e075e7835eee106164d"},
+      "owner": "core-release-maintainers",
+      "validation": "./scripts/core-docs-governance check"
+    },
+    {
+      "id": "core-product-version-projection",
+      "kind": "projection",
+      "authority": {"kind": "product-contract", "issuer": "product-architecture", "decision_ref": "repo://peanut-admin/docs/architecture/product-version-identity-adr.md"},
+      "scope": {"repository": "peanut-admin-core", "subject": "product-version-projection", "modes": ["development", "qualification", "release"], "actions": ["project", "validate"], "exclusions": ["application-release-claim"]},
+      "status": "active",
+      "effective_at": {"value": "2026-09-13", "precision": "date"},
+      "supersedes": [],
+      "source": {"kind": "git-file", "uri": "repo://peanut-admin", "locator": "docs/architecture/product-version-identity-adr.md", "revision": "a1dc089be9b4150af5871354006fa44fe731874e", "sha256": "8804095b7a88ed8337495f96dbbab43f82b51d929e92f4c063ce7d8feffad291"},
+      "source_span": {"start_line": 11, "end_line": 19, "heading": "决定"},
+      "owner": "product-architecture",
+      "validation": "./scripts/core-docs-governance check"
+    },
+    {
+      "id": "core-git-and-verification",
+      "kind": "project-policy",
+      "authority": {"kind": "project-policy", "issuer": "application-maintainers", "decision_ref": "repo://peanut-admin/AGENT_EXECUTION_RULES.md"},
+      "scope": {"repository": "peanut-admin-core", "subject": "git-integration-and-verification", "modes": ["development", "qualification", "release"], "actions": ["integrate", "push", "review"], "exclusions": ["shared-history-rewrite"]},
+      "status": "active",
+      "effective_at": {"value": "2026-09-13", "precision": "date"},
+      "supersedes": [],
+      "source": {"kind": "git-file", "uri": "repo://peanut-admin", "locator": "AGENT_EXECUTION_RULES.md", "revision": "a1dc089be9b4150af5871354006fa44fe731874e", "sha256": "2b31207ffaa83cba6a0befda11adcb1bfad0a7c701dc2f163c86494c00ac3be9"},
+      "source_span": {"start_line": 88, "end_line": 93, "heading": "5.1 本地批处理、资源租约与远程推送门禁"},
+      "owner": "core-maintainers",
+      "validation": "./scripts/core-docs-governance check"
+    }
+  ],
   "enums": {
     "audience": [
       "maintainer",
@@ -442,14 +506,6 @@
       "path": "docs/status/alpha13-publication-candidate-contract.md",
       "title": "Alpha.13 Publication Candidate Contract",
       "status": "archived",
-      "owner": "Peanut Admin maintainers",
-      "replacement": null
-    },
-    {
-      "id": "core-doc-status-product-310-publication-candidate-contract",
-      "path": "docs/status/product-310-publication-candidate-contract.md",
-      "title": "Product 3.1.0 Publication Candidate Contract",
-      "status": "planned",
       "owner": "Peanut Admin maintainers",
       "replacement": null
     },

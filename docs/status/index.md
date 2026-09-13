@@ -9,16 +9,11 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 
 ## Current facts
 
-- Product 3.1.0 is **qualified and unpublished** on fixed candidate
-  `985ee420b486a97325cdd0bb87412a76346aeb93` (tree
-  `e00f644b07c8e5218d1fa3779e373338adac7366`).
-  Its [candidate contract](./product-310-publication-candidate-contract.md)
-  records the repaired supply-chain failure and fixed resources. The
-  [qualification record](../releases/qualifications/3.1.0.json) binds the fresh
-  full Q01 and same-candidate nine-perspective D05 evidence, both package
-  projections, and verified Q01 resource cleanup. Source/split tags, registry
-  publication, GitHub Release and Application dependency adoption remain
-  separate states and are not implied by qualification.
+- Core `v3.1.0` is a published fixed source tag and package identity. Its
+  [qualification record](../releases/qualifications/3.1.0.json) binds the
+  fixed-candidate Q01 and same-candidate nine-perspective D05 evidence. A Core
+  tag or package publication does not establish an Application release,
+  deployment, or dependency adoption; those facts are owned by Application.
 
 - Source publication requires the [committed qualification binding](../guide/release-qualification.md).
   Alpha.13 Q01 and the nine-role D05 review pass for fixed candidate
@@ -41,10 +36,10 @@ and fixed-commit evidence remain the authoritative sources for their facts.
   GitHub Release, npm package, Packagist package and clean Composer consumer
   agree. Peanut Admin Application v3.0.13 has adopted that immutable version.
 
-The current package identity is [Alpha.13](https://github.com/peanut-opensource/peanut-admin-core/releases/tag/v0.1.0-alpha.13),
-published on 2026-09-08 from source tag commit `9e63054850f5e2f5270485ba7e62ea42bb6e9afb` with the committed
-qualification record. Future coordinated product numbering follows the
-[version identity decision](../architecture/product-version-identity.md).
+The current published package identity is
+[v3.1.0](https://github.com/peanut-opensource/peanut-admin-core/releases/tag/v3.1.0).
+Historical Alpha.13 remains immutable evidence of its own source line. Product
+numbering follows the [version identity projection](../architecture/product-version-identity.md).
 
 ## Plans and bounded candidate history
 
