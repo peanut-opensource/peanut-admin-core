@@ -9,6 +9,10 @@ and fixed-commit evidence remain the authoritative sources for their facts.
 
 ## Current facts
 
+- Core `3.1.1` is the current development candidate containing the accepted
+  ThinkPHP convergence. Its [qualification record](../releases/qualifications/3.1.1.json)
+  remains pending; no 3.1.1 source tag or package publication is claimed here.
+
 - Core `v3.1.0` is a published fixed source tag and package identity. Its
   [qualification record](../releases/qualifications/3.1.0.json) binds the
   fixed-candidate Q01 and same-candidate nine-perspective D05 evidence. A Core

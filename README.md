@@ -83,7 +83,8 @@ The current [release qualification binding](docs/guide/release-qualification.md)
 defines how source-tag evidence is verified; ordinary preparation history remains in Git.
 Future shared product numbering and independent
 Module/Instance versions follow the [version decision](docs/architecture/product-version-identity.md);
-a new coordinated target is not a published package.
+the current 3.1.1 manifests are a development candidate and are not a published
+package until their fixed qualification and source-tag release complete.
 
 ## Principles
 

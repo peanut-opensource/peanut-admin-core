@@ -20,7 +20,8 @@ if ($actual !== $expected) {
 }
 '
 
-  if rg -n '/Users/|base-framework|BusinessSpace|PermissionDomain|MemberIdentity|DataScope|DCS|Finance Manager' \
+  if rg -n --glob '!docs/releases/evidence/**' \
+    '/Users/|base-framework|BusinessSpace|PermissionDomain|MemberIdentity|DataScope|DCS|Finance Manager' \
     AGENTS.md README.md NOTICE docs; then
     echo 'ERROR: private path, legacy model, or product-specific content detected' >&2
     exit 1

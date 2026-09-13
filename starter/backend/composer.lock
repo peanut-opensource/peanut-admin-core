@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "420641d3de941107a97d6326e7bd2e6f",
+    "content-hash": "a82519b2bb15ca9f8f4a2cec46298b4b",
     "packages": [
         {
             "name": "composer/semver",
@@ -275,11 +275,11 @@
         },
         {
             "name": "peanut-admin/core",
-            "version": "3.1.0",
+            "version": "3.1.1",
             "dist": {
                 "type": "path",
                 "url": "../packages/php",
-                "reference": "1a7e5d38ad0a9b05c86b6d7fa2fc734e236bf9ac"
+                "reference": "f1666293c587971808f5a8cb77c5348143115e0b"
             },
             "require": {
                 "ext-fileinfo": "*",
@@ -288,7 +288,8 @@
                 "ext-pdo": "*",
                 "ext-sodium": "*",
                 "opis/json-schema": "^2.6.0",
-                "php": "^8.3"
+                "php": "^8.3",
+                "topthink/think-orm": "^4.0.51"
             },
             "require-dev": {
                 "phpunit/phpunit": "^12.5.31"
@@ -881,5 +882,5 @@
     "platform-overrides": {
         "php": "8.3.24"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

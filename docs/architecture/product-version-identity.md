@@ -19,6 +19,10 @@ state that Application `v3.1.0` has been released, deployed, or has adopted the
 Core packages. Read the owning Application ADR and its release facts for those
 states.
 
+Core `3.1.1` is the current coordinated development candidate for the accepted
+ThinkPHP convergence. Its package manifests are candidate inputs only until a
+new fixed Q01/D05 qualification, source tag and Registry publication complete.
+
 ## Historical Alpha.13
 
 Core [v0.1.0-alpha.13](https://github.com/peanut-opensource/peanut-admin-core/releases/tag/v0.1.0-alpha.13) was published under the former independent Core sequence. Application v3.0.14 consumes that exact historical version. Existing tags, Release assets, package versions and qualification records must remain unchanged; Alpha.13 must not be relabeled as Core v3.0.14.
