@@ -1,9 +1,10 @@
 # Reference Codes PHP Package
 
-> Alpha.13 still contains the `PdoReferenceCodeRepository` implementation and
-> same-connection wording below as a migration-before source fact. The accepted
-> runtime direction is ThinkPHP 8 Model/Query/Db/Transaction; do not add new
-> public PDO consumers. See `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
+> Published Core 3.1.0 retains its historical PDO implementation. Development
+> commit `cab7415` replaces that source path with the injected ThinkPHP
+> `PDOConnection` and native transaction boundary; this is not a new package
+> identity or qualification result. See
+> `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
 
 The Reference Codes namespace inside `peanut-admin/core` provides neutral,
 reusable reference-code set definitions and Tenant-owned, immutable code
@@ -20,8 +21,8 @@ categories, workflow states, units, taxonomies, or default values.
 - The package has no deployment, platform, target, global, or shared-master
   value scope.
 - The Host must verify both `peanut.reference-codes` and the declaring Module
-  before calling the package. The repository independently requires the active
-  synchronized set digest on the same PDO connection.
+  before calling the package. `ReferenceCodeStore` independently requires the
+  active synchronized set digest on the same injected ThinkPHP connection.
 
 ## Definitions
 
@@ -31,15 +32,15 @@ categories, workflow states, units, taxonomies, or default values.
 unsafe slugs, malformed UTF-8, and missing resources fail closed.
 
 Register every compiled Module, including Modules with zero sets, in one
-`ReferenceCodeSetRegistry`. `PdoReferenceCodeRepository::synchronize()` treats
+`ReferenceCodeSetRegistry`. `ReferenceCodeStore::synchronize()` treats
 that registry as the complete definition snapshot: changed definitions advance
 their revision, missing definitions retire, and restoring the same owner/key
 reactivates the same database identity.
 
 ## Tenant Commands
 
-Construct `ReferenceCodeAdminService` with a `PdoReferenceCodeRepository` that
-uses the same PDO instance as the R02 atomic operation. The service exposes:
+Construct `ReferenceCodeAdminService` with a `ReferenceCodeStore` that uses the
+same ThinkPHP `PDOConnection` as the R02 atomic operation. The service exposes:
 
 ```php
 $created = $admin->create(

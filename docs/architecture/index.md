@@ -1,6 +1,6 @@
 # Architecture
 
-Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. The current Core package still exposes PDO-backed persistence and atomic-command contracts. Converging those contracts on ThinkPHP Model/Query/Db/Transaction is an accepted future direction recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. The 3.1.0 identity alignment does not implement that migration or create a framework-neutral support promise.
+Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. Most Core domains still expose PDO-backed persistence contracts; the transaction foundation and ReferenceCodes development source have begun the accepted ThinkPHP Model/Query/Db/Transaction convergence recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. Published 3.1.0 artifacts remain immutable and do not include these development changes.
 
 ## Repository Layers
 
@@ -26,16 +26,21 @@ supported non-ThinkPHP production consumer, and Core is not pursuing
 framework-neutral persistence. The canonical cross-repository decision is
 `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
 This section is Core's current projection of that decision; it does not claim
-that the source migration has happened. Development commit `61287a9` adds the
+that the repository-wide migration is complete. Development commit `61287a9` adds the
 first native `ThinkPhpTransactionManager` implementation and the publishable
 package's explicit ThinkORM dependency. Application commit `14ce7b1b` adopts
 that boundary in its main composition root; Application commit `e67acd72`
 uses the repository's local-Core Composer workflow to verify full startup,
 container resolution, shared ThinkPHP/PDO connection state, nested transaction
 handling and failure rollback against the registered development database.
-Existing domain PDO repositories and direct `PdoTransactionManager` consumers
-remain migration work, so these commits are a transaction foundation rather
-than completed Runtime convergence or a qualified/published package identity.
+Core commits `e0102fc` and `cab7415` then inject the transaction boundary into
+atomic operations and migrate ReferenceCodes plus its HTTP/install/upgrade
+composition to the shared ThinkPHP connection. The former
+`PdoReferenceCodeRepository` source path is gone, while the domain's MySQL
+isolation/concurrency gate and both-Edition qualification remain pending a
+registered ReferenceCodes resource. Other domain PDO repositories and direct
+`PdoTransactionManager` consumers remain migration work, so this is neither
+completed Runtime convergence nor a qualified/published package identity.
 
 The source audit is fixed to Application
 `ea9bc3a1dfaa844a8481b01d0341aa1ad749faa9` and Core

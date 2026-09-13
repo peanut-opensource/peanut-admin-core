@@ -150,15 +150,17 @@ Runtime contracts below have not yet migrated.
 An external Module owns its domain callable and, when needed, its outbox
 schema. Peanut Admin provides the transaction, idempotency, and audit
 primitives; it does not own the Module's domain tables or outbox table. The
-current `ExternalOperationHost::command()` and `AtomicOperationAdapter` pass
-one transaction-owned PDO to the handler, guard and optional outbox. That
-contract is still present in the coordinated 3.1.0 candidate. Every write in
-one command must use that same connection to preserve atomicity.
+`ExternalOperationHost::command()` and `AtomicOperationAdapter` pass one
+transaction-owned PDO to the handler, guard and optional outbox. Development
+commit `e0102fc` makes the transaction manager explicit, so a migrated domain
+can supply the native ThinkPHP transaction boundary while unmigrated domains
+retain their current manager. Every write in one command must still use the
+same underlying connection to preserve atomicity.
 
-The following diagram describes the accepted future ThinkPHP migration. It
-is not an API implemented by renumbering the package. New architecture must
-target this boundary without adding another PDO abstraction; adoption of a
-changed public command contract waits for its implementation and qualification.
+The following diagram is the accepted ThinkPHP target. ReferenceCodes
+development commit `cab7415` now uses it, but the other domains and the fixed
+qualification matrix have not completed. It is not an API implemented by
+renumbering the package, and no second PDO abstraction is permitted.
 
 ```text
 ThinkPHP bootstrap
@@ -171,9 +173,10 @@ ThinkPHP bootstrap
 
 The atomicity invariant remains: idempotency acquisition, domain writes,
 audit, outbox and terminal completion share one transaction and one execution
-context. The current implementation uses the passed PDO; the future migration
-must preserve this invariant through ThinkPHP transactions. Creating a second
-connection inside a handler breaks the existing guarantee.
+context. ReferenceCodes uses the injected ThinkPHP `PDOConnection` and
+`ThinkPhpTransactionManager`; the handler PDO is the same connection's native
+handle for the still-shared Kernel guards, idempotency and audit contracts.
+Creating a second connection inside a handler breaks the guarantee.
 
 The host must store only a safe, redacted terminal response. It must not store
 credentials, secrets, SQL, stack traces, raw authorization input, or hidden
@@ -242,13 +245,13 @@ host path and method
 ```
 
 The request body, query, route parameters, and headers cannot establish a
-Tenant context. The current command callable receives the transaction-owned
-PDO and returns an `ExternalOperationResult` containing only its safe response
-and redacted audit evidence. Domain writes, idempotency, audit and an optional
-application-owned outbox share that same connection. The planned ThinkPHP
-transaction migration is described above; it has not changed this callable
-signature. Missing context, Module, permission, target declaration, Provider,
-or operation fails closed and maps to a stable Problem Details response.
+Tenant context. The command callable receives the transaction-owned PDO and
+returns an `ExternalOperationResult` containing only its safe response and
+redacted audit evidence. Domain writes, idempotency, audit and an optional
+application-owned outbox share that same connection. The ThinkPHP transaction
+migration does not change this cross-Module callable signature. Missing
+context, Module, permission, target declaration, Provider, or operation fails
+closed and maps to a stable Problem Details response.
 
 The executable fictional example is under `examples/external-host`. It proves
 five explicit operations and is not a generic repository, CRUD engine, route

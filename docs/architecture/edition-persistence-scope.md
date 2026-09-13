@@ -22,6 +22,13 @@ Queries and TenantScope. A migration batch must preserve both physical schemas
 and remove its corresponding repository/PDO path atomically; it may not emulate
 an Edition with a scope bypass or keep a second persistence implementation.
 
+ReferenceCodes development commit `cab7415` is the first domain migration on
+that boundary: its three owned tables retain their explicit Tenant identity and
+the old PDO repository is removed in favor of one injected ThinkPHP connection.
+This source result does not qualify either Edition; the registered MySQL
+isolation/concurrency run and the fixed Standalone/Multi-tenant candidate remain
+required before delivery.
+
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
 Import/Export, and [`P1-ED01-R01`](../status/p1-ed01-r01-settings-persistence-scope-contract.md) for
