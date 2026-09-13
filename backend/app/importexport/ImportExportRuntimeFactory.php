@@ -34,7 +34,7 @@ final class ImportExportRuntimeFactory
         $pdo = $connection->connect();
         $transactions = new ThinkPhpTransactionManager($connection);
         $repository = new ImportExportStore($connection);
-        return new ImportExportTaskHandler(new CsvOperationRunner($repository, $transactions, self::providers($pdo), new PdoFileMediaGateway($pdo), new PdoAuditRepository($pdo)));
+        return new ImportExportTaskHandler(new CsvOperationRunner($repository, $transactions, self::providers($pdo), new ThinkPhpFileMediaGateway($connection), new PdoAuditRepository($pdo)));
     }
     private static function providers(PDO $pdo): DataProviderRegistry
     {

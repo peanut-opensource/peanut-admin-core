@@ -32,7 +32,7 @@ final class FileMediaSecurityTest extends TestCase
 
     public function testEveryLookupAndMutationIsTenantScoped(): void
     {
-        $repository = file_get_contents(dirname(__DIR__, 3) . '/packages/php/file-media/src/Persistence/PdoFileRepository.php') ?: '';
+        $repository = file_get_contents(dirname(__DIR__, 3) . '/packages/php/file-media/src/Persistence/FileStore.php') ?: '';
         self::assertGreaterThanOrEqual(4, substr_count($repository, 'tenant_id = :tenant_id'));
         self::assertStringContainsString("AND status = 'ready'", $repository);
         self::assertStringContainsString('FOR UPDATE', $repository);

@@ -20,6 +20,7 @@ use RecursiveIteratorIterator;
 use RuntimeException;
 use think\Request;
 use think\Response;
+use think\db\PDOConnection;
 
 final class FileMediaModuleIntegrationTest extends TestCase
 {
@@ -27,6 +28,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
 
     private PDO $admin;
     private PDO $pdo;
+    private PDOConnection $connection;
     private int $tenantId;
     private int $memberId;
     private int $accountId;
@@ -69,6 +71,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
                 PDO::ATTR_EMULATE_PREPARES => false,
             ],
         );
+        $this->connection = \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo);
         foreach ([
             'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD', 'AUTH_IDENTIFIER_HMAC_KEY',
             'FILE_MEDIA_STORAGE_ROOT', 'FILE_MEDIA_DELIVERY_BASE_URL', 'FILE_MEDIA_DELIVERY_SIGNING_KEY',
@@ -85,7 +88,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
         $root = dirname(__DIR__, 3);
         $installation = (new InstallWorkflow(
             $root,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+            $this->connection,
         ))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
@@ -138,7 +141,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
                 'req_file_create_0001',
                 files: $this->uploadFiles('../private report.txt'),
             ),
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
             $this->storage(),
         );
@@ -161,7 +164,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
 
         $list = FileRuntimeFactory::list(
             $this->request('GET', '/api/v1/files', 'req_file_list_0001', query: ['page' => '1', 'page_size' => '20']),
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
         );
         self::assertSame(200, $list->getCode());
@@ -170,7 +173,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
         $download = FileRuntimeFactory::download(
             $this->request('GET', "/api/v1/files/{$fileKey}/content", 'req_file_download_0001'),
             $fileKey,
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
             $this->storage(),
         );
@@ -184,7 +187,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
         $archived = FileRuntimeFactory::archive(
             $this->request('DELETE', "/api/v1/files/{$fileKey}", 'req_file_archive_0001', headers: ['if-match' => '"rev-1"']),
             $fileKey,
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
         );
         self::assertSame(200, $archived->getCode());
@@ -198,7 +201,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
         $denied = FileRuntimeFactory::download(
             $this->request('GET', "/api/v1/files/{$fileKey}/content", 'req_file_archived_download_0001'),
             $fileKey,
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
             $this->storage(),
         );
@@ -227,7 +230,7 @@ WHERE role_permission.tenant_id = {$this->tenantId}
 SQL);
         $denied = FileRuntimeFactory::list(
             $this->request('GET', '/api/v1/files', 'req_file_permission_denied_0001'),
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
         );
         self::assertSame(403, $denied->getCode());
@@ -235,7 +238,7 @@ SQL);
 
         $wrongAudience = FileRuntimeFactory::list(
             $this->request('GET', '/api/v1/files', 'req_file_wrong_audience_0001', trustedContext: false),
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
         );
         self::assertSame(401, $wrongAudience->getCode());
@@ -248,7 +251,7 @@ SQL);
                 body: ['tenant_id' => 99],
                 files: $this->uploadFiles('report.txt'),
             ),
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
             $this->storage(),
         );
@@ -261,13 +264,13 @@ SQL);
         $unknown = FileRuntimeFactory::detail(
             $this->request('GET', '/api/v1/files/file_' . str_repeat('f', 32), 'req_file_unknown_0001'),
             'file_' . str_repeat('f', 32),
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
         );
         $malformed = FileRuntimeFactory::detail(
             $this->request('GET', '/api/v1/files/not-a-key', 'req_file_malformed_0001'),
             'not-a-key',
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
         );
         self::assertSame(404, $unknown->getCode());
@@ -283,7 +286,7 @@ SQL);
                 'req_file_delivery_create_0001',
                 files: $this->uploadFiles('preview.txt'),
             ),
-            $this->pdo,
+            $this->connection,
             RuntimeModuleRegistry::compile(),
             $this->storage(),
         );
@@ -343,7 +346,7 @@ SQL);
                     'req_file_audit_failure_0001',
                     files: $this->uploadFiles('report.txt'),
                 ),
-                $this->pdo,
+                $this->connection,
                 RuntimeModuleRegistry::compile(),
                 $this->storage(),
             );

@@ -14,7 +14,7 @@ use PeanutAdmin\FileMedia\Application\FileMediaException;
 use PeanutAdmin\FileMedia\Application\FileObject;
 use PeanutAdmin\FileMedia\Application\FileService;
 use PeanutAdmin\FileMedia\Application\UploadPolicy;
-use PeanutAdmin\FileMedia\Persistence\PdoFileRepository;
+use PeanutAdmin\FileMedia\Persistence\FileStore;
 use PeanutAdmin\FileMedia\Storage\StorageProvider;
 use PeanutAdmin\FileMedia\Storage\StoredObject;
 use PeanutAdmin\Kernel\Api\ApiException;
@@ -44,11 +44,13 @@ use PeanutAdmin\Kernel\Module\ModuleGuard;
 use PeanutAdmin\Kernel\Module\ModuleHostLayout;
 use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
 use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
+use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
 use PeanutAdmin\Kernel\Platform\Authorization\PdoPlatformAuthorizationRepository;
 use PeanutAdmin\Kernel\Platform\Authorization\PlatformAuthorizationEvaluator;
 use think\Request;
 use think\Response;
+use think\db\PDOConnection;
+use think\facade\Db;
 use Throwable;
 
 final class FileRuntimeFactory
@@ -87,20 +89,20 @@ final class FileRuntimeFactory
         ];
     }
 
-    public static function list(Request $request, ?PDO $pdo = null, ?CompiledModuleRegistry $modules = null): Response
+    public static function list(Request $request, ?PDOConnection $connection = null, ?CompiledModuleRegistry $modules = null): Response
     {
-        $pdo ??= MemberAdminRuntime::pdo();
+        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['listFiles'];
         $externalRequest = self::externalRequest($request, $operation, '/api/v1/files');
-        $response = self::host($pdo, $modules)->read(
+        $response = self::host($connection, $modules)->read(
             $operation,
             $externalRequest,
-            static function (AuthorizedExternalOperation $authorized, ExternalOperationRequest $query) use ($pdo): ExternalOperationResponse {
+            static function (AuthorizedExternalOperation $authorized, ExternalOperationRequest $query) use ($connection): ExternalOperationResponse {
                 try {
                     self::assertEmptyPayload($query);
                     $input = self::listQuery($query);
-                    $result = (new PdoFileRepository($pdo))->list(
+                    $result = (new FileStore($connection))->list(
                         self::context($authorized)->tenantId,
                         $input['status'],
                         $input['page'],
@@ -127,21 +129,21 @@ final class FileRuntimeFactory
     public static function detail(
         Request $request,
         string $fileKey,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $pdo ??= MemberAdminRuntime::pdo();
+        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['getFile'];
         $externalRequest = self::externalRequest($request, $operation, self::detailPath($fileKey));
-        $response = self::host($pdo, $modules)->read(
+        $response = self::host($connection, $modules)->read(
             $operation,
             $externalRequest,
-            static function (AuthorizedExternalOperation $authorized, ExternalOperationRequest $query) use ($pdo, $fileKey): ExternalOperationResponse {
+            static function (AuthorizedExternalOperation $authorized, ExternalOperationRequest $query) use ($connection, $fileKey): ExternalOperationResponse {
                 try {
                     self::assertNoInput($query);
                     self::assertFileKey($fileKey);
-                    $file = (new PdoFileRepository($pdo))->get(self::context($authorized)->tenantId, $fileKey);
+                    $file = (new FileStore($connection))->get(self::context($authorized)->tenantId, $fileKey);
 
                     return new ExternalOperationResponse(200, ['data' => $file->toArray()]);
                 } catch (FileMediaException $exception) {
@@ -155,29 +157,35 @@ final class FileRuntimeFactory
 
     public static function upload(
         Request $request,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
         ?StorageProvider $storage = null,
     ): Response {
-        $pdo ??= MemberAdminRuntime::pdo();
+        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $storage ??= self::storage();
         $operation = self::operations()['createFile'];
         $externalRequest = self::externalRequest($request, $operation, '/api/v1/files');
         $stored = null;
-        $service = new FileService(new PdoFileRepository($pdo), $storage, self::uploadPolicy());
-        $response = self::host($pdo, $modules)->command(
+        $transactions = new ThinkPhpTransactionManager($connection);
+        $service = new FileService(new FileStore($connection), $transactions, $storage, self::uploadPolicy());
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($request, $storage, &$stored): ExternalOperationResult {
+            ) use ($request, $connection, $storage, &$stored): ExternalOperationResult {
                 try {
                     self::assertNoInput($command);
                     [$sourcePath, $originalName] = self::uploadedFile($request);
-                    $service = new FileService(new PdoFileRepository($transaction), $storage, self::uploadPolicy());
+                    $service = new FileService(
+                        new FileStore($connection),
+                        new ThinkPhpTransactionManager($connection),
+                        $storage,
+                        self::uploadPolicy(),
+                    );
                     $file = $service->upload(
                         self::context($authorized),
                         $sourcePath,
@@ -186,7 +194,7 @@ final class FileRuntimeFactory
                             $stored = $object;
                         },
                     );
-                    (new FileDeliveryRepository($transaction))->recordImage($file, $sourcePath);
+                    (new FileDeliveryStore($connection))->recordImage($file, $sourcePath);
 
                     return new ExternalOperationResult(
                         201,
@@ -220,29 +228,31 @@ final class FileRuntimeFactory
     public static function archive(
         Request $request,
         string $fileKey,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $pdo ??= MemberAdminRuntime::pdo();
+        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['archiveFile'];
         $externalRequest = self::externalRequest($request, $operation, self::detailPath($fileKey));
-        $response = self::host($pdo, $modules)->command(
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($fileKey): ExternalOperationResult {
+            ) use ($connection, $fileKey): ExternalOperationResult {
                 try {
                     self::assertNoInput($command);
                     self::assertFileKey($fileKey);
                     $revision = self::expectedRevision($command);
-                    $file = (new PdoFileRepository($transaction))->archive(
-                        self::context($authorized),
-                        $fileKey,
-                        $revision,
+                    $file = (new ThinkPhpTransactionManager($connection))->run(
+                        fn(): FileObject => (new FileStore($connection))->archive(
+                            self::context($authorized),
+                            $fileKey,
+                            $revision,
+                        ),
                     );
 
                     return new ExternalOperationResult(
@@ -267,20 +277,22 @@ final class FileRuntimeFactory
     public static function download(
         Request $request,
         string $fileKey,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
         ?StorageProvider $storage = null,
     ): Response {
-        $pdo ??= MemberAdminRuntime::pdo();
+        $connection ??= self::connection();
+        $pdo = $connection->connect();
         $modules ??= RuntimeModuleRegistry::compile();
         $storage ??= self::storage();
         $operation = self::operations()['downloadFile'];
         $path = self::detailPath($fileKey) . '/content';
         $externalRequest = self::externalRequest($request, $operation, $path);
-        $response = self::host($pdo, $modules)->read(
+        $response = self::host($connection, $modules)->read(
             $operation,
             $externalRequest,
             static function (AuthorizedExternalOperation $authorized, ExternalOperationRequest $query) use (
+                $connection,
                 $pdo,
                 $fileKey,
                 $storage,
@@ -290,13 +302,14 @@ final class FileRuntimeFactory
                     self::assertFileKey($fileKey);
                     $context = self::context($authorized);
 
-                    return (new PdoTransactionManager($pdo))->run(static function () use (
+                    return (new ThinkPhpTransactionManager($connection))->run(static function () use (
+                        $connection,
                         $pdo,
                         $fileKey,
                         $storage,
                         $context,
                     ): ExternalOperationResponse {
-                        $file = (new PdoFileRepository($pdo))->getForDownload($context->tenantId, $fileKey);
+                        $file = (new FileStore($connection))->getForDownload($context->tenantId, $fileKey);
                         if (!hash_equals($storage->key(), $file->storageProviderKey)) {
                             throw FileMediaException::storageUnavailable();
                         }
@@ -351,8 +364,9 @@ final class FileRuntimeFactory
         ]);
     }
 
-    public static function host(PDO $pdo, CompiledModuleRegistry $modules): ExternalOperationHost
+    public static function host(PDOConnection $connection, CompiledModuleRegistry $modules): ExternalOperationHost
     {
+        $pdo = $connection->connect();
         $configuration = self::hostConfiguration();
         $permissions = new PermissionMiddleware(
             new TenantAuthorizationEvaluator(
@@ -379,7 +393,7 @@ final class FileRuntimeFactory
             new ModuleAvailabilityAdapter($modules, new ModuleGuard(new PdoModuleRuntimeRepository($pdo))),
             new PermissionAdapter($permissions),
             new TypedTargetAdapter($unusedDataAuthorization),
-            new AtomicOperationAdapter($pdo, new PdoTransactionManager($pdo)),
+            new AtomicOperationAdapter($pdo, new ThinkPhpTransactionManager($connection)),
             new ProblemDetailsAdapter(),
         );
     }
@@ -422,6 +436,16 @@ final class FileRuntimeFactory
         $config = require dirname(__DIR__, 3) . '/backend/config/file-media.php';
 
         return new UploadPolicy($config['allowed_media_types'], $config['max_bytes']);
+    }
+
+    private static function connection(): PDOConnection
+    {
+        $connection = Db::connect();
+        if (!$connection instanceof PDOConnection) {
+            throw new LogicException('FILE_MEDIA_DATABASE_CONNECTION_UNSUPPORTED');
+        }
+
+        return $connection;
     }
 
     private static function operation(

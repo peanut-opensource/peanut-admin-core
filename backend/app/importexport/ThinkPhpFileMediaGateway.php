@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\importexport;
 
-use PDO;
 use PeanutAdmin\App\filemedia\LocalPrivateStorageProvider;
 use PeanutAdmin\FileMedia\Application\FileService;
 use PeanutAdmin\FileMedia\Application\UploadPolicy;
-use PeanutAdmin\FileMedia\Persistence\PdoFileRepository;
+use PeanutAdmin\FileMedia\Persistence\FileStore;
 use PeanutAdmin\ImportExport\Application\ImportExportException;
 use PeanutAdmin\ImportExport\File\FileMediaGateway;
 use PeanutAdmin\Kernel\Context\AuthorizedOperationContext;
+use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
+use think\db\PDOConnection;
 use Throwable;
 
-final readonly class PdoFileMediaGateway implements FileMediaGateway
+final readonly class ThinkPhpFileMediaGateway implements FileMediaGateway
 {
-    public function __construct(private PDO $pdo) {}
+    public function __construct(private PDOConnection $connection) {}
     public function openCsvInput(AuthorizedOperationContext $context, string $fileKey)
     {
         try {
@@ -56,6 +57,6 @@ final readonly class PdoFileMediaGateway implements FileMediaGateway
     private function service(): FileService
     {
         $config = require dirname(__DIR__, 2) . '/config/file-media.php';
-        return new FileService(new PdoFileRepository($this->pdo), new LocalPrivateStorageProvider($config['local_root'], $config['public_roots']), new UploadPolicy(['text/csv'], $config['max_bytes']));
+        return new FileService(new FileStore($this->connection), new ThinkPhpTransactionManager($this->connection), new LocalPrivateStorageProvider($config['local_root'], $config['public_roots']), new UploadPolicy(['text/csv'], $config['max_bytes']));
     }
 }
