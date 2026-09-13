@@ -155,6 +155,12 @@ if rg -n 'DCS|Finance Manager|BusinessSpace|PermissionDomain|MemberIdentity|Data
   exit 1
 fi
 
+if rg -n -i '\bAS[[:space:]]+(current_time|current_date|current_timestamp)\b' \
+  backend/app packages/php/*/src starter/backend/src; then
+  echo 'ERROR: product-owned SQL uses an unquoted reserved temporal alias' >&2
+  exit 1
+fi
+
 php vendor/bin/phpunit backend/tests/Architecture
 php vendor/bin/deptrac analyse --no-progress --fail-on-uncovered --cache-file=.cache/deptrac.cache
 

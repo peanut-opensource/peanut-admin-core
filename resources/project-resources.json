@@ -344,6 +344,34 @@
         ]
       },
       {
+        "stable_resource_id": "peanut-admin-core-mysql84-311-database-time-development",
+        "purpose": "isolated MySQL service for the Core 3.1.1 database-time alias focused validation",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core 3.1.1 database-time recovery owner",
+        "host": "127.0.0.1",
+        "port": 33436,
+        "database": "generated Starter and domain-harness synthetic databases inside the isolated Compose service",
+        "schema": "generated Starter plus File Media, Task/Job, Notification/SMS and Reference Codes fixtures",
+        "namespace": "Docker Compose project peanut-admin-core-311-dbtime-dev, service mysql",
+        "service_type": "MySQL",
+        "version": "8.4.10",
+        "credential_ref": "compose.yaml synthetic development fixture environment; values are not repeated in this registry",
+        "data_source": "the active Core development tree and freshly generated synthetic fixtures only",
+        "freshness_requirement": "the Compose project, MySQL volume, listener and every script-owned database are absent before the focused run",
+        "health_check": "Docker reports the peanut-admin-core-311-dbtime-dev mysql service healthy and a PDO connection to 127.0.0.1:33436 reports MySQL 8.4.10",
+        "fallback": "none",
+        "lifecycle": "one Development-mode database-time compatibility validation",
+        "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-dbtime-dev with volumes and orphans, then proves its containers, volume, network, listener and generated databases are absent",
+        "consumers": [
+          "packages/php/file-media/tests/Integration/FileServiceTest.php",
+          "packages/php/task-job/tests/feature-harness.php",
+          "packages/php/notification-sms/tests/mysql-harness.php",
+          "starter/backend/tests/reference-codes.php"
+        ]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-mysql84-alpha12-qualification",
         "purpose": "exclusive MySQL service for the fixed Alpha.12 repository qualification",
         "environments": [
@@ -641,6 +669,31 @@
         ]
       },
       {
+        "stable_resource_id": "peanut-admin-core-compose-311-database-time-development",
+        "purpose": "isolated container namespace for the Core 3.1.1 database-time alias focused validation",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core 3.1.1 database-time recovery owner",
+        "host": "macbookpro-arm64 Docker Desktop Linux VM",
+        "port": null,
+        "database": "script-owned synthetic databases only",
+        "schema": "generated Starter and four affected Core domain fixtures",
+        "namespace": "Docker Compose project peanut-admin-core-311-dbtime-dev",
+        "service_type": "Docker Compose",
+        "version": "compose.yaml service mysql:8.4.10",
+        "credential_ref": "compose.yaml synthetic development fixture environment; no secret value is stored in the registry",
+        "data_source": "the active Core development tree and compose.yaml mysql service",
+        "freshness_requirement": "Docker container, network and volume inventories contain no peanut-admin-core-311-dbtime-dev resource before the run",
+        "health_check": "docker compose for project peanut-admin-core-311-dbtime-dev resolves the fixed config and its mysql service becomes healthy",
+        "fallback": "none",
+        "lifecycle": "one Development-mode focused validation",
+        "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-dbtime-dev with volumes and orphans and proves zero containers, networks, volumes and listeners remain",
+        "consumers": [
+          "database-time focused validation"
+        ]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-compose-alpha12-qualification",
         "purpose": "exclusive container namespace for fixed Alpha.12 MySQL and Valkey qualification services",
         "environments": [
@@ -768,6 +821,31 @@
         ]
       },
       {
+        "stable_resource_id": "peanut-admin-core-311-database-time-development-output",
+        "purpose": "temporary generated Starter and focused evidence for the Core 3.1.1 database-time alias recovery",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core 3.1.1 database-time recovery owner",
+        "host": "macbookpro-arm64",
+        "port": null,
+        "database": null,
+        "schema": null,
+        "namespace": "/private/tmp/peanut-admin-core-311-dbtime-dev",
+        "service_type": "local temporary filesystem",
+        "version": "one focused Development run",
+        "credential_ref": null,
+        "data_source": "scripts/create-internal-starter and the four affected Core production stores",
+        "freshness_requirement": "the exact path is absent before the focused run and contains no prior candidate evidence",
+        "health_check": "the recovery owner verifies the path is writable after claim and absent after evidence reduction",
+        "fallback": "none",
+        "lifecycle": "one Development-mode focused validation",
+        "cleanup_responsibility": "the recovery owner removes only /private/tmp/peanut-admin-core-311-dbtime-dev after preserving the focused receipt",
+        "consumers": [
+          "database-time focused validation"
+        ]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-alpha12-qualification-output",
         "purpose": "exclusive temporary files and evidence scratch space for one fixed Alpha.12 qualification run",
         "environments": [
@@ -791,6 +869,33 @@
       }
     ],
     "local_listeners": [
+      {
+        "stable_resource_id": "peanut-admin-core-311-database-time-development-mysql-port",
+        "purpose": "loopback MySQL listener for the Core 3.1.1 database-time alias focused validation",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core 3.1.1 database-time recovery owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 33436,
+        "database": "script-owned synthetic databases",
+        "schema": "affected-domain fixtures",
+        "namespace": "peanut-admin-core-311-dbtime-dev/mysql",
+        "service_type": "MySQL 8.4.10 listener",
+        "version": "8.4.10",
+        "credential_ref": "compose.yaml synthetic development fixture environment",
+        "data_source": "peanut-admin-core-compose-311-database-time-development",
+        "freshness_requirement": "the listener is unbound before the lease owner starts the Compose mysql service",
+        "health_check": "a credential-backed PDO query reports MySQL 8.4.10 through 127.0.0.1:33436",
+        "fallback": "none",
+        "lifecycle": "one Development-mode focused validation",
+        "cleanup_responsibility": "the recovery owner proves port 33436 is unbound after Compose cleanup",
+        "consumers": [
+          "database-time focused validation"
+        ]
+      },
       {
         "stable_resource_id": "peanut-admin-core-alpha13-compose-backend-port",
         "purpose": "fixed backend port projected by compose config during Alpha.13 qualification; the aggregate gate does not start this profile",
