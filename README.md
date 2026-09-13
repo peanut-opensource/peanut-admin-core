@@ -79,8 +79,9 @@ The latest published package identity is
 [`0.1.0-alpha.13`](https://github.com/peanut-opensource/peanut-admin-core/releases/tag/v0.1.0-alpha.13),
 qualified at `a949a77728f2940153c6cfd76b104d5d8bb183e3` and tagged at
 `9e63054850f5e2f5270485ba7e62ea42bb6e9afb`. Application v3.0.14 consumes it.
-The [candidate contract](docs/status/alpha13-publication-candidate-contract.md)
-preserves preparation history. Future shared product numbering and independent
+The current [release qualification binding](docs/guide/release-qualification.md)
+defines how source-tag evidence is verified; ordinary preparation history remains in Git.
+Future shared product numbering and independent
 Module/Instance versions follow the [version decision](docs/architecture/product-version-identity.md);
 a new coordinated target is not a published package.
 

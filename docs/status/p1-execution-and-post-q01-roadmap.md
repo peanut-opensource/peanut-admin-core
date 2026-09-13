@@ -66,10 +66,8 @@ moves first through a separate planning correction.
 
 CAP02 used the final CAP01 merge, preserved the opaque Workflow port, passed
 all six repository checks and merged through PR #9 as
-`ba707c1b3943ff76620770dbf72413de51f340f6`. The next executable capability is
-the independently contracted
-[CAP03 EntitlementQuota](./p1-cap03-entitlement-quota-contract.md) stage using
-that exact prerequisite.
+`ba707c1b3943ff76620770dbf72413de51f340f6`. The later CAP03 work is historical
+evidence and does not create a reusable execution entry.
 
 During CAP03 implementation:
 
@@ -84,11 +82,10 @@ its Runtime remains blocked until the independent exact contract is accepted.
 
 CAP05 subsequently fixed and qualified the exact Alpha.5 source/projections at
 `14010993e47f5e3082ab8f0b53456f282b71f086` (tree
-`3fa7e79730ec9ed8f0349dc1c0d24fa72cfda54f`). The
-[CAP06 private downstream adoption contract](./p1-cap06-private-downstream-adoption-contract.md)
-is now the only executable consumer step: it pins both projection digests,
-keeps the application domain owner, and requires one focused cross-capability
-acceptance before any downstream lock or external state can move.
+`3fa7e79730ec9ed8f0349dc1c0d24fa72cfda54f`). Its downstream-adoption record is
+historical only. Current consumers use the version-identity decision and the
+source-tag release qualification binding; a historical digest cannot move a
+downstream lock or external state.
 
 Qualification, private downstream adoption and public publication are separate
 decisions. A later candidate does not move the v1.0.0 compatibility baseline or

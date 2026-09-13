@@ -43,11 +43,11 @@ numbering follows the [version identity projection](../architecture/product-vers
 
 ## Plans and bounded candidate history
 
-- [Alpha.13 publication candidate](./alpha13-publication-candidate-contract.md)
-  records the repair and no-repeat continuation that produced qualified source
-  candidate `a949a77728f2940153c6cfd76b104d5d8bb183e3`. Its Q01 and D05 evidence are
-  complete; its preparation-time pending statements are historical. The published
-  source tag and Application v3.0.14 dependency locks supersede that pending state.
+- The [release qualification binding](../guide/release-qualification.md) verifies
+  the published source tag. The qualified Alpha.13 source candidate is
+  `a949a77728f2940153c6cfd76b104d5d8bb183e3`; Application v3.0.14 dependency
+  locks are the downstream adoption evidence. Preparation-time pending statements
+  remain ordinary Git history and do not carry forward.
 
 - [P1-ED01 Edition persistence scope](./p1-ed01-edition-persistence-scope-contract.md) is implemented
   for Idempotency, Task/Job and Import/Export in the Alpha.11 source line. The follow-up
