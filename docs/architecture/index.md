@@ -26,7 +26,13 @@ supported non-ThinkPHP production consumer, and Core is not pursuing
 framework-neutral persistence. The canonical cross-repository decision is
 `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
 This section is Core's current projection of that decision; it does not claim
-that the source migration has happened.
+that the source migration has happened. Development commit `61287a9` adds the
+first native `ThinkPhpTransactionManager` implementation and the publishable
+package's explicit ThinkORM dependency. Application commit `14ce7b1b` adopts
+that boundary in its main composition root. Existing domain PDO repositories
+and direct `PdoTransactionManager` consumers remain migration work, so these
+commits are a transaction foundation rather than completed Runtime convergence
+or a qualified/published package identity.
 
 The source audit is fixed to Application
 `ea9bc3a1dfaa844a8481b01d0341aa1ad749faa9` and Core

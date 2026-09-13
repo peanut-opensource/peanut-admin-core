@@ -24,8 +24,11 @@ independently transactional. Disabled creation stays pending, and editing never 
 credentials. Consumers must lock a Core version containing these commands before adopting them;
 source implementation alone is not package or downstream qualification. The
 PDO transaction is a migration-before fact; the accepted supported runtime is
-ThinkPHP 8 and the eventual implementation must use the formal ThinkPHP
-transaction boundary without changing the atomicity or Tenant contract.
+ThinkPHP 8. Development commit `61287a9` now provides the native Core
+transaction implementation adopted by Application commit `14ce7b1b`, while
+the remaining domain PDO callers still await their atomic migration. This
+foundation preserves nested savepoint and rollback behavior but does not by
+itself qualify or publish a new Core package.
 
 ## Tenant And Business Targets
 
