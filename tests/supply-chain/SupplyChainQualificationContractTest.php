@@ -21,7 +21,9 @@ final class SupplyChainQualificationContractTest extends TestCase
         }
 
         $gate = (string) file_get_contents($this->root . '/scripts/check-supply-chain');
-        self::assertStringContainsString('composer audit', $gate);
+        self::assertStringContainsString('composer_bin="${PEANUT_COMPOSER:-composer}"', $gate);
+        self::assertStringContainsString('"$composer_bin" audit --locked --format=json', $gate);
+        self::assertStringNotContainsString('if composer audit --locked --format=json', $gate);
         self::assertStringContainsString('pnpm audit', $gate);
         self::assertStringContainsString('./scripts/check-secrets', $gate);
         self::assertStringContainsString('./scripts/check-third-party-licenses', $gate);
