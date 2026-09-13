@@ -222,7 +222,7 @@
         "schema": null,
         "namespace": "/private/tmp/peanut-admin-core-311-q01-pnpm-store",
         "service_type": "isolated pnpm v11 content-addressable qualification store",
-        "version": "Node 24.13.0; pnpm 11.13.0; composer.lock sha256 934bfdbfa98eb2047fd0dab6c4cefd86a54d17ceaf49d7d896c040af2920bd6c; pnpm-lock.yaml sha256 f775f94199564097654d91266ccb3112e2089a8e0ef8aa908e94270acb438015; starter/backend/composer.lock sha256 ec131dced5c9a69904f7799f329042f319dc7cefd089f1a2575f7c93b8a00a46; starter/pnpm-lock.yaml sha256 e9431e18a11138ebafeda70d808f26248af4a30ec703d5bb8c1b4458ef8d48d9",
+        "version": "Node 24.13.0; pnpm 11.13.0; composer.lock sha256 d2badf6812eb097d01e735508b908a7839fa5d57a29ba3a1298d74755c868153; pnpm-lock.yaml sha256 f775f94199564097654d91266ccb3112e2089a8e0ef8aa908e94270acb438015; starter/backend/composer.lock sha256 1e7ce7f247e60e534be45474751c034be9bee6d0b9abf2df2054801a2e61a89b; starter/pnpm-lock.yaml sha256 e9431e18a11138ebafeda70d808f26248af4a30ec703d5bb8c1b4458ef8d48d9",
         "credential_ref": null,
         "data_source": "the exact root and internal Starter pnpm locks from the frozen candidate; public package metadata and tarballs from registry.npmjs.org with lock-recorded integrity",
         "freshness_requirement": "the directory is absent before preparation; warm only the exact frozen root and Starter lock resolutions, then require PNPM_STORE_DIR to select this store and complete both offline frozen installs and lock checks without a cache miss",
