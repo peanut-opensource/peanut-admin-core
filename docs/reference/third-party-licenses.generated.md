@@ -486,7 +486,7 @@ Packages recorded: **561**.
 | pnpm | `playwright` | `1.61.1` | `Apache-2.0` |
 | pnpm | `playwright-core` | `1.61.1` | `Apache-2.0` |
 | pnpm | `pluralize` | `8.0.0` | `MIT` |
-| pnpm | `postcss` | `8.5.19` | `MIT` |
+| pnpm | `postcss` | `8.5.23` | `MIT` |
 | pnpm | `postcss-selector-parser` | `7.1.4` | `MIT` |
 | pnpm | `preact` | `10.29.7` | `MIT` |
 | pnpm | `prelude-ls` | `1.2.1` | `MIT` |
