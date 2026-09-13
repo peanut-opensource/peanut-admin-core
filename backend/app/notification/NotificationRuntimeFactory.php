@@ -68,7 +68,7 @@ final class NotificationRuntimeFactory
         $handlers = new TaskHandlerRegistry([
             new InboxTaskHandler($repository, $transactions),
             new SmsTaskHandler($repository, $transactions, $recipients, $smsProvider),
-            ImportExportRuntimeFactory::handler($pdo),
+            ImportExportRuntimeFactory::handler($connection),
         ]);
         return new LocalWorker($tenantId, $workerId, new TaskJobStore($connection), $transactions, $handlers, new JobHandlerAdapter(self::codec(), new PdoTaskAuthorizationRevalidator($pdo)));
     }

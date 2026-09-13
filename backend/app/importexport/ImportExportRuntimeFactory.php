@@ -10,7 +10,7 @@ use PeanutAdmin\ImportExport\Contract\DataProviderRegistry;
 use PeanutAdmin\ImportExport\Execution\CsvOperationRunner;
 use PeanutAdmin\ImportExport\Execution\ImportExportTaskHandler;
 use PeanutAdmin\ImportExport\Execution\ImportExportTaskSubmissionProvider;
-use PeanutAdmin\ImportExport\Persistence\PdoImportExportRepository;
+use PeanutAdmin\ImportExport\Persistence\ImportExportStore;
 use PeanutAdmin\Kernel\Async\TrustedEnvelopeCodec;
 use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
 use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
@@ -27,12 +27,14 @@ final class ImportExportRuntimeFactory
         $pdo = $connection->connect();
         $transactions = new ThinkPhpTransactionManager($connection);
         $jobs = new TaskJobStore($connection);
-        return new ImportExportService(new PdoImportExportRepository($pdo), self::providers($pdo), new TrustedJobPublisher($jobs, $transactions, new TaskSubmissionRegistry([new ImportExportTaskSubmissionProvider()]), self::codec()), new TaskJobService($jobs, $transactions), new PdoAuditRepository($pdo));
+        return new ImportExportService(new ImportExportStore($connection), $transactions, self::providers($pdo), new TrustedJobPublisher($jobs, $transactions, new TaskSubmissionRegistry([new ImportExportTaskSubmissionProvider()]), self::codec()), new TaskJobService($jobs, $transactions), new PdoAuditRepository($pdo));
     }
-    public static function handler(PDO $pdo): ImportExportTaskHandler
+    public static function handler(PDOConnection $connection): ImportExportTaskHandler
     {
-        $repository = new PdoImportExportRepository($pdo);
-        return new ImportExportTaskHandler(new CsvOperationRunner($repository, self::providers($pdo), new PdoFileMediaGateway($pdo), new PdoAuditRepository($pdo)));
+        $pdo = $connection->connect();
+        $transactions = new ThinkPhpTransactionManager($connection);
+        $repository = new ImportExportStore($connection);
+        return new ImportExportTaskHandler(new CsvOperationRunner($repository, $transactions, self::providers($pdo), new PdoFileMediaGateway($pdo), new PdoAuditRepository($pdo)));
     }
     private static function providers(PDO $pdo): DataProviderRegistry
     {
