@@ -79,12 +79,13 @@ try {
             PDO::ATTR_EMULATE_PREPARES => false,
         ],
     );
+    $connection = \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($pdo);
     $profile = InstallProductProfile::load(
         $root . '/profiles/reference-admin.json',
         $root . '/schemas/product-profile.schema.json',
     );
     $password = 'Performance-P0-Only-2026!';
-    $installation = (new InstallWorkflow($root, $pdo))->run(
+    $installation = (new InstallWorkflow($root, $connection))->run(
         $profile,
         'performance@example.test',
         $password,
@@ -207,7 +208,10 @@ SQL, implode(', ', $workItemValues)))->execute($workItemParameters);
         throw new RuntimeException('Performance fixture login unexpectedly required tenant selection.');
     }
     $resolver = new PdoTargetResolver($pdo);
-    $authorization = DataPermissionRuntimeFactory::create($pdo, $root);
+    $authorization = DataPermissionRuntimeFactory::create(
+        $connection,
+        $root,
+    );
     $workItems = new PdoWorkItemQuery($pdo, $authorization, new PdoTargetQuery($pdo));
     $results = [];
     foreach ([10, 500, 5000] as $size) {

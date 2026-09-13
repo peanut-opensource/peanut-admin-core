@@ -153,7 +153,9 @@ final class ExampleModuleQueryIntegrationTest extends TestCase
         );
         self::assertCount(501, $resolved->targets->sets[0]->targetIds);
 
-        $authorization = DataPermissionRuntimeFactory::create($this->pdo);
+        $authorization = DataPermissionRuntimeFactory::create(
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+        );
         $targets = new TypedResourceTargetCollection([$targetSet]);
         $page = (new PdoWorkItemQuery($this->pdo, $authorization, new PdoTargetQuery($this->pdo)))->list(
             $authentication->context,

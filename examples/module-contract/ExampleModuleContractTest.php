@@ -7,6 +7,7 @@ namespace PeanutAdmin\Examples\ModuleContract;
 use DateTimeImmutable;
 use PDO;
 use PeanutAdmin\App\authorization\DataPermissionRuntimeFactory;
+use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
 use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Persistence\PdoReferenceQuery;
@@ -48,8 +49,9 @@ final class ExampleModuleContractTest extends TestCase
         $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
         $this->admin->exec('CREATE DATABASE `' . self::DATABASE . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
         $this->pdo = $this->connect(self::DATABASE);
+        $connection = ThinkPhpTestConnection::fromPdo($this->pdo);
         $root = dirname(__DIR__, 2);
-        $result = (new InstallWorkflow($root, $this->pdo))->run(
+        $result = (new InstallWorkflow($root, $connection))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',
@@ -71,7 +73,10 @@ final class ExampleModuleContractTest extends TestCase
         );
         $this->seedBusinessFixtures();
         $this->seedAuthorization();
-        $this->authorization = DataPermissionRuntimeFactory::create($this->pdo, $root);
+        $this->authorization = DataPermissionRuntimeFactory::create(
+            $connection,
+            $root,
+        );
     }
 
     protected function tearDown(): void

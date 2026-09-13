@@ -13,13 +13,14 @@ use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Persistence\PdoRefe
 use PeanutAdmin\DataPermission\Constraint\ColumnReference;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
 use PeanutAdmin\DataPermission\Provider\ConditionProviderRegistry;
-use PeanutAdmin\DataPermission\Provider\PdoDepartmentHierarchyProvider;
-use PeanutAdmin\DataPermission\Provider\PdoTargetSetMembershipProvider;
+use PeanutAdmin\DataPermission\Provider\ThinkPhpDepartmentHierarchyProvider;
+use PeanutAdmin\DataPermission\Provider\ThinkPhpTargetSetMembershipProvider;
 use PeanutAdmin\DataPermission\Provider\ProviderColumnMap;
 use PeanutAdmin\DataPermission\Provider\StandardResourcePolicyProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
+use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, ReferenceRuntimeProvider
 {
@@ -33,8 +34,9 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return [ReferenceRuntimeProvider::class => self::class];
     }
 
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void
     {
+        $pdo = $connection->connect();
         $provider = new ReferencePolicyProvider(new StandardResourcePolicyProvider(
             new ProviderColumnMap(
                 new ColumnReference('item.owner_tenant_id'),
@@ -42,8 +44,8 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
                 null,
                 [],
             ),
-            new PdoDepartmentHierarchyProvider($pdo),
-            new PdoTargetSetMembershipProvider($pdo),
+            new ThinkPhpDepartmentHierarchyProvider($connection),
+            new ThinkPhpTargetSetMembershipProvider($connection),
             new ConditionProviderRegistry(),
         ));
         $scope = new PdoReferenceScopeProvider($pdo);

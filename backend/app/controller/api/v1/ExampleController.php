@@ -23,8 +23,11 @@ use PeanutAdmin\Kernel\Authorization\Application\Etag;
 use PeanutAdmin\Kernel\Membership\Application\MemberAdminService;
 use PeanutAdmin\Kernel\Module\ModuleException;
 use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
+use RuntimeException;
 use think\Request;
 use think\Response;
+use think\db\PDOConnection;
+use think\facade\Db;
 
 final class ExampleController
 {
@@ -167,8 +170,9 @@ final class ExampleController
                     'Reference search is invalid.',
                 );
             }
-            $pdo = MemberAdminRuntime::pdo();
-            $items = $this->referenceProvider()->referenceQuery($pdo, $this->authorization($pdo))->candidates(
+            $connection = self::connection();
+            $pdo = $connection->connect();
+            $items = $this->referenceProvider()->referenceQuery($pdo, $this->authorization($connection))->candidates(
                 MemberAdminRuntime::context($request),
                 ExampleHttpRuntime::queryTargets($request, 1),
                 'use',
@@ -207,10 +211,11 @@ final class ExampleController
                 );
             }
             $targets = ExampleHttpRuntime::policyTargets($body);
-            $pdo = MemberAdminRuntime::pdo();
+            $connection = self::connection();
+            $pdo = $connection->connect();
             $policyId = $this->workItemProvider()->workItemPolicyPublication(
                 $pdo,
-                $this->authorization($pdo),
+                $this->authorization($connection),
                 new PdoAuditRepository($pdo),
             )->publish(
                 $context,
@@ -263,22 +268,24 @@ final class ExampleController
 
     private function workItems(): WorkItemQuery
     {
-        $pdo = MemberAdminRuntime::pdo();
+        $connection = self::connection();
+        $pdo = $connection->connect();
 
         return $this->workItemProvider()->workItemQuery(
             $pdo,
-            $this->authorization($pdo),
+            $this->authorization($connection),
             $this->targetProvider()->targetQuery($pdo),
         );
     }
 
     private function commands(): WorkItemCommands
     {
-        $pdo = MemberAdminRuntime::pdo();
+        $connection = self::connection();
+        $pdo = $connection->connect();
 
         return $this->workItemProvider()->workItemCommands(
             $pdo,
-            $this->authorization($pdo),
+            $this->authorization($connection),
             new PdoAuditRepository($pdo),
             new MemberAdminService($pdo),
         );
@@ -327,9 +334,19 @@ final class ExampleController
         throw new ModuleException('MODULE_CONTRACT_MISSING', "Module {$moduleKey} runtime contract is unavailable.");
     }
 
-    private function authorization(PDO $pdo): DataPermissionEngine
+    private function authorization(PDOConnection $connection): DataPermissionEngine
     {
-        return DataPermissionRuntimeFactory::create($pdo);
+        return DataPermissionRuntimeFactory::create($connection);
+    }
+
+    private static function connection(): PDOConnection
+    {
+        $connection = Db::connect();
+        if (!$connection instanceof PDOConnection) {
+            throw new RuntimeException('DATA_PERMISSION_DATABASE_CONNECTION_UNSUPPORTED');
+        }
+
+        return $connection;
     }
 
     /** @return array<string, mixed> */

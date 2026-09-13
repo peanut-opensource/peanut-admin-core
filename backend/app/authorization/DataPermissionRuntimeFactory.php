@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\authorization;
 
-use PDO;
 use PeanutAdmin\App\module\RuntimeModuleRegistry;
-use PeanutAdmin\DataPermission\Catalog\PdoResourceOperationCatalog;
+use PeanutAdmin\DataPermission\Catalog\ResourceOperationStore;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
-use PeanutAdmin\DataPermission\Policy\PdoPolicyRepository;
+use PeanutAdmin\DataPermission\Policy\PolicyStore;
 use PeanutAdmin\DataPermission\Policy\PolicyCache;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
@@ -17,21 +16,23 @@ use PeanutAdmin\Kernel\Authorization\RevisionPermissionCache;
 use PeanutAdmin\Kernel\Authorization\TenantAuthorizationEvaluator;
 use PeanutAdmin\Kernel\Module\ManifestDocument;
 use PeanutAdmin\Kernel\Module\ModuleException;
+use think\db\PDOConnection;
 
 final class DataPermissionRuntimeFactory
 {
     private function __construct() {}
 
     public static function create(
-        PDO $pdo,
+        PDOConnection $connection,
         ?string $root = null,
         ?DataPermissionRuntimeRegistry $runtime = null,
     ): DataPermissionEngine {
-        $runtime ??= self::runtime($pdo, $root);
+        $runtime ??= self::runtime($connection, $root);
+        $pdo = $connection->connect();
 
         return new DataPermissionEngine(
-            new PdoResourceOperationCatalog($pdo),
-            new PdoPolicyRepository($pdo),
+            new ResourceOperationStore($connection),
+            new PolicyStore($connection),
             new PolicyCache(),
             new TenantAuthorizationEvaluator(
                 new PdoTenantAuthorizationRepository($pdo),
@@ -44,7 +45,7 @@ final class DataPermissionRuntimeFactory
         );
     }
 
-    public static function runtime(PDO $pdo, ?string $root = null): DataPermissionRuntimeRegistry
+    public static function runtime(PDOConnection $connection, ?string $root = null): DataPermissionRuntimeRegistry
     {
         $root ??= dirname(__DIR__, 3);
         $modules = RuntimeModuleRegistry::compile($root);
@@ -52,7 +53,7 @@ final class DataPermissionRuntimeFactory
         foreach ($modules->modules as $module) {
             $provider = self::moduleProvider($module);
             if ($provider instanceof DataPermissionModuleProvider) {
-                $provider->registerDataPermission($runtime, $pdo);
+                $provider->registerDataPermission($runtime, $connection);
             }
         }
 

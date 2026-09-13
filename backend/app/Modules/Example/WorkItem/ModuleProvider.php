@@ -17,8 +17,8 @@ use PeanutAdmin\App\Modules\Example\WorkItem\Infrastructure\Persistence\PdoWorkI
 use PeanutAdmin\DataPermission\Constraint\ColumnReference;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
 use PeanutAdmin\DataPermission\Provider\ConditionProviderRegistry;
-use PeanutAdmin\DataPermission\Provider\PdoDepartmentHierarchyProvider;
-use PeanutAdmin\DataPermission\Provider\PdoTargetSetMembershipProvider;
+use PeanutAdmin\DataPermission\Provider\ThinkPhpDepartmentHierarchyProvider;
+use PeanutAdmin\DataPermission\Provider\ThinkPhpTargetSetMembershipProvider;
 use PeanutAdmin\DataPermission\Provider\ProviderColumnMap;
 use PeanutAdmin\DataPermission\Provider\StandardResourcePolicyProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
@@ -26,6 +26,7 @@ use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\Kernel\Audit\AuditRepository;
 use PeanutAdmin\Kernel\Membership\Application\MemberAdminService;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
+use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, WorkItemRuntimeProvider
 {
@@ -39,7 +40,7 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return [WorkItemRuntimeProvider::class => self::class];
     }
 
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void
     {
         $provider = new WorkItemPolicyProvider(new StandardResourcePolicyProvider(
             new ProviderColumnMap(
@@ -51,8 +52,8 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
                     'example.queue' => new ColumnReference('work_item.queue_id'),
                 ],
             ),
-            new PdoDepartmentHierarchyProvider($pdo),
-            new PdoTargetSetMembershipProvider($pdo),
+            new ThinkPhpDepartmentHierarchyProvider($connection),
+            new ThinkPhpTargetSetMembershipProvider($connection),
             new ConditionProviderRegistry(),
         ));
         $registry->registerResourceProvider(WorkItemPolicyProvider::class, $provider);

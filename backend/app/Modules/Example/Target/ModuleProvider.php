@@ -14,13 +14,14 @@ use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\QueuePol
 use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Persistence\PdoTargetQuery;
 use PeanutAdmin\DataPermission\Constraint\ColumnReference;
 use PeanutAdmin\DataPermission\Provider\ConditionProviderRegistry;
-use PeanutAdmin\DataPermission\Provider\PdoDepartmentHierarchyProvider;
-use PeanutAdmin\DataPermission\Provider\PdoTargetSetMembershipProvider;
+use PeanutAdmin\DataPermission\Provider\ThinkPhpDepartmentHierarchyProvider;
+use PeanutAdmin\DataPermission\Provider\ThinkPhpTargetSetMembershipProvider;
 use PeanutAdmin\DataPermission\Provider\ProviderColumnMap;
 use PeanutAdmin\DataPermission\Provider\StandardResourcePolicyProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
+use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, TargetRuntimeProvider
 {
@@ -34,10 +35,11 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return [TargetRuntimeProvider::class => self::class];
     }
 
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void
     {
-        $departments = new PdoDepartmentHierarchyProvider($pdo);
-        $targetSets = new PdoTargetSetMembershipProvider($pdo);
+        $pdo = $connection->connect();
+        $departments = new ThinkPhpDepartmentHierarchyProvider($connection);
+        $targetSets = new ThinkPhpTargetSetMembershipProvider($connection);
         $project = new ProjectPolicyProvider(new StandardResourcePolicyProvider(
             new ProviderColumnMap(
                 new ColumnReference('target.tenant_id'),
