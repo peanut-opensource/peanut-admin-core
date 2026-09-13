@@ -19,7 +19,47 @@ if [[ -d "$target" ]] && [[ -n "$(find "$target" -mindepth 1 -maxdepth 1 -print 
 fi
 
 mkdir -p "$target"
-cp -R "$ROOT/starter/." "$target/"
+
+copy_starter_template() {
+  local tracked_path relative_path source_path destination_path
+  local copied=0
+
+  while IFS= read -r -d '' tracked_path; do
+    case "$tracked_path" in
+      starter/*) ;;
+      *)
+        echo "ERROR: tracked starter path escaped the template root: $tracked_path" >&2
+        exit 1
+        ;;
+    esac
+
+    relative_path="${tracked_path#starter/}"
+    case "/$relative_path/" in
+      */../*|*/./*)
+        echo "ERROR: tracked starter path is not portable: $tracked_path" >&2
+        exit 1
+        ;;
+    esac
+
+    source_path="$ROOT/$tracked_path"
+    if [[ ! -f "$source_path" ]] || [[ -L "$source_path" ]]; then
+      echo "ERROR: tracked starter entry is not a regular file: $tracked_path" >&2
+      exit 1
+    fi
+
+    destination_path="$target/$relative_path"
+    mkdir -p "$(dirname "$destination_path")"
+    cp -p "$source_path" "$destination_path"
+    copied=$((copied + 1))
+  done < <(git -C "$ROOT" ls-files -z -- starter)
+
+  if [[ "$copied" -eq 0 ]]; then
+    echo 'ERROR: no tracked starter template files were found' >&2
+    exit 1
+  fi
+}
+
+copy_starter_template
 
 copy_runtime_directory() {
   local source="$1"
