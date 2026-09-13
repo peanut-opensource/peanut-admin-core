@@ -44,7 +44,7 @@ final readonly class InstallProductProfileApplier
         if ($unknown !== []) {
             throw new ModuleException('MODULE_NOT_INSTALLED', 'Profile references unknown module: ' . $unknown[0]);
         }
-        SettingsRuntimeFactory::synchronizeDefinitions($this->pdo, $registry, new DateTimeImmutable('now'));
+        SettingsRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
         ReferenceCodeRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
 
         $manager = new TenantModuleManager(

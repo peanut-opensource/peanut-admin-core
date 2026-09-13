@@ -114,7 +114,7 @@ final class SettingsModuleIntegrationTest extends TestCase
 SELECT account_id FROM pa_tenant_member WHERE tenant_id = ? AND id = ?
 SQL, [$this->tenantId, $this->memberId]);
         SettingsRuntimeFactory::synchronizeDefinitions(
-            $this->pdo,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
             RuntimeModuleRegistry::compile($root),
             new DateTimeImmutable('2026-07-19T00:00:00Z'),
         );
@@ -1023,6 +1023,7 @@ SQL);
 
         return $port;
     }
+
 
     private function grantPlatformPermissions(): void
     {

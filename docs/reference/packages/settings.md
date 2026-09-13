@@ -1,9 +1,9 @@
 # Settings Package
 
-> Alpha.13 still contains the `PdoSettingRepository` implementation and same-
-> transaction wording below as a migration-before source fact. The accepted
-> runtime direction is ThinkPHP 8 Model/Query/Db/Transaction; do not add new
-> public PDO consumers. See `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
+> The current source uses the injected ThinkPHP `PDOConnection`, Query API and
+> transaction manager through `SettingStore`. The former
+> `PdoSettingRepository` and Settings Runtime `new PDO` assembly have exited.
+> See `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
 
 The Settings namespace inside `peanut-admin/core` provides reusable,
 Module-owned typed setting definitions, encrypted values, optimistic
@@ -52,7 +52,7 @@ ETag, including when it is unset, future, or expired.
 
 ## Persistence scope
 
-`PdoSettingRepository` and `Schema::createSql()` default to `tenant-scoped`. A Host that stores one
+`SettingStore` and `Schema::createSql()` default to `tenant-scoped`. A Host that stores one
 physical application partition may explicitly select `instance-scoped` and supply its fixed logical
 Tenant ID when constructing the repository. Only the Tenant ownership columns, indexes, foreign keys
 and SQL predicates of the Tenant and target value tables are omitted. Tenant/member authorization,
@@ -91,7 +91,7 @@ DELETE /api/v1/settings/{module_key}/{setting_key}
 Platform and Tenant audiences remain separate. Tenant identity comes only from
 trusted context. Writes require one strong precondition and an
 `Idempotency-Key`; definition and owner Module availability are revalidated
-inside the same PDO transaction before replay or mutation. There is no generic
+inside the same ThinkPHP-owned transaction before replay or mutation. There is no generic
 target Settings HTTP API.
 
 The Tenant Web route is `/app/settings` and requires
@@ -99,5 +99,7 @@ The Tenant Web route is `/app/settings` and requires
 `peanut.settings.manage`. Unsupported JSON Schema forms remain visible as
 read-only definitions instead of breaking the page.
 
-P1-B03 is an unqualified candidate. It does not move the fixed downstream lock,
-publish either package, approve consumption, or claim production readiness.
+The source convergence is not qualification: the registered Settings database
+credential cannot create or access its fixed test schema, so integration,
+security, upgrade, and Edition candidate gates remain pending. No fallback
+database or historical candidate evidence may be substituted.

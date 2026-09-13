@@ -195,7 +195,7 @@ final readonly class UpgradeWorkflow
         ))->synchronize($registry);
         (new MenuCatalogSynchronizer(new PdoMenuCatalogRepository($this->pdo)))->synchronize($registry);
         if ($this->tableExists('pa_setting_definition')) {
-            SettingsRuntimeFactory::synchronizeDefinitions($this->pdo, $registry, new DateTimeImmutable('now'));
+            SettingsRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
         }
         if ($this->tableExists('pa_reference_code_set')) {
             ReferenceCodeRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));

@@ -40,6 +40,7 @@ use PeanutAdmin\Kernel\Module\ModuleException;
 use PeanutAdmin\Kernel\Module\ModuleGuard;
 use PeanutAdmin\Kernel\Module\ModuleHostLayout;
 use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
+use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
 use PeanutAdmin\Kernel\Platform\Authorization\PdoPlatformAuthorizationRepository;
 use PeanutAdmin\Kernel\Platform\Authorization\PlatformAuthorizationEvaluator;
 use PeanutAdmin\Settings\Application\EffectiveSetting;
@@ -50,8 +51,11 @@ use PeanutAdmin\Settings\Cache\ArrayRevisionedSettingCache;
 use PeanutAdmin\Settings\Definition\SettingDefinition;
 use PeanutAdmin\Settings\Definition\SettingDefinitionLoader;
 use PeanutAdmin\Settings\Definition\SettingDefinitionRegistry;
-use PeanutAdmin\Settings\Persistence\PdoSettingRepository;
+use PeanutAdmin\Settings\Persistence\SettingStore;
 use PeanutAdmin\Settings\Secret\SodiumSecretProtector;
+use RuntimeException;
+use think\db\PDOConnection;
+use think\facade\Db;
 use think\Request;
 use think\Response;
 
@@ -199,7 +203,8 @@ final class SettingsRuntimeFactory
         string $moduleKey,
         string $settingKey,
     ): Response {
-        $pdo = self::pdo();
+        $connection = self::connection();
+        $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['replaceTenantSetting'];
         $externalRequest = self::externalRequest(
@@ -208,14 +213,14 @@ final class SettingsRuntimeFactory
             '/api/v1/settings/' . rawurlencode($moduleKey) . '/' . rawurlencode($settingKey),
             'tenant_context',
         );
-        $response = self::host($pdo, $modules)->command(
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($modules, $moduleKey, $settingKey): ExternalOperationResult {
+            ) use ($connection, $modules, $moduleKey, $settingKey): ExternalOperationResult {
                 try {
                     $context = $authorized->context;
                     if (!$context instanceof TenantContext) {
@@ -225,7 +230,7 @@ final class SettingsRuntimeFactory
                     $input = self::replaceInput($body, $command->comparisonTime);
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $settingKey);
                     self::assertOwnerAvailable($transaction, $definition, $context, $command->comparisonTime);
-                    $setting = self::admin($transaction)->replaceTenant(
+                    $setting = self::admin($connection)->replaceTenant(
                         $definition,
                         $context->tenantId,
                         $context->memberId,
@@ -258,7 +263,7 @@ final class SettingsRuntimeFactory
                     throw self::apiException($exception);
                 }
             },
-            guard: self::commandGuard($modules, $moduleKey, $settingKey),
+            guard: self::commandGuard($connection, $modules, $moduleKey, $settingKey),
         );
 
         return self::httpResponse($response, $externalRequest->requestId->value);
@@ -266,7 +271,8 @@ final class SettingsRuntimeFactory
 
     public static function listTenant(Request $request): Response
     {
-        $pdo = self::pdo();
+        $connection = self::connection();
+        $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['listTenantSettings'];
         $externalRequest = self::externalRequest(
@@ -275,20 +281,20 @@ final class SettingsRuntimeFactory
             '/api/v1/settings',
             'tenant_context',
         );
-        $response = self::host($pdo, $modules)->read(
+        $response = self::host($connection, $modules)->read(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $query,
-            ) use ($pdo, $modules): ExternalOperationResponse {
+            ) use ($connection, $pdo, $modules): ExternalOperationResponse {
                 try {
                     $context = $authorized->context;
                     if (!$context instanceof TenantContext) {
                         throw SettingException::notFound('SETTING_TARGET_UNAUTHORIZED');
                     }
                     $items = [];
-                    $resolver = self::resolver($pdo);
+                    $resolver = self::resolver($connection);
                     foreach (self::definitionRegistry($modules)->all() as $definition) {
                         if (!$definition->allows('tenant')
                             || !self::ownerAvailable($pdo, $definition, $context, $query->comparisonTime)) {
@@ -326,7 +332,8 @@ final class SettingsRuntimeFactory
         string $moduleKey,
         string $settingKey,
     ): Response {
-        $pdo = self::pdo();
+        $connection = self::connection();
+        $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['unsetTenantSetting'];
         $externalRequest = self::externalRequest(
@@ -335,14 +342,14 @@ final class SettingsRuntimeFactory
             '/api/v1/settings/' . rawurlencode($moduleKey) . '/' . rawurlencode($settingKey),
             'tenant_context',
         );
-        $response = self::host($pdo, $modules)->command(
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($modules, $moduleKey, $settingKey): ExternalOperationResult {
+            ) use ($connection, $modules, $moduleKey, $settingKey): ExternalOperationResult {
                 try {
                     $context = $authorized->context;
                     if (!$context instanceof TenantContext) {
@@ -351,7 +358,7 @@ final class SettingsRuntimeFactory
                     $input = self::unsetInput(self::requestPayload($command), $command->comparisonTime);
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $settingKey);
                     self::assertOwnerAvailable($transaction, $definition, $context, $command->comparisonTime);
-                    $setting = self::admin($transaction)->unsetTenant(
+                    $setting = self::admin($connection)->unsetTenant(
                         $definition,
                         $context->tenantId,
                         $context->memberId,
@@ -381,7 +388,7 @@ final class SettingsRuntimeFactory
                     throw self::apiException($exception);
                 }
             },
-            guard: self::commandGuard($modules, $moduleKey, $settingKey),
+            guard: self::commandGuard($connection, $modules, $moduleKey, $settingKey),
         );
 
         return self::httpResponse($response, $externalRequest->requestId->value);
@@ -392,7 +399,8 @@ final class SettingsRuntimeFactory
         string $moduleKey,
         string $settingKey,
     ): Response {
-        $pdo = self::pdo();
+        $connection = self::connection();
+        $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['replaceDeploymentSetting'];
         $externalRequest = self::externalRequest(
@@ -401,14 +409,14 @@ final class SettingsRuntimeFactory
             '/api/platform/v1/settings/' . rawurlencode($moduleKey) . '/' . rawurlencode($settingKey),
             'platform_context',
         );
-        $response = self::host($pdo, $modules)->command(
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($modules, $moduleKey, $settingKey): ExternalOperationResult {
+            ) use ($connection, $modules, $moduleKey, $settingKey): ExternalOperationResult {
                 try {
                     $context = $authorized->context;
                     if (!$context instanceof PlatformContext) {
@@ -417,7 +425,7 @@ final class SettingsRuntimeFactory
                     $input = self::replaceInput(self::requestPayload($command), $command->comparisonTime);
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $settingKey);
                     self::assertOwnerAvailable($transaction, $definition, $context, $command->comparisonTime);
-                    $setting = self::admin($transaction)->replaceDeployment(
+                    $setting = self::admin($connection)->replaceDeployment(
                         $definition,
                         $input['value'],
                         $context->operatorId,
@@ -449,7 +457,7 @@ final class SettingsRuntimeFactory
                     throw self::apiException($exception);
                 }
             },
-            guard: self::commandGuard($modules, $moduleKey, $settingKey),
+            guard: self::commandGuard($connection, $modules, $moduleKey, $settingKey),
         );
 
         return self::httpResponse($response, $externalRequest->requestId->value);
@@ -460,7 +468,8 @@ final class SettingsRuntimeFactory
         string $moduleKey,
         string $settingKey,
     ): Response {
-        $pdo = self::pdo();
+        $connection = self::connection();
+        $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['unsetDeploymentSetting'];
         $externalRequest = self::externalRequest(
@@ -469,14 +478,14 @@ final class SettingsRuntimeFactory
             '/api/platform/v1/settings/' . rawurlencode($moduleKey) . '/' . rawurlencode($settingKey),
             'platform_context',
         );
-        $response = self::host($pdo, $modules)->command(
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($modules, $moduleKey, $settingKey): ExternalOperationResult {
+            ) use ($connection, $modules, $moduleKey, $settingKey): ExternalOperationResult {
                 try {
                     $context = $authorized->context;
                     if (!$context instanceof PlatformContext) {
@@ -485,7 +494,7 @@ final class SettingsRuntimeFactory
                     $input = self::unsetInput(self::requestPayload($command), $command->comparisonTime);
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $settingKey);
                     self::assertOwnerAvailable($transaction, $definition, $context, $command->comparisonTime);
-                    $setting = self::admin($transaction)->unsetDeployment(
+                    $setting = self::admin($connection)->unsetDeployment(
                         $definition,
                         $context->operatorId,
                         $input['effectiveAt'],
@@ -514,7 +523,7 @@ final class SettingsRuntimeFactory
                     throw self::apiException($exception);
                 }
             },
-            guard: self::commandGuard($modules, $moduleKey, $settingKey),
+            guard: self::commandGuard($connection, $modules, $moduleKey, $settingKey),
         );
 
         return self::httpResponse($response, $externalRequest->requestId->value);
@@ -522,7 +531,8 @@ final class SettingsRuntimeFactory
 
     public static function listDeployment(Request $request): Response
     {
-        $pdo = self::pdo();
+        $connection = self::connection();
+        $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['listDeploymentSettings'];
         $externalRequest = self::externalRequest(
@@ -531,20 +541,20 @@ final class SettingsRuntimeFactory
             '/api/platform/v1/settings',
             'platform_context',
         );
-        $response = self::host($pdo, $modules)->read(
+        $response = self::host($connection, $modules)->read(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $query,
-            ) use ($pdo, $modules): ExternalOperationResponse {
+            ) use ($connection, $pdo, $modules): ExternalOperationResponse {
                 try {
                     $context = $authorized->context;
                     if (!$context instanceof PlatformContext) {
                         throw SettingException::notFound('SETTING_ACTOR_UNAUTHORIZED');
                     }
                     $items = [];
-                    $resolver = self::resolver($pdo);
+                    $resolver = self::resolver($connection);
                     foreach (self::definitionRegistry($modules)->all() as $definition) {
                         if (!$definition->allows('deployment')
                             || !self::ownerAvailable($pdo, $definition, $context, $query->comparisonTime)) {
@@ -575,11 +585,11 @@ final class SettingsRuntimeFactory
 
     /** @return array{inserted: int, updated: int, retired: int} */
     public static function synchronizeDefinitions(
-        PDO $pdo,
+        PDOConnection $connection,
         CompiledModuleRegistry $modules,
         DateTimeImmutable $now,
     ): array {
-        return (new PdoSettingRepository($pdo))->synchronize(
+        return (new SettingStore($connection))->synchronize(
             self::definitionRegistry($modules),
             $now,
         );
@@ -605,8 +615,9 @@ final class SettingsRuntimeFactory
         return $registry;
     }
 
-    public static function host(PDO $pdo, CompiledModuleRegistry $modules): ExternalOperationHost
+    public static function host(PDOConnection $connection, CompiledModuleRegistry $modules): ExternalOperationHost
     {
+        $pdo = $connection->connect();
         $configuration = self::hostConfiguration();
         $permissions = new PermissionMiddleware(
             new TenantAuthorizationEvaluator(
@@ -636,13 +647,14 @@ final class SettingsRuntimeFactory
             ),
             new PermissionAdapter($permissions),
             new TypedTargetAdapter($unusedDataAuthorization),
-            new AtomicOperationAdapter($pdo, new \PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager($pdo)),
+            new AtomicOperationAdapter($pdo, new ThinkPhpTransactionManager($connection)),
             new ProblemDetailsAdapter(),
         );
     }
 
     /** @return callable(AuthorizedExternalOperation, ExternalOperationRequest, PDO): void */
     private static function commandGuard(
+        PDOConnection $connection,
         CompiledModuleRegistry $modules,
         string $moduleKey,
         string $settingKey,
@@ -651,10 +663,10 @@ final class SettingsRuntimeFactory
             AuthorizedExternalOperation $authorized,
             ExternalOperationRequest $request,
             PDO $transaction,
-        ) use ($modules, $moduleKey, $settingKey): void {
+        ) use ($connection, $modules, $moduleKey, $settingKey): void {
             try {
                 $definition = self::definitionRegistry($modules)->require($moduleKey, $settingKey);
-                (new PdoSettingRepository($transaction))->assertCurrentDefinition($definition, true);
+                (new SettingStore($connection))->assertCurrentDefinition($definition, true);
                 self::assertModuleAvailable(
                     $transaction,
                     $authorized->operation->moduleKey,
@@ -807,15 +819,20 @@ final class SettingsRuntimeFactory
         );
     }
 
-    private static function pdo(): PDO
+    private static function connection(): PDOConnection
     {
-        return MemberAdminRuntime::pdo();
+        $connection = Db::connect();
+        if (!$connection instanceof PDOConnection) {
+            throw new RuntimeException('SETTING_DATABASE_CONNECTION_UNSUPPORTED');
+        }
+
+        return $connection;
     }
 
-    private static function admin(PDO $pdo): SettingAdminService
+    private static function admin(PDOConnection $connection): SettingAdminService
     {
         return new SettingAdminService(
-            new PdoSettingRepository($pdo),
+            new SettingStore($connection),
             SodiumSecretProtector::fromJson(
                 is_string(getenv('PEANUT_SETTINGS_SECRET_KEYS'))
                     ? (string) getenv('PEANUT_SETTINGS_SECRET_KEYS')
@@ -827,7 +844,7 @@ final class SettingsRuntimeFactory
         );
     }
 
-    private static function resolver(PDO $pdo): SettingResolver
+    private static function resolver(PDOConnection $connection): SettingResolver
     {
         $protector = SodiumSecretProtector::fromJson(
             is_string(getenv('PEANUT_SETTINGS_SECRET_KEYS'))
@@ -839,7 +856,7 @@ final class SettingsRuntimeFactory
         );
 
         return new SettingResolver(
-            new PdoSettingRepository($pdo),
+            new SettingStore($connection),
             $protector,
             new ArrayRevisionedSettingCache(),
         );

@@ -22,7 +22,7 @@ use PeanutAdmin\Settings\Database\Schema as SettingsSchema;
 use PeanutAdmin\Settings\Definition\SettingDefinitionLoader;
 use PeanutAdmin\Settings\Definition\SettingDefinitionRegistry;
 use PeanutAdmin\Settings\Package as SettingsPackage;
-use PeanutAdmin\Settings\Persistence\PdoSettingRepository;
+use PeanutAdmin\Settings\Persistence\SettingStore;
 use PeanutAdmin\Settings\Secret\SecretProtector;
 use PeanutAdmin\Settings\Secret\SecretStorageContext;
 use Phinx\Config\Config;
@@ -139,7 +139,29 @@ try {
     $migrate($settingsModuleRoot . '/Database/Migrations', 'pa_settings_migration');
     $migrate($settingsModuleRoot . '/Database/Migrations', 'pa_settings_migration');
 
-    $pdo = new PDO($dsn . ";dbname={$databaseName}", 'root', $rootCredential, $options);
+    $manager = new \think\DbManager();
+    $manager->setConfig([
+        'default' => 'mysql',
+        'connections' => [
+            'mysql' => [
+                'type' => 'mysql',
+                'hostname' => '127.0.0.1',
+                'database' => $databaseName,
+                'username' => 'root',
+                'password' => $rootCredential,
+                'hostport' => $databasePort,
+                'charset' => 'utf8mb4',
+                'prefix' => 'pa_',
+                'fields_strict' => true,
+                'break_reconnect' => false,
+            ],
+        ],
+    ]);
+    $connection = $manager->connect();
+    if (!$connection instanceof \think\db\PDOConnection) {
+        throw new RuntimeException('Starter Settings requires a ThinkPHP PDO connection.');
+    }
+    $pdo = $connection->connect();
     $assertSame(4, (int) $pdo->query('SELECT COUNT(*) FROM pa_settings_migration')->fetchColumn(), 'Settings migration order is incomplete.');
     foreach (SettingsSchema::tableNames() as $table) {
         $statement = $pdo->prepare(<<<'SQL'
@@ -197,7 +219,7 @@ SQL);
             : [];
         $definitionRegistry->registerModule($moduleKey, $definitions);
     }
-    $repository = new PdoSettingRepository($pdo);
+    $repository = new SettingStore($connection);
     $now = new DateTimeImmutable('2026-07-20T00:00:00.000Z', new DateTimeZone('UTC'));
     $assertSame(
         ['inserted' => 1, 'updated' => 0, 'retired' => 0],

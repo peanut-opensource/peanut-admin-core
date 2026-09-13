@@ -20,7 +20,7 @@ final class SettingsSecurityTest extends TestCase
         self::assertStringContainsString('ExternalOperationHost', $factory);
         self::assertStringContainsString('AtomicOperationAdapter', $factory);
         self::assertStringContainsString('SettingAdminService', $factory);
-        self::assertStringContainsString('PdoSettingRepository', $factory);
+        self::assertStringContainsString('SettingStore', $factory);
         self::assertStringNotContainsString('pa_setting_', $factory);
         self::assertStringNotContainsString('IdempotencyMiddleware', $factory);
         self::assertStringNotContainsString('PDO', $tenant);
