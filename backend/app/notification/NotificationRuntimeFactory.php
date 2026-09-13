@@ -20,7 +20,7 @@ use PeanutAdmin\NotificationSms\Task\OutboxTaskSubmissionProvider;
 use PeanutAdmin\NotificationSms\Task\SmsTaskHandler;
 use PeanutAdmin\TaskJob\Execution\LocalWorker;
 use PeanutAdmin\TaskJob\Execution\TaskHandlerRegistry;
-use PeanutAdmin\TaskJob\Persistence\PdoTaskJobRepository;
+use PeanutAdmin\TaskJob\Persistence\TaskJobStore;
 use PeanutAdmin\TaskJob\Submission\TaskSubmissionRegistry;
 use PeanutAdmin\TaskJob\Submission\TrustedJobPublisher;
 use RuntimeException;
@@ -49,7 +49,7 @@ final class NotificationRuntimeFactory
         return new NotificationOutboxDispatcher(
             new NotificationStore($connection),
             new ThinkPhpTransactionManager($connection),
-            self::publisher($connection->connect()),
+            self::publisher($connection),
         );
     }
 
@@ -70,12 +70,12 @@ final class NotificationRuntimeFactory
             new SmsTaskHandler($repository, $transactions, $recipients, $smsProvider),
             ImportExportRuntimeFactory::handler($pdo),
         ]);
-        return new LocalWorker($tenantId, $workerId, new PdoTaskJobRepository($pdo), $handlers, new JobHandlerAdapter(self::codec(), new PdoTaskAuthorizationRevalidator($pdo)));
+        return new LocalWorker($tenantId, $workerId, new TaskJobStore($connection), $transactions, $handlers, new JobHandlerAdapter(self::codec(), new PdoTaskAuthorizationRevalidator($pdo)));
     }
 
-    private static function publisher(PDO $pdo): TrustedJobPublisher
+    private static function publisher(PDOConnection $connection): TrustedJobPublisher
     {
-        return new TrustedJobPublisher(new PdoTaskJobRepository($pdo), new TaskSubmissionRegistry([new OutboxTaskSubmissionProvider('inbox'),new OutboxTaskSubmissionProvider('sms')]), self::codec());
+        return new TrustedJobPublisher(new TaskJobStore($connection), new ThinkPhpTransactionManager($connection), new TaskSubmissionRegistry([new OutboxTaskSubmissionProvider('inbox'),new OutboxTaskSubmissionProvider('sms')]), self::codec());
     }
 
     private static function codec(): TrustedEnvelopeCodec

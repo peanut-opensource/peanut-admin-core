@@ -13,17 +13,21 @@ use PeanutAdmin\ImportExport\Execution\ImportExportTaskSubmissionProvider;
 use PeanutAdmin\ImportExport\Persistence\PdoImportExportRepository;
 use PeanutAdmin\Kernel\Async\TrustedEnvelopeCodec;
 use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
+use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
 use PeanutAdmin\TaskJob\Application\TaskJobService;
-use PeanutAdmin\TaskJob\Persistence\PdoTaskJobRepository;
+use PeanutAdmin\TaskJob\Persistence\TaskJobStore;
 use PeanutAdmin\TaskJob\Submission\TaskSubmissionRegistry;
 use PeanutAdmin\TaskJob\Submission\TrustedJobPublisher;
+use think\db\PDOConnection;
 
 final class ImportExportRuntimeFactory
 {
-    public static function service(PDO $pdo): ImportExportService
+    public static function service(PDOConnection $connection): ImportExportService
     {
-        $jobs = new PdoTaskJobRepository($pdo);
-        return new ImportExportService(new PdoImportExportRepository($pdo), self::providers($pdo), new TrustedJobPublisher($jobs, new TaskSubmissionRegistry([new ImportExportTaskSubmissionProvider()]), self::codec()), new TaskJobService($jobs), new PdoAuditRepository($pdo));
+        $pdo = $connection->connect();
+        $transactions = new ThinkPhpTransactionManager($connection);
+        $jobs = new TaskJobStore($connection);
+        return new ImportExportService(new PdoImportExportRepository($pdo), self::providers($pdo), new TrustedJobPublisher($jobs, $transactions, new TaskSubmissionRegistry([new ImportExportTaskSubmissionProvider()]), self::codec()), new TaskJobService($jobs, $transactions), new PdoAuditRepository($pdo));
     }
     public static function handler(PDO $pdo): ImportExportTaskHandler
     {

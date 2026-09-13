@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\task;
 
-use PDO;
-use PeanutAdmin\App\controller\api\v1\MemberAdminRuntime;
 use PeanutAdmin\App\http\TenantModuleRuntime;
 use PeanutAdmin\App\module\RuntimeModuleRegistry;
 use PeanutAdmin\Kernel\Api\ApiException;
 use PeanutAdmin\Kernel\Host\ExternalOperationResult;
+use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
 use PeanutAdmin\TaskJob\Application\JobRecord;
 use PeanutAdmin\TaskJob\Application\TaskJobException;
 use PeanutAdmin\TaskJob\Application\TaskJobService;
-use PeanutAdmin\TaskJob\Persistence\PdoTaskJobRepository;
+use PeanutAdmin\TaskJob\Persistence\TaskJobStore;
+use RuntimeException;
+use think\db\PDOConnection;
+use think\facade\Db;
 use think\Request;
 use think\Response;
 
@@ -21,18 +23,18 @@ final class TaskHttpRuntime
 {
     public static function list(Request $request): Response
     {
-        $pdo = MemberAdminRuntime::pdo();
+        $connection = self::connection();
         $modules = RuntimeModuleRegistry::compile();
         $operation = TenantModuleRuntime::operation('listTasks', 'GET', '/api/v1/tasks', 'peanut.task-job', 'peanut.task-job.read');
         $external = TenantModuleRuntime::request($request, $operation, '/api/v1/tasks');
-        $response = TenantModuleRuntime::host($pdo, $modules)->read($operation, $external, static function ($authorized, $query) use ($pdo) {
+        $response = TenantModuleRuntime::host($connection, $modules)->read($operation, $external, static function ($authorized, $query) use ($connection) {
             try {
                 self::emptyBody($query->body['payload'] ?? null);
                 $raw = $query->body['query'] ?? null;
                 if (!is_array($raw) || array_diff(array_keys($raw), ['status','page','page_size']) !== []) {
                     throw TaskJobException::invalid();
                 }
-                $result = (new TaskJobService(new PdoTaskJobRepository($pdo)))->list(
+                $result = self::service($connection)->list(
                     TenantModuleRuntime::authorizedContext($authorized, 'peanut.task-job', 'read'),
                     is_string($raw['status'] ?? null) ? $raw['status'] : 'queued',
                     TenantModuleRuntime::positiveInt($raw['page'] ?? '1', 10000),
@@ -62,15 +64,15 @@ final class TaskHttpRuntime
 
     private static function readOne(Request $request, string $jobKey): Response
     {
-        $pdo = MemberAdminRuntime::pdo();
+        $connection = self::connection();
         $modules = RuntimeModuleRegistry::compile();
         $path = '/api/v1/tasks/' . rawurlencode($jobKey);
         $operation = TenantModuleRuntime::operation('getTask', 'GET', '/api/v1/tasks/{job_key}', 'peanut.task-job', 'peanut.task-job.read');
         $external = TenantModuleRuntime::request($request, $operation, $path);
-        $response = TenantModuleRuntime::host($pdo, $modules)->read($operation, $external, static function ($authorized, $query) use ($pdo, $jobKey) {
+        $response = TenantModuleRuntime::host($connection, $modules)->read($operation, $external, static function ($authorized, $query) use ($connection, $jobKey) {
             try {
                 self::noInput($query->body);
-                $job = (new TaskJobService(new PdoTaskJobRepository($pdo)))->detail(TenantModuleRuntime::authorizedContext($authorized, 'peanut.task-job', 'read'), $jobKey);
+                $job = self::service($connection)->detail(TenantModuleRuntime::authorizedContext($authorized, 'peanut.task-job', 'read'), $jobKey);
                 return new \PeanutAdmin\Kernel\Host\ExternalOperationResponse(200, ['data' => $job->toPublicArray()]);
             } catch (TaskJobException $e) {
                 throw self::problem($e);
@@ -81,16 +83,16 @@ final class TaskHttpRuntime
 
     private static function mutate(Request $request, string $jobKey, string $operationId): Response
     {
-        $pdo = MemberAdminRuntime::pdo();
+        $connection = self::connection();
         $modules = RuntimeModuleRegistry::compile();
         $suffix = $operationId === 'cancelTask' ? 'cancel' : 'retry';
         $path = '/api/v1/tasks/' . rawurlencode($jobKey) . '/' . $suffix;
         $operation = TenantModuleRuntime::operation($operationId, 'POST', '/api/v1/tasks/{job_key}/' . $suffix, 'peanut.task-job', 'peanut.task-job.manage', true);
         $external = TenantModuleRuntime::request($request, $operation, $path);
-        $response = TenantModuleRuntime::host($pdo, $modules)->command($operation, $external, static function ($authorized, $command, PDO $transaction) use ($jobKey, $operationId) {
+        $response = TenantModuleRuntime::host($connection, $modules)->command($operation, $external, static function ($authorized, $command) use ($connection, $jobKey, $operationId) {
             try {
                 self::noInput($command->body);
-                $service = new TaskJobService(new PdoTaskJobRepository($transaction));
+                $service = self::service($connection);
                 $revision = TenantModuleRuntime::expectedRevision($command);
                 if ($revision === null) {
                     throw TaskJobException::invalid();
@@ -102,6 +104,23 @@ final class TaskHttpRuntime
             }
         }, guard: TenantModuleRuntime::commandGuard('peanut.task-job'));
         return TenantModuleRuntime::response($response, $external->requestId->value);
+    }
+
+    private static function service(PDOConnection $connection): TaskJobService
+    {
+        return new TaskJobService(
+            new TaskJobStore($connection),
+            new ThinkPhpTransactionManager($connection),
+        );
+    }
+
+    private static function connection(): PDOConnection
+    {
+        $connection = Db::connect();
+        if (!$connection instanceof PDOConnection) {
+            throw new RuntimeException('TASK_JOB_DATABASE_CONNECTION_UNSUPPORTED');
+        }
+        return $connection;
     }
 
     private static function emptyBody(mixed $body): void
