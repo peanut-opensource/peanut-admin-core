@@ -379,7 +379,7 @@ final class FileRuntimeFactory
             new ModuleAvailabilityAdapter($modules, new ModuleGuard(new PdoModuleRuntimeRepository($pdo))),
             new PermissionAdapter($permissions),
             new TypedTargetAdapter($unusedDataAuthorization),
-            new AtomicOperationAdapter($pdo),
+            new AtomicOperationAdapter($pdo, new PdoTransactionManager($pdo)),
             new ProblemDetailsAdapter(),
         );
     }

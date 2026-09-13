@@ -636,7 +636,7 @@ final class SettingsRuntimeFactory
             ),
             new PermissionAdapter($permissions),
             new TypedTargetAdapter($unusedDataAuthorization),
-            new AtomicOperationAdapter($pdo),
+            new AtomicOperationAdapter($pdo, new \PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager($pdo)),
             new ProblemDetailsAdapter(),
         );
     }

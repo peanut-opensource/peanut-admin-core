@@ -111,7 +111,7 @@ final class TenantModuleRuntime
             new ModuleAvailabilityAdapter($modules, new ModuleGuard(new PdoModuleRuntimeRepository($pdo))),
             new PermissionAdapter($permissions),
             new TypedTargetAdapter($noTargets),
-            new AtomicOperationAdapter($pdo),
+            new AtomicOperationAdapter($pdo, new \PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager($pdo)),
             new ProblemDetailsAdapter(),
         );
     }
