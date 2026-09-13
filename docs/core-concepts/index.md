@@ -25,9 +25,11 @@ credentials. Consumers must lock a Core version containing these commands before
 source implementation alone is not package or downstream qualification. The
 PDO transaction is a migration-before fact; the accepted supported runtime is
 ThinkPHP 8. Development commit `61287a9` now provides the native Core
-transaction implementation adopted by Application commit `14ce7b1b`, while
-the remaining domain PDO callers still await their atomic migration. This
-foundation preserves nested savepoint and rollback behavior but does not by
+transaction implementation adopted by Application commit `14ce7b1b`.
+Application commit `e67acd72` verifies the development-only local package
+link, full startup, shared connection state, nested handling and failure
+rollback against the registered development database. Remaining domain PDO
+callers still await their atomic migration, and this evidence does not by
 itself qualify or publish a new Core package.
 
 ## Tenant And Business Targets
