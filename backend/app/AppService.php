@@ -13,6 +13,7 @@ use PeanutAdmin\NotificationSms\Sms\DisabledSmsProvider;
 use PeanutAdmin\NotificationSms\Sms\SmsProvider;
 use RuntimeException;
 use think\db\ConnectionInterface;
+use think\db\PDOConnection;
 use think\facade\Db;
 use think\Service;
 
@@ -39,9 +40,17 @@ final class AppService extends Service
         }
 
         $this->app->bind(ConnectionInterface::class, static fn(): ConnectionInterface => Db::connect());
-        $this->app->bind(PDO::class, fn(): PDO => $this->app->make(ConnectionInterface::class)->connect());
+        $this->app->bind(PDOConnection::class, function (): PDOConnection {
+            $connection = $this->app->make(ConnectionInterface::class);
+            if (!$connection instanceof PDOConnection) {
+                throw new RuntimeException('DATABASE_CONNECTION_UNSUPPORTED');
+            }
+
+            return $connection;
+        });
+        $this->app->bind(PDO::class, fn(): PDO => $this->app->make(PDOConnection::class)->connect());
         $this->app->bind(TransactionManager::class, fn(): TransactionManager => new ThinkPhpTransactionManager(
-            $this->app->make(ConnectionInterface::class),
+            $this->app->make(PDOConnection::class),
         ));
     }
 }

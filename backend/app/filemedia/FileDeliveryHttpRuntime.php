@@ -28,18 +28,15 @@ use PeanutAdmin\Kernel\Module\ModuleGuard;
 use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
 use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
 use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
-use RuntimeException;
 use think\db\PDOConnection;
-use think\facade\Db;
 use think\Request;
 use think\Response;
 use Throwable;
 
 final class FileDeliveryHttpRuntime
 {
-    public static function assets(Request $request): Response
+    public static function assets(Request $request, PDOConnection $connection): Response
     {
-        $connection = self::connection();
         $modules = RuntimeModuleRegistry::compile();
         $op = TenantModuleRuntime::operation('listFileAssets', 'GET', '/api/v1/file-assets', 'peanut.file-media', 'peanut.file-media.read');
         $external = TenantModuleRuntime::request($request, $op, '/api/v1/file-assets');
@@ -64,9 +61,8 @@ final class FileDeliveryHttpRuntime
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
 
-    public static function grant(Request $request, string $fileKey): Response
+    public static function grant(Request $request, string $fileKey, PDOConnection $connection): Response
     {
-        $connection = self::connection();
         $modules = RuntimeModuleRegistry::compile();
         $path = '/api/v1/files/' . rawurlencode($fileKey) . '/delivery-grants';
         $op = TenantModuleRuntime::operation('createFileDeliveryGrant', 'POST', '/api/v1/files/{file_key}/delivery-grants', 'peanut.file-media', 'peanut.file-media.read', true);
@@ -85,9 +81,8 @@ final class FileDeliveryHttpRuntime
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
 
-    public static function deliver(Request $request, string $fileKey): Response
+    public static function deliver(Request $request, string $fileKey, PDOConnection $connection): Response
     {
-        $connection = self::connection();
         $pdo = $connection->connect();
         $requestId = MemberAdminRuntime::requestId($request);
         $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
@@ -162,14 +157,6 @@ final class FileDeliveryHttpRuntime
         }return new SignedDeliveryTokenService($key, new ThinkPhpDeliveryReplayGuard($connection, $tenantId));
     }
 
-    private static function connection(): PDOConnection
-    {
-        $connection = Db::connect();
-        if (!$connection instanceof PDOConnection) {
-            throw new RuntimeException('FILE_MEDIA_DATABASE_CONNECTION_UNSUPPORTED');
-        }
-        return $connection;
-    }
     private static function storage(): PrivateStorageAdapter
     {
         $c = self::config();

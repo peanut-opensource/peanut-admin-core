@@ -298,7 +298,7 @@ SQL);
             'POST',
             "/api/v1/files/{$fileKey}/delivery-grants",
             'req_file_delivery_grant_0001',
-        ), $fileKey);
+        ), $fileKey, $this->connection);
         self::assertSame(201, $grant->getCode(), json_encode($grant->getData(), JSON_THROW_ON_ERROR));
         $uri = $grant->getData()['data']['delivery_uri'] ?? null;
         self::assertIsString($uri);
@@ -313,7 +313,7 @@ SQL);
             trustedContext: false,
         );
         self::assertNull($deliveryRequest->header('authorization'));
-        $delivery = FileDeliveryHttpRuntime::deliver($deliveryRequest, $fileKey);
+        $delivery = FileDeliveryHttpRuntime::deliver($deliveryRequest, $fileKey, $this->connection);
         self::assertSame(200, $delivery->getCode(), json_encode($delivery->getData(), JSON_THROW_ON_ERROR));
         self::assertSame("host multipart bytes\n", $delivery->getContent());
         self::assertSame('tenant_system', $this->scalar(<<<'SQL'
@@ -321,7 +321,7 @@ SELECT actor_type FROM pa_tenant_audit_event
 WHERE tenant_id = ? AND event_type = 'tenant.file.delivered' AND request_id = ?
 SQL, [$this->tenantId, 'req_file_delivery_public_0001']));
 
-        $replay = FileDeliveryHttpRuntime::deliver($deliveryRequest, $fileKey);
+        $replay = FileDeliveryHttpRuntime::deliver($deliveryRequest, $fileKey, $this->connection);
         self::assertSame(403, $replay->getCode());
         self::assertSame('FILE_DELIVERY_DENIED', $replay->getData()['code'] ?? null);
     }

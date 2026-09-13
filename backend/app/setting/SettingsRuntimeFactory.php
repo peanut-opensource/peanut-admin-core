@@ -53,9 +53,7 @@ use PeanutAdmin\Settings\Definition\SettingDefinitionLoader;
 use PeanutAdmin\Settings\Definition\SettingDefinitionRegistry;
 use PeanutAdmin\Settings\Persistence\SettingStore;
 use PeanutAdmin\Settings\Secret\SodiumSecretProtector;
-use RuntimeException;
 use think\db\PDOConnection;
-use think\facade\Db;
 use think\Request;
 use think\Response;
 
@@ -202,8 +200,8 @@ final class SettingsRuntimeFactory
         Request $request,
         string $moduleKey,
         string $settingKey,
+        PDOConnection $connection,
     ): Response {
-        $connection = self::connection();
         $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['replaceTenantSetting'];
@@ -269,9 +267,8 @@ final class SettingsRuntimeFactory
         return self::httpResponse($response, $externalRequest->requestId->value);
     }
 
-    public static function listTenant(Request $request): Response
+    public static function listTenant(Request $request, PDOConnection $connection): Response
     {
-        $connection = self::connection();
         $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['listTenantSettings'];
@@ -331,8 +328,8 @@ final class SettingsRuntimeFactory
         Request $request,
         string $moduleKey,
         string $settingKey,
+        PDOConnection $connection,
     ): Response {
-        $connection = self::connection();
         $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['unsetTenantSetting'];
@@ -398,8 +395,8 @@ final class SettingsRuntimeFactory
         Request $request,
         string $moduleKey,
         string $settingKey,
+        PDOConnection $connection,
     ): Response {
-        $connection = self::connection();
         $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['replaceDeploymentSetting'];
@@ -467,8 +464,8 @@ final class SettingsRuntimeFactory
         Request $request,
         string $moduleKey,
         string $settingKey,
+        PDOConnection $connection,
     ): Response {
-        $connection = self::connection();
         $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['unsetDeploymentSetting'];
@@ -529,9 +526,8 @@ final class SettingsRuntimeFactory
         return self::httpResponse($response, $externalRequest->requestId->value);
     }
 
-    public static function listDeployment(Request $request): Response
+    public static function listDeployment(Request $request, PDOConnection $connection): Response
     {
-        $connection = self::connection();
         $pdo = $connection->connect();
         $modules = RuntimeModuleRegistry::compile();
         $operation = self::operations()['listDeploymentSettings'];
@@ -817,16 +813,6 @@ final class SettingsRuntimeFactory
             atomicCommand: $command,
             idempotencyRequired: $command,
         );
-    }
-
-    private static function connection(): PDOConnection
-    {
-        $connection = Db::connect();
-        if (!$connection instanceof PDOConnection) {
-            throw new RuntimeException('SETTING_DATABASE_CONNECTION_UNSUPPORTED');
-        }
-
-        return $connection;
     }
 
     private static function admin(PDOConnection $connection): SettingAdminService

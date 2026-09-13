@@ -50,7 +50,6 @@ use PeanutAdmin\Kernel\Platform\Authorization\PlatformAuthorizationEvaluator;
 use think\Request;
 use think\Response;
 use think\db\PDOConnection;
-use think\facade\Db;
 use Throwable;
 
 final class FileRuntimeFactory
@@ -89,9 +88,8 @@ final class FileRuntimeFactory
         ];
     }
 
-    public static function list(Request $request, ?PDOConnection $connection = null, ?CompiledModuleRegistry $modules = null): Response
+    public static function list(Request $request, PDOConnection $connection, ?CompiledModuleRegistry $modules = null): Response
     {
-        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['listFiles'];
         $externalRequest = self::externalRequest($request, $operation, '/api/v1/files');
@@ -129,10 +127,9 @@ final class FileRuntimeFactory
     public static function detail(
         Request $request,
         string $fileKey,
-        ?PDOConnection $connection = null,
+        PDOConnection $connection,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['getFile'];
         $externalRequest = self::externalRequest($request, $operation, self::detailPath($fileKey));
@@ -157,11 +154,10 @@ final class FileRuntimeFactory
 
     public static function upload(
         Request $request,
-        ?PDOConnection $connection = null,
+        PDOConnection $connection,
         ?CompiledModuleRegistry $modules = null,
         ?StorageProvider $storage = null,
     ): Response {
-        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $storage ??= self::storage();
         $operation = self::operations()['createFile'];
@@ -228,10 +224,9 @@ final class FileRuntimeFactory
     public static function archive(
         Request $request,
         string $fileKey,
-        ?PDOConnection $connection = null,
+        PDOConnection $connection,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['archiveFile'];
         $externalRequest = self::externalRequest($request, $operation, self::detailPath($fileKey));
@@ -277,11 +272,10 @@ final class FileRuntimeFactory
     public static function download(
         Request $request,
         string $fileKey,
-        ?PDOConnection $connection = null,
+        PDOConnection $connection,
         ?CompiledModuleRegistry $modules = null,
         ?StorageProvider $storage = null,
     ): Response {
-        $connection ??= self::connection();
         $pdo = $connection->connect();
         $modules ??= RuntimeModuleRegistry::compile();
         $storage ??= self::storage();
@@ -436,16 +430,6 @@ final class FileRuntimeFactory
         $config = require dirname(__DIR__, 3) . '/backend/config/file-media.php';
 
         return new UploadPolicy($config['allowed_media_types'], $config['max_bytes']);
-    }
-
-    private static function connection(): PDOConnection
-    {
-        $connection = Db::connect();
-        if (!$connection instanceof PDOConnection) {
-            throw new LogicException('FILE_MEDIA_DATABASE_CONNECTION_UNSUPPORTED');
-        }
-
-        return $connection;
     }
 
     private static function operation(

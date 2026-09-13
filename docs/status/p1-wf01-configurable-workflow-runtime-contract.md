@@ -378,11 +378,14 @@ subject target. Cross-Tenant and invisible rows are the same not-found result.
 Queries create no workflow or idempotency row; the Host owns any audit required
 for a sensitive read operation.
 
-All command effects use one caller-owned PDO and one R01 transaction. A failure
+All command effects use one caller-owned ThinkPHP connection and one R01 transaction. A failure
 at definition/instance/work-item, event, existing Tenant audit, notification
 outbox, task publication or idempotency completion rolls back every effect. A
-resolver or publisher on another PDO is rejected before the first write; no
-cross-connection atomicity is claimed.
+side-effect publisher must prove that it participates in the active command
+transaction before the idempotency record or any workflow row is written; no
+cross-connection atomicity is claimed. Read-only resolvers remain Host contracts
+and receive the already authorized context rather than exposing database handles
+through the public package API.
 
 ## Permission, Audit, Side Effects And Security
 
@@ -443,10 +446,11 @@ transaction rolls back, using `AuditOutcome::Denied`; unexpected error uses a
 new explicit post-rollback transaction and `AuditOutcome::Error`. Neither may
 commit beside a partial workflow effect.
 
-`WorkflowSideEffectPublisher::publish(PDO, AuthorizedOperationContext,
-WorkflowTransitionEffects, parentIdempotencyKey)` receives the same PDO and the
-already authorized transition context. Effects are immutable and canonically
-ordered. Task child keys are exactly
+`WorkflowSideEffectPublisher::assertTransactionParticipation()` runs inside the
+active command transaction and before its first write. After that check,
+`publish(AuthorizedOperationContext, WorkflowTransitionEffects,
+parentIdempotencyKey)` receives the already authorized transition context.
+Effects are immutable and canonically ordered. Task child keys are exactly
 `wf:<instance_key>:<event_sequence>:task:<zero_based_index>` and notification
 child keys replace `task` with `notification`; the corresponding request hash
 is canonical JSON of the typed intent. A Task provider must bind to the same
@@ -456,7 +460,8 @@ separately evaluated `peanut.notification-sms/manage`
 `AuthorizedOperationContext` for the same trusted Tenant; it may not construct
 or forge that decision. Until such an adapter is contracted by a real Host, a
 definition containing a notification intent fails closed with provider
-unavailable. Missing provider, mismatched PDO/context or child-key collision
+unavailable. Missing provider, transaction-participation failure, mismatched
+context or child-key collision
 rolls back the transition. Exact parent replay never calls the publisher.
 
 Human-required transitions accept only an active Tenant member resolved from
