@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ReferenceCodeSecurityTest extends TestCase
 {
-    public function testHostUsesR02AndTheReferenceCodePackageWithoutParallelSql(): void
+    public function testHostUsesThinkPhpTransactionAndReferenceCodeStoreWithoutParallelSql(): void
     {
         $factory = $this->source('backend/app/referencecode/ReferenceCodeRuntimeFactory.php');
         $controller = $this->source('backend/app/controller/api/v1/ReferenceCodeController.php');
@@ -19,7 +19,9 @@ final class ReferenceCodeSecurityTest extends TestCase
         self::assertStringContainsString('AtomicOperationAdapter', $factory);
         self::assertStringContainsString('ReferenceCodeAdminService', $factory);
         self::assertStringContainsString('ReferenceCodeQuery', $factory);
-        self::assertStringContainsString('PdoReferenceCodeRepository', $factory);
+        self::assertStringContainsString('ReferenceCodeStore', $factory);
+        self::assertStringContainsString('ThinkPhpTransactionManager', $factory);
+        self::assertStringNotContainsString('PdoReferenceCodeRepository', $factory);
         self::assertStringNotContainsString('pa_reference_code_', $factory . $controller);
         self::assertStringNotContainsString('PDO', $controller);
     }
@@ -68,7 +70,7 @@ final class ReferenceCodeSecurityTest extends TestCase
 
         self::assertGreaterThanOrEqual(6, substr_count($factory, 'definitionRegistry($modules)->require('));
         self::assertGreaterThanOrEqual(3, substr_count($factory, 'assertOwnerAvailable('));
-        self::assertSame(3, substr_count($factory, 'self::admin($transaction)'));
+        self::assertSame(3, substr_count($factory, 'self::admin($connection)'));
         self::assertStringContainsString('new ReferenceCodeAdminService(', $factory);
     }
 

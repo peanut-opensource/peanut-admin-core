@@ -15,13 +15,18 @@ use PeanutAdmin\Kernel\Module\ModuleException;
 use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
 use PeanutAdmin\Kernel\Module\TenantModuleManager;
 use PeanutAdmin\Kernel\Package as KernelPackage;
+use think\db\PDOConnection;
 
 final readonly class InstallProductProfileApplier
 {
+    private PDO $pdo;
+
     public function __construct(
         private string $root,
-        private PDO $pdo,
-    ) {}
+        private PDOConnection $connection,
+    ) {
+        $this->pdo = $connection->connect();
+    }
 
     /** @return array{enabled_modules: list<string>, role_templates: list<string>, default_department_id: int|null} */
     public function apply(int $tenantId, InstallProductProfile $profile): array
@@ -40,7 +45,7 @@ final readonly class InstallProductProfileApplier
             throw new ModuleException('MODULE_NOT_INSTALLED', 'Profile references unknown module: ' . $unknown[0]);
         }
         SettingsRuntimeFactory::synchronizeDefinitions($this->pdo, $registry, new DateTimeImmutable('now'));
-        ReferenceCodeRuntimeFactory::synchronizeDefinitions($this->pdo, $registry, new DateTimeImmutable('now'));
+        ReferenceCodeRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
 
         $manager = new TenantModuleManager(
             $registry,

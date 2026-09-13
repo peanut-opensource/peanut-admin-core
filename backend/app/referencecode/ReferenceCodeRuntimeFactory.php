@@ -38,6 +38,7 @@ use PeanutAdmin\Kernel\Module\ModuleException;
 use PeanutAdmin\Kernel\Module\ModuleGuard;
 use PeanutAdmin\Kernel\Module\ModuleHostLayout;
 use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
+use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
 use PeanutAdmin\Kernel\Platform\Authorization\PdoPlatformAuthorizationRepository;
 use PeanutAdmin\Kernel\Platform\Authorization\PlatformAuthorizationEvaluator;
 use PeanutAdmin\ReferenceCodes\Application\EffectiveReferenceCode;
@@ -47,7 +48,10 @@ use PeanutAdmin\ReferenceCodes\Application\ReferenceCodeQuery;
 use PeanutAdmin\ReferenceCodes\Definition\ReferenceCodeSetDefinition;
 use PeanutAdmin\ReferenceCodes\Definition\ReferenceCodeSetLoader;
 use PeanutAdmin\ReferenceCodes\Definition\ReferenceCodeSetRegistry;
-use PeanutAdmin\ReferenceCodes\Persistence\PdoReferenceCodeRepository;
+use PeanutAdmin\ReferenceCodes\Persistence\ReferenceCodeStore;
+use RuntimeException;
+use think\db\PDOConnection;
+use think\facade\Db;
 use think\Request;
 use think\Response;
 
@@ -247,20 +251,21 @@ final class ReferenceCodeRuntimeFactory
 
     public static function listSets(
         Request $request,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $pdo ??= self::pdo();
+        $connection ??= self::connection();
+        $pdo = $connection->connect();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['listReferenceCodeSets'];
         $externalRequest = self::externalRequest($request, $operation, '/api/v1/reference-code-sets');
-        $response = self::host($pdo, $modules)->read(
+        $response = self::host($connection, $modules)->read(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $query,
-            ) use ($pdo, $modules): ExternalOperationResponse {
+            ) use ($connection, $pdo, $modules): ExternalOperationResponse {
                 try {
                     $context = self::tenantContext($authorized);
                     self::assertEmptyBody(self::requestPayload($query));
@@ -273,7 +278,7 @@ final class ReferenceCodeRuntimeFactory
                     );
 
                     return new ExternalOperationResponse(200, [
-                        'data' => ['items' => self::query($pdo)->sets($visible)],
+                        'data' => ['items' => self::query($connection)->sets($visible)],
                     ]);
                 } catch (ReferenceCodeException $exception) {
                     throw self::apiException($exception);
@@ -288,28 +293,29 @@ final class ReferenceCodeRuntimeFactory
         Request $request,
         string $moduleKey,
         string $setKey,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $pdo ??= self::pdo();
+        $connection ??= self::connection();
+        $pdo = $connection->connect();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['listReferenceCodes'];
         $path = self::collectionPath($moduleKey, $setKey);
         $externalRequest = self::externalRequest($request, $operation, $path);
-        $response = self::host($pdo, $modules)->read(
+        $response = self::host($connection, $modules)->read(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $query,
-            ) use ($pdo, $modules, $moduleKey, $setKey): ExternalOperationResponse {
+            ) use ($connection, $pdo, $modules, $moduleKey, $setKey): ExternalOperationResponse {
                 try {
                     $context = self::tenantContext($authorized);
                     self::assertEmptyBody(self::requestPayload($query));
                     $input = self::listQuery(self::requestQuery($query));
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $setKey);
                     self::assertOwnerAvailable($pdo, $definition, $context, $query->comparisonTime);
-                    $result = self::query($pdo)->list(
+                    $result = self::query($connection)->list(
                         $definition,
                         $context,
                         $input['asOf'],
@@ -342,28 +348,29 @@ final class ReferenceCodeRuntimeFactory
         string $moduleKey,
         string $setKey,
         string $code,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $pdo ??= self::pdo();
+        $connection ??= self::connection();
+        $pdo = $connection->connect();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['getReferenceCode'];
         $path = self::detailPath($moduleKey, $setKey, $code);
         $externalRequest = self::externalRequest($request, $operation, $path);
-        $response = self::host($pdo, $modules)->read(
+        $response = self::host($connection, $modules)->read(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $query,
-            ) use ($pdo, $modules, $moduleKey, $setKey, $code): ExternalOperationResponse {
+            ) use ($connection, $pdo, $modules, $moduleKey, $setKey, $code): ExternalOperationResponse {
                 try {
                     $context = self::tenantContext($authorized);
                     self::assertEmptyBody(self::requestPayload($query));
                     $asOf = self::detailQuery(self::requestQuery($query));
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $setKey);
                     self::assertOwnerAvailable($pdo, $definition, $context, $query->comparisonTime);
-                    $entry = self::query($pdo)->get($definition, $context, $code, $asOf);
+                    $entry = self::query($connection)->get($definition, $context, $code, $asOf);
 
                     return new ExternalOperationResponse(200, ['data' => self::item($entry)]);
                 } catch (ReferenceCodeException $exception) {
@@ -379,29 +386,29 @@ final class ReferenceCodeRuntimeFactory
         Request $request,
         string $moduleKey,
         string $setKey,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $pdo ??= self::pdo();
+        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['createReferenceCode'];
         $path = self::collectionPath($moduleKey, $setKey);
         $externalRequest = self::externalRequest($request, $operation, $path);
-        $response = self::host($pdo, $modules)->command(
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($modules, $moduleKey, $setKey): ExternalOperationResult {
+            ) use ($connection, $modules, $moduleKey, $setKey): ExternalOperationResult {
                 try {
                     $context = self::tenantContext($authorized);
                     self::assertNoQuery(self::requestQuery($command));
                     $input = self::versionInput(self::requestPayload($command), true);
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $setKey);
                     self::assertOwnerAvailable($transaction, $definition, $context, $command->comparisonTime);
-                    $entry = self::admin($transaction)->create(
+                    $entry = self::admin($connection)->create(
                         $definition,
                         $context,
                         $input['code'],
@@ -425,7 +432,7 @@ final class ReferenceCodeRuntimeFactory
                     throw self::apiException($exception);
                 }
             },
-            guard: self::commandGuard($modules, $moduleKey, $setKey),
+            guard: self::commandGuard($connection, $modules, $moduleKey, $setKey),
         );
 
         return self::httpResponse($response, $externalRequest->requestId->value);
@@ -436,29 +443,29 @@ final class ReferenceCodeRuntimeFactory
         string $moduleKey,
         string $setKey,
         string $code,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $pdo ??= self::pdo();
+        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['replaceReferenceCode'];
         $path = self::detailPath($moduleKey, $setKey, $code);
         $externalRequest = self::externalRequest($request, $operation, $path);
-        $response = self::host($pdo, $modules)->command(
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($modules, $moduleKey, $setKey, $code): ExternalOperationResult {
+            ) use ($connection, $modules, $moduleKey, $setKey, $code): ExternalOperationResult {
                 try {
                     $context = self::tenantContext($authorized);
                     self::assertNoQuery(self::requestQuery($command));
                     $input = self::versionInput(self::requestPayload($command), false);
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $setKey);
                     self::assertOwnerAvailable($transaction, $definition, $context, $command->comparisonTime);
-                    $entry = self::admin($transaction)->replace(
+                    $entry = self::admin($connection)->replace(
                         $definition,
                         $context,
                         $code,
@@ -482,7 +489,7 @@ final class ReferenceCodeRuntimeFactory
                     throw self::apiException($exception);
                 }
             },
-            guard: self::commandGuard($modules, $moduleKey, $setKey),
+            guard: self::commandGuard($connection, $modules, $moduleKey, $setKey),
         );
 
         return self::httpResponse($response, $externalRequest->requestId->value);
@@ -493,29 +500,29 @@ final class ReferenceCodeRuntimeFactory
         string $moduleKey,
         string $setKey,
         string $code,
-        ?PDO $pdo = null,
+        ?PDOConnection $connection = null,
         ?CompiledModuleRegistry $modules = null,
     ): Response {
-        $pdo ??= self::pdo();
+        $connection ??= self::connection();
         $modules ??= RuntimeModuleRegistry::compile();
         $operation = self::operations()['retireReferenceCode'];
         $path = self::detailPath($moduleKey, $setKey, $code);
         $externalRequest = self::externalRequest($request, $operation, $path);
-        $response = self::host($pdo, $modules)->command(
+        $response = self::host($connection, $modules)->command(
             $operation,
             $externalRequest,
             static function (
                 AuthorizedExternalOperation $authorized,
                 ExternalOperationRequest $command,
                 PDO $transaction,
-            ) use ($modules, $moduleKey, $setKey, $code): ExternalOperationResult {
+            ) use ($connection, $modules, $moduleKey, $setKey, $code): ExternalOperationResult {
                 try {
                     $context = self::tenantContext($authorized);
                     self::assertNoQuery(self::requestQuery($command));
                     self::assertEmptyBody(self::requestPayload($command));
                     $definition = self::definitionRegistry($modules)->require($moduleKey, $setKey);
                     self::assertOwnerAvailable($transaction, $definition, $context, $command->comparisonTime);
-                    $entry = self::admin($transaction)->retire(
+                    $entry = self::admin($connection)->retire(
                         $definition,
                         $context,
                         $code,
@@ -533,7 +540,7 @@ final class ReferenceCodeRuntimeFactory
                     throw self::apiException($exception);
                 }
             },
-            guard: self::commandGuard($modules, $moduleKey, $setKey),
+            guard: self::commandGuard($connection, $modules, $moduleKey, $setKey),
         );
 
         return self::httpResponse($response, $externalRequest->requestId->value);
@@ -541,11 +548,11 @@ final class ReferenceCodeRuntimeFactory
 
     /** @return array{inserted: int, updated: int, retired: int, reactivated: int} */
     public static function synchronizeDefinitions(
-        PDO $pdo,
+        PDOConnection $connection,
         CompiledModuleRegistry $modules,
         DateTimeImmutable $now,
     ): array {
-        return (new PdoReferenceCodeRepository($pdo))->synchronize(
+        return (new ReferenceCodeStore($connection))->synchronize(
             self::definitionRegistry($modules),
             self::millisecond($now),
         );
@@ -567,8 +574,9 @@ final class ReferenceCodeRuntimeFactory
         return $registry;
     }
 
-    public static function host(PDO $pdo, CompiledModuleRegistry $modules): ExternalOperationHost
+    public static function host(PDOConnection $connection, CompiledModuleRegistry $modules): ExternalOperationHost
     {
+        $pdo = $connection->connect();
         $configuration = self::hostConfiguration();
         $permissions = new PermissionMiddleware(
             new TenantAuthorizationEvaluator(
@@ -600,7 +608,7 @@ final class ReferenceCodeRuntimeFactory
             new TypedTargetAdapter($unusedDataAuthorization),
             new AtomicOperationAdapter(
                 $pdo,
-                new \PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager($pdo),
+                new ThinkPhpTransactionManager($connection),
             ),
             new ProblemDetailsAdapter(),
         );
@@ -665,6 +673,7 @@ final class ReferenceCodeRuntimeFactory
 
     /** @return callable(AuthorizedExternalOperation, ExternalOperationRequest, PDO): void */
     private static function commandGuard(
+        PDOConnection $connection,
         CompiledModuleRegistry $modules,
         string $moduleKey,
         string $setKey,
@@ -673,11 +682,11 @@ final class ReferenceCodeRuntimeFactory
             AuthorizedExternalOperation $authorized,
             ExternalOperationRequest $request,
             PDO $transaction,
-        ) use ($modules, $moduleKey, $setKey): void {
+        ) use ($connection, $modules, $moduleKey, $setKey): void {
             try {
                 $context = self::tenantContext($authorized);
                 $definition = self::definitionRegistry($modules)->require($moduleKey, $setKey);
-                (new PdoReferenceCodeRepository($transaction))->assertCurrentDefinition($definition, true);
+                (new ReferenceCodeStore($connection))->assertCurrentDefinition($definition, true);
                 self::assertModuleAvailable(
                     $transaction,
                     'peanut.reference-codes',
@@ -832,14 +841,14 @@ SQL);
         return $authorized->context;
     }
 
-    private static function admin(PDO $pdo): ReferenceCodeAdminService
+    private static function admin(PDOConnection $connection): ReferenceCodeAdminService
     {
-        return new ReferenceCodeAdminService(new PdoReferenceCodeRepository($pdo));
+        return new ReferenceCodeAdminService(new ReferenceCodeStore($connection));
     }
 
-    private static function query(PDO $pdo): ReferenceCodeQuery
+    private static function query(PDOConnection $connection): ReferenceCodeQuery
     {
-        return new ReferenceCodeQuery(new PdoReferenceCodeRepository($pdo));
+        return new ReferenceCodeQuery(new ReferenceCodeStore($connection));
     }
 
     private static function operation(
@@ -861,9 +870,14 @@ SQL);
         );
     }
 
-    private static function pdo(): PDO
+    private static function connection(): PDOConnection
     {
-        return MemberAdminRuntime::pdo();
+        $connection = Db::connect();
+        if (!$connection instanceof PDOConnection) {
+            throw new RuntimeException('REFERENCE_CODE_DATABASE_CONNECTION_UNSUPPORTED');
+        }
+
+        return $connection;
     }
 
     private static function externalRequest(

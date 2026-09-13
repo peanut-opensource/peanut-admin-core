@@ -22,9 +22,10 @@ use PeanutAdmin\ReferenceCodes\Database\Schema as ReferenceCodeSchema;
 use PeanutAdmin\ReferenceCodes\Definition\ReferenceCodeSetLoader;
 use PeanutAdmin\ReferenceCodes\Definition\ReferenceCodeSetRegistry;
 use PeanutAdmin\ReferenceCodes\Package as ReferenceCodesPackage;
-use PeanutAdmin\ReferenceCodes\Persistence\PdoReferenceCodeRepository;
+use PeanutAdmin\ReferenceCodes\Persistence\ReferenceCodeStore;
 use Phinx\Config\Config;
 use Phinx\Migration\Manager;
+use think\DbManager;
 use think\console\Input;
 use think\migration\NullOutput;
 
@@ -103,6 +104,28 @@ try {
     $migrate($dataPermissionRoot . '/database/migrations', 'pa_data_permission_migration');
 
     $pdo = new PDO($dsn . ";dbname={$databaseName}", 'root', $rootCredential, $options);
+    $db = new DbManager();
+    $db->setConfig([
+        'default' => 'mysql',
+        'connections' => [
+            'mysql' => [
+                'type' => 'mysql',
+                'hostname' => '127.0.0.1',
+                'database' => $databaseName,
+                'username' => 'root',
+                'password' => $rootCredential,
+                'hostport' => $port,
+                'charset' => 'utf8mb4',
+                'prefix' => 'pa_',
+                'fields_strict' => true,
+                'break_reconnect' => false,
+            ],
+        ],
+    ]);
+    $connection = $db->connect();
+    if (!$connection instanceof think\db\PDOConnection) {
+        throw new RuntimeException('Starter Reference Codes requires a ThinkPHP PDO connection.');
+    }
     foreach (ReferenceCodeSchema::tableNames() as $table) {
         $pdo->exec(ReferenceCodeSchema::createSql($table));
     }
@@ -161,8 +184,8 @@ try {
     $definitions = (new ReferenceCodeSetLoader())->load('peanut.reference-codes', $definitionFixture);
     $definitionRegistry = new ReferenceCodeSetRegistry();
     $definitionRegistry->registerModule('peanut.reference-codes', $definitions);
-    $repository = new PdoReferenceCodeRepository($pdo);
-    $synchronized = $repository->synchronize(
+    $store = new ReferenceCodeStore($connection);
+    $synchronized = $store->synchronize(
         $definitionRegistry,
         new DateTimeImmutable('2020-01-01T00:00:00.000Z'),
     );
@@ -180,7 +203,7 @@ try {
         1,
     ), 'starter-reference-request');
     $definition = $definitions[0];
-    $created = (new ReferenceCodeAdminService($repository))->create(
+    $created = (new ReferenceCodeAdminService($store))->create(
         $definition,
         $context,
         'synthetic-code',
@@ -192,7 +215,7 @@ try {
         null,
         '*',
     );
-    $active = (new ReferenceCodeQuery($repository))->listActiveCandidates($definition, $context);
+    $active = (new ReferenceCodeQuery($store))->listActiveCandidates($definition, $context);
     if ($created->code !== 'synthetic-code'
         || !$created->selectable()
         || count($active) !== 1

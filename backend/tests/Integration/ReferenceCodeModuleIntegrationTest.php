@@ -9,6 +9,7 @@ use PDO;
 use PDOException;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
+use PeanutAdmin\App\database\ThinkPhpConnectionFactory;
 use PeanutAdmin\App\module\RuntimeModuleRegistry;
 use PeanutAdmin\App\referencecode\ReferenceCodeRuntimeFactory;
 use PeanutAdmin\Kernel\Auth\TenantContext;
@@ -23,6 +24,7 @@ use PeanutAdmin\ReferenceCodes\Database\Schema as ReferenceCodeSchema;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use RuntimeException;
+use think\db\PDOConnection;
 use think\Request;
 use think\Response;
 
@@ -34,6 +36,7 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
 
     private PDO $admin;
     private PDO $pdo;
+    private PDOConnection $connection;
     private int $tenantId;
     private int $memberId;
     private int $accountId;
@@ -88,11 +91,12 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
         putenv('AUTH_IDENTIFIER_HMAC_KEY=reference-code-host-integration-key');
 
         $root = dirname(__DIR__, 3);
+        $this->connection = ThinkPhpConnectionFactory::fromEnvironment($root);
         $installationRoot = getenv('PEANUT_B04_INSTALL_ROOT');
         $installationRoot = is_string($installationRoot) && $installationRoot !== ''
             ? $installationRoot
             : $root;
-        $installation = (new InstallWorkflow($installationRoot, $this->pdo))->run(
+        $installation = (new InstallWorkflow($installationRoot, $this->connection))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',
@@ -116,7 +120,7 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
         $this->modules = $this->syntheticModules(RuntimeModuleRegistry::compile($root));
         $this->installHostFixture();
         ReferenceCodeRuntimeFactory::synchronizeDefinitions(
-            $this->pdo,
+            $this->connection,
             $this->modules,
             new DateTimeImmutable('2026-07-20T00:00:00.000Z'),
         );
@@ -194,7 +198,7 @@ SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes'])
             self::OWNER_MODULE,
             self::OWNER_SET,
             'replace-code',
-            $this->pdo,
+            $this->connection,
             $this->modules,
         );
 
@@ -223,7 +227,7 @@ SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes'])
             self::OWNER_MODULE,
             self::OWNER_SET,
             'retire-code',
-            $this->pdo,
+            $this->connection,
             $this->modules,
         );
 
@@ -318,7 +322,7 @@ SQL);
             'GET',
             '/api/v1/reference-code-sets',
             'req_reference_sets_0001',
-        ), $this->pdo, $this->modules);
+        ), $this->connection, $this->modules);
         $list = ReferenceCodeRuntimeFactory::listCodes(
             $this->request('GET', $this->collectionPath(), 'req_reference_list_0001', query: [
                 'as_of' => '2099-07-20T00:00:00.000Z',
@@ -329,7 +333,7 @@ SQL);
             ]),
             self::OWNER_MODULE,
             self::OWNER_SET,
-            $this->pdo,
+            $this->connection,
             $this->modules,
         );
         $detail = ReferenceCodeRuntimeFactory::getCode(
@@ -339,7 +343,7 @@ SQL);
             self::OWNER_MODULE,
             self::OWNER_SET,
             'read-code',
-            $this->pdo,
+            $this->connection,
             $this->modules,
         );
 
@@ -393,7 +397,7 @@ SQL);
             ]),
             self::OWNER_MODULE,
             self::OWNER_SET,
-            $this->pdo,
+            $this->connection,
             $this->modules,
         );
     }

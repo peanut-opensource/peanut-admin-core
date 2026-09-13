@@ -65,7 +65,10 @@ final class ExampleModuleHttpIntegrationTest extends TestCase
 
         $root = dirname(__DIR__, 3);
         $password = 'Example-Http-P0-Only-2026!';
-        $installation = (new InstallWorkflow($root, $this->pdo))->run(
+        $installation = (new InstallWorkflow(
+            $root,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+        ))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',

@@ -83,7 +83,10 @@ final class FileMediaModuleIntegrationTest extends TestCase
         putenv('AUTH_IDENTIFIER_HMAC_KEY=file-media-host-integration-key');
 
         $root = dirname(__DIR__, 3);
-        $installation = (new InstallWorkflow($root, $this->pdo))->run(
+        $installation = (new InstallWorkflow(
+            $root,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+        ))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',

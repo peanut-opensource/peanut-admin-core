@@ -76,7 +76,10 @@ final class EffectiveAccessPreviewHttpIntegrationTest extends TestCase
             $root . '/profiles/reference-admin.json',
             $root . '/schemas/product-profile.schema.json',
         );
-        $installation = (new InstallWorkflow($root, $this->pdo))->run(
+        $installation = (new InstallWorkflow(
+            $root,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+        ))->run(
             $profile,
             self::EMAIL,
             self::PASSWORD,
@@ -112,7 +115,10 @@ final class EffectiveAccessPreviewHttpIntegrationTest extends TestCase
             $other->tenantId,
             'req_effective_access_other_tenant',
         );
-        (new InstallProductProfileApplier($root, $this->pdo))->apply($other->tenantId, $profile);
+        (new InstallProductProfileApplier(
+            $root,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+        ))->apply($other->tenantId, $profile);
         $this->otherTenantMemberId = $other->memberId;
 
         $seeder = new PdoAuthorizationFixtureSeeder($this->pdo);

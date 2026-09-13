@@ -8,6 +8,7 @@ use Composer\InstalledVersions;
 use DateTimeImmutable;
 use DateTimeZone;
 use PDO;
+use PeanutAdmin\App\database\ThinkPhpConnectionFactory;
 use PeanutAdmin\App\module\ModuleRegistryFactory;
 use PeanutAdmin\App\referencecode\ReferenceCodeRuntimeFactory;
 use PeanutAdmin\App\setting\SettingsRuntimeFactory;
@@ -31,22 +32,26 @@ use Phinx\Migration\Manager;
 use Phinx\Migration\MigrationInterface;
 use RuntimeException;
 use think\console\Input;
+use think\db\PDOConnection;
 use think\migration\NullOutput;
 use Throwable;
 
 final readonly class UpgradeWorkflow
 {
+    private PDO $pdo;
+
     public function __construct(
         private string $root,
-        private PDO $pdo,
+        private PDOConnection $connection,
     ) {
+        $this->pdo = $connection->connect();
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
     public static function fromEnvironment(string $root): self
     {
-        return new self($root, self::connectFromEnvironment());
+        return new self($root, ThinkPhpConnectionFactory::fromEnvironment($root));
     }
 
     /**
@@ -193,7 +198,7 @@ final readonly class UpgradeWorkflow
             SettingsRuntimeFactory::synchronizeDefinitions($this->pdo, $registry, new DateTimeImmutable('now'));
         }
         if ($this->tableExists('pa_reference_code_set')) {
-            ReferenceCodeRuntimeFactory::synchronizeDefinitions($this->pdo, $registry, new DateTimeImmutable('now'));
+            ReferenceCodeRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
         }
 
         return [
@@ -900,18 +905,4 @@ SQL);
         return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s.v');
     }
 
-    private static function connectFromEnvironment(): PDO
-    {
-        return new PDO(
-            sprintf(
-                'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
-                getenv('DB_HOST') ?: '127.0.0.1',
-                (int) (getenv('DB_PORT') ?: 3306),
-                getenv('DB_DATABASE') ?: 'peanut_admin',
-            ),
-            getenv('DB_USERNAME') ?: 'peanut_admin',
-            getenv('DB_PASSWORD') ?: 'peanut_admin_dev',
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
-        );
-    }
 }

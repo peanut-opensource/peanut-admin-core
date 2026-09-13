@@ -103,7 +103,8 @@ deptrac:
         - type: classNameRegex
           value: '#^PeanutAdmin\\App\\Modules\\(?!.*\\Contracts\\)#'
   ruleset:
-    Kernel: []
+    Kernel:
+      - Framework
     ArtifactRevision:
       - Kernel
       - Workflow
@@ -115,6 +116,7 @@ deptrac:
       - RuntimeLibraries
       - Kernel
     ReferenceCodes:
+      - Framework
       - RuntimeLibraries
       - Kernel
     FileMedia:

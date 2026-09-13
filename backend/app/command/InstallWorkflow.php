@@ -14,13 +14,18 @@ use PeanutAdmin\Kernel\Persistence\Pdo\PdoTenantRepository;
 use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
 use PeanutAdmin\Kernel\Platform\Bootstrap\BootstrapService;
 use RuntimeException;
+use think\db\PDOConnection;
 
 final readonly class InstallWorkflow
 {
+    private PDO $pdo;
+
     public function __construct(
         private string $root,
-        private PDO $pdo,
-    ) {}
+        private PDOConnection $connection,
+    ) {
+        $this->pdo = $connection->connect();
+    }
 
     /**
      * @param array{code: string, name: string, owner_email: string, owner_name: string, owner_password?: string}|null $tenant
@@ -35,7 +40,7 @@ final readonly class InstallWorkflow
         bool $allowExisting = false,
     ): array {
         (new InstallEnvironmentChecker($this->root))->assertReady();
-        $upgradeWorkflow = new UpgradeWorkflow($this->root, $this->pdo);
+        $upgradeWorkflow = new UpgradeWorkflow($this->root, $this->connection);
         $existingSchema = $this->tableExists('pa_platform_operator');
         $upgrade = $allowExisting && $existingSchema
             ? $upgradeWorkflow->assertCurrentReleaseNoop()
@@ -104,7 +109,7 @@ final readonly class InstallWorkflow
                 $candidate->tenantId,
                 'install-tenant-activate-' . bin2hex(random_bytes(12)),
             );
-            $appliedProfile = (new InstallProductProfileApplier($this->root, $this->pdo))
+            $appliedProfile = (new InstallProductProfileApplier($this->root, $this->connection))
                 ->apply($candidate->tenantId, $profile);
             $tenantResult = [
                 'tenant_id' => $candidate->tenantId,

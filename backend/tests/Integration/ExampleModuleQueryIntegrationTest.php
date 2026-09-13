@@ -86,7 +86,10 @@ final class ExampleModuleQueryIntegrationTest extends TestCase
             $root . '/schemas/product-profile.schema.json',
         );
         $password = 'Example-Query-P0-Only-2026!';
-        $installation = (new InstallWorkflow($root, $this->pdo))->run(
+        $installation = (new InstallWorkflow(
+            $root,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+        ))->run(
             $profile,
             'query-owner@example.test',
             $password,

@@ -74,7 +74,10 @@ final class UpgradeWorkflowIntegrationTest extends TestCase
     public function testUpgradeRunsKernelDataAndModulesInDependencyOrderAndIsIdempotent(): void
     {
         $root = self::$repositoryRoot;
-        $workflow = new UpgradeWorkflow($root, $this->database);
+        $workflow = new UpgradeWorkflow(
+            $root,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
+        );
 
         $first = $workflow->installEmptyDatabase();
         $second = $workflow->assertCurrentReleaseNoop();
@@ -140,7 +143,10 @@ SQL));
         $source = (new RepositoryInspector())->inventoryAtCommit($root, $sourceCommit);
 
         try {
-            (new UpgradeWorkflow($root, $this->database))->run(
+            (new UpgradeWorkflow(
+                $root,
+                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
+            ))->run(
                 $this->plan($root, $source, null, $sourceRevision),
             );
         } catch (ModuleException $exception) {
@@ -158,7 +164,10 @@ SQL));
 
     public function testAppliedMigrationChecksumDriftStopsBeforeFurtherChanges(): void
     {
-        $workflow = new UpgradeWorkflow(self::$repositoryRoot, $this->database);
+        $workflow = new UpgradeWorkflow(
+            self::$repositoryRoot,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
+        );
         $workflow->installEmptyDatabase();
         $this->database->exec(
             "UPDATE pa_module_migration SET checksum = REPEAT('0', 64)"
@@ -189,10 +198,16 @@ SQL));
             $old = $this->installOldRelease($oldRoot);
             $source = (new TargetMigrationInventory())->scan($oldRoot);
 
-            $result = (new UpgradeWorkflow($root, $this->database))->run(
+            $result = (new UpgradeWorkflow(
+                $root,
+                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
+            ))->run(
                 $this->plan($root, $source, $oldRoot),
             );
-            $repeat = (new UpgradeWorkflow($root, $this->database))->assertCurrentReleaseNoop();
+            $repeat = (new UpgradeWorkflow(
+                $root,
+                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
+            ))->assertCurrentReleaseNoop();
 
             self::assertSame(3, $old['applied_module_migrations']);
             self::assertSame(13, $result['applied_module_migrations']);
@@ -216,7 +231,9 @@ SQL));
         try {
             (new UpgradeWorkflow(
                 self::$repositoryRoot,
-                $this->connect('DB_PORT', self::DATABASE),
+                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo(
+                    $this->connect('DB_PORT', self::DATABASE),
+                ),
             ))->installEmptyDatabase();
         } catch (ModuleException $exception) {
             self::assertSame('MODULE_UPGRADE_LOCKED', $exception->errorCode);
@@ -236,7 +253,10 @@ SQL));
 
     public function testCurrentReleaseNoopRejectsDefinitionDigestDrift(): void
     {
-        $workflow = new UpgradeWorkflow(self::$repositoryRoot, $this->database);
+        $workflow = new UpgradeWorkflow(
+            self::$repositoryRoot,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
+        );
         $workflow->installEmptyDatabase();
         $this->database->exec("UPDATE pa_setting_definition SET definition_digest = REPEAT('0', 64) LIMIT 1");
 
@@ -253,7 +273,10 @@ SQL));
 
     public function testCurrentReleaseNoopRejectsAnExtraModuleInstallation(): void
     {
-        $workflow = new UpgradeWorkflow(self::$repositoryRoot, $this->database);
+        $workflow = new UpgradeWorkflow(
+            self::$repositoryRoot,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
+        );
         $workflow->installEmptyDatabase();
         $this->database->exec(<<<'SQL'
 INSERT INTO pa_module_installation (
@@ -275,7 +298,10 @@ SQL);
 
     public function testCurrentReleaseNoopAllowsRetiredHistoryButRequiresCurrentDefinitionsActive(): void
     {
-        $workflow = new UpgradeWorkflow(self::$repositoryRoot, $this->database);
+        $workflow = new UpgradeWorkflow(
+            self::$repositoryRoot,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
+        );
         $workflow->installEmptyDatabase();
         $this->database->exec(<<<'SQL'
 INSERT INTO pa_reference_code_set (

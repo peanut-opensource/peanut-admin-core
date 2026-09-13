@@ -88,7 +88,10 @@ final class SettingsModuleIntegrationTest extends TestCase
         ], JSON_THROW_ON_ERROR));
 
         $root = dirname(__DIR__, 3);
-        $installation = (new InstallWorkflow($root, $this->pdo))->run(
+        $installation = (new InstallWorkflow(
+            $root,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+        ))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',

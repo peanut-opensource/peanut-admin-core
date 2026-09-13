@@ -65,7 +65,10 @@ final class AccountSelfServiceHttpIntegrationTest extends TestCase
         putenv('AUTH_IDENTIFIER_HMAC_KEY=account-http-integration-hmac-key-2026');
 
         $root = dirname(__DIR__, 3);
-        (new InstallWorkflow($root, $this->pdo))->run(
+        (new InstallWorkflow(
+            $root,
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
+        ))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',

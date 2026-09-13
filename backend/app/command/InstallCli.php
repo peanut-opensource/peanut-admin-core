@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\command;
 
-use PDO;
+use PeanutAdmin\App\database\ThinkPhpConnectionFactory;
 use Throwable;
 
 final class InstallCli
@@ -39,7 +39,7 @@ final class InstallCli
                 }
             }
 
-            $result = (new InstallWorkflow($root, self::pdo()))->run(
+            $result = (new InstallWorkflow($root, ThinkPhpConnectionFactory::fromEnvironment($root)))->run(
                 $profile,
                 $options['email'] ?? '',
                 $password,
@@ -84,18 +84,4 @@ final class InstallCli
         return $options;
     }
 
-    private static function pdo(): PDO
-    {
-        return new PDO(
-            sprintf(
-                'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
-                getenv('DB_HOST') ?: '127.0.0.1',
-                (int) (getenv('DB_PORT') ?: 3306),
-                getenv('DB_DATABASE') ?: 'peanut_admin',
-            ),
-            getenv('DB_USERNAME') ?: 'peanut_admin',
-            getenv('DB_PASSWORD') ?: 'peanut_admin_dev',
-            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
-        );
-    }
 }
