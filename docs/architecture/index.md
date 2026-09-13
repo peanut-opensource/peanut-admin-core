@@ -1,6 +1,6 @@
 # Architecture
 
-Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. Most Core domains still expose PDO-backed persistence contracts; the transaction foundation and ReferenceCodes development source have begun the accepted ThinkPHP Model/Query/Db/Transaction convergence recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. Published 3.1.0 artifacts remain immutable and do not include these development changes.
+Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. Most Core domains still expose PDO-backed persistence contracts; the transaction foundation plus ReferenceCodes, Settings and ArtifactRevision development source have begun the accepted ThinkPHP Model/Query/Db/Transaction convergence recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. Published 3.1.0 artifacts remain immutable and do not include these development changes.
 
 ## Repository Layers
 
@@ -38,7 +38,17 @@ atomic operations and migrate ReferenceCodes plus its HTTP/install/upgrade
 composition to the shared ThinkPHP connection. The former
 `PdoReferenceCodeRepository` source path is gone, while the domain's MySQL
 isolation/concurrency gate and both-Edition qualification remain pending a
-registered ReferenceCodes resource. Other domain PDO repositories and direct
+registered ReferenceCodes resource. Settings now follows the same shared
+connection and constructor-injection boundary, with `SettingStore` replacing
+the old PDO repository and Runtime-created connections. ArtifactRevision now
+uses the injected ThinkPHP `ArtifactRevisionStore`; its service receives the
+transaction, idempotency and audit collaborators explicitly, and the business
+repository contract no longer exposes a PDO connection. The Workflow adapter
+temporarily retains its pre-existing connection-identity port until the
+immediately following Workflow convergence batch. ArtifactRevision's registered
+database qualification and the absence of a production Application consumer
+remain explicit stops, so this source state is not a qualified candidate.
+Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.
 

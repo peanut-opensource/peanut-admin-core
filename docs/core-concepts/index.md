@@ -32,7 +32,12 @@ rollback against the registered development database. Remaining domain PDO
 callers still await their atomic migration. Core development commits `e0102fc`
 and `cab7415` use that boundary for atomic operations and ReferenceCodes, but
 the ReferenceCodes MySQL/Edition gate is still pending and none of this evidence
-by itself qualifies or publishes a new Core package.
+by itself qualifies or publishes a new Core package. Settings and
+ArtifactRevision now also use injected ThinkPHP stores in development source.
+ArtifactRevision keeps its cross-module repository and Workflow resolver
+semantics, but removes the repository's PDO accessor and internal service
+assembly; its dynamic database, consumer-ownership and both-Edition gates remain
+pending.
 
 ## Tenant And Business Targets
 

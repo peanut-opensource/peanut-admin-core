@@ -138,6 +138,14 @@
         "frontend/tests/e2e/reference-codes.e2e.ts"
       ]
     },
+    "RUNTIME-ARTIFACT-REVISION-001": {
+      "description": "Tenant-owned immutable artifact revisions, lineage, optimistic concurrency, and Workflow pinning",
+      "evidence": [
+        "packages/php/artifact-revision/tests/Integration/Application/ArtifactRevisionServiceTest.php",
+        "packages/php/artifact-revision/tests/Integration/Persistence/ArtifactRevisionStoreTest.php",
+        "packages/php/artifact-revision/tests/Integration/Workflow/ArtifactWorkflowSubjectRevisionResolverTest.php"
+      ]
+    },
     "RUNTIME-FILE-MEDIA-001": {
       "description": "Tenant-private file metadata, local provider, isolation, Host API, and Admin Web behavior",
       "evidence": [

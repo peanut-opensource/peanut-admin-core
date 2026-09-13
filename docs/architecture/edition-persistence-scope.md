@@ -29,6 +29,13 @@ This source result does not qualify either Edition; the registered MySQL
 isolation/concurrency run and the fixed Standalone/Multi-tenant candidate remain
 required before delivery.
 
+Settings and ArtifactRevision now use the same injected ThinkPHP connection
+boundary in development source. Their Tenant identity, optimistic concurrency,
+rollback and immutable revision semantics remain unchanged. ArtifactRevision's
+cross-module repository contract remains, but no longer exposes a PDO
+connection; its existing Workflow connection-identity port is owned by the next
+Workflow batch. These source changes do not qualify either Edition.
+
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
 Import/Export, and [`P1-ED01-R01`](../status/p1-ed01-r01-settings-persistence-scope-contract.md) for
