@@ -7,8 +7,9 @@ cd "$ROOT"
 composer_report="$(mktemp "${TMPDIR:-/tmp}/peanut-admin-composer-audit.XXXXXX")"
 pnpm_report="$(mktemp "${TMPDIR:-/tmp}/peanut-admin-pnpm-audit.XXXXXX")"
 trap 'rm -f "$composer_report" "$pnpm_report"' EXIT
+composer_bin="${PEANUT_COMPOSER:-composer}"
 
-if composer audit --locked --format=json > "$composer_report"; then
+if "$composer_bin" audit --locked --format=json > "$composer_report"; then
   :
 else
   audit_status=$?

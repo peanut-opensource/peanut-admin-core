@@ -101,6 +101,19 @@ Start with [the documentation index](docs/README.md).
 
 ## Development
 
+Prepare the repository-pinned Composer once per worktree. The PHAR is stored at
+the ignored relative path `.local/toolchain/`, and its SHA-256 is checked on
+every invocation:
+
+```bash
+./scripts/project-composer prepare
+export PEANUT_COMPOSER="$PWD/scripts/project-composer"
+```
+
+Commands that accept `PEANUT_COMPOSER` then use this exact 2.10.2 entry point;
+an unprepared worktree fails instead of silently using a different global
+Composer.
+
 Bootstrap each new worktree once from the shared pnpm content store:
 
 ```bash
