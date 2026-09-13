@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ExampleHost\App\Modules\Peanut\ImportExport;
 
-use PDO;
 use PeanutAdmin\DataPermission\Catalog\ResourceOperation;
 use PeanutAdmin\DataPermission\Constraint\AlwaysFalse;
 use PeanutAdmin\DataPermission\Constraint\AlwaysTrue;
@@ -21,12 +20,13 @@ use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
+use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, ResourceQueryPolicyProvider, ResourceTargetPolicyProvider, ResourceCreatePolicyProvider
 {
     public function moduleKey(): string { return 'peanut.import-export'; }
     public function bindings(): array { return []; }
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDO $pdo): void { $registry->registerResourceProvider(self::class, $this); }
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void { $registry->registerResourceProvider(self::class, $this); }
     public function tenantConstraint(AuthorizationContext $context, ResourceOperation $operation): QueryConstraint { return new TenantEquals(new ColumnReference('operation.tenant_id'), $context->tenant->tenantId); }
     public function requestedTargetConstraint(AuthorizationContext $context, ResourceOperation $operation, TypedResourceTargetCollection $targets): QueryConstraint { return $targets->sets === [] ? new AlwaysTrue() : new AlwaysFalse(); }
     public function compilePredicate(AuthorizationContext $context, ResourceOperation $operation, EffectivePolicySet $policies): QueryConstraint { return $this->tenantConstraint($context, $operation); }
