@@ -146,6 +146,23 @@
         "packages/php/artifact-revision/tests/Integration/Workflow/ArtifactWorkflowSubjectRevisionResolverTest.php"
       ]
     },
+    "RUNTIME-ENTITLEMENT-QUOTA-001": {
+      "description": "Tenant quota policy snapshots, usage windows, reservation compensation, idempotency, and concurrency",
+      "evidence": [
+        "packages/php/entitlement-quota/tests/Integration/Application/EntitlementQuotaServiceTest.php",
+        "packages/php/entitlement-quota/tests/Integration/Persistence/EntitlementQuotaStoreTest.php",
+        "packages/php/entitlement-quota/tests/Unit/Database/SchemaTest.php"
+      ]
+    },
+    "RUNTIME-WORKFLOW-001": {
+      "description": "Tenant workflow definition, start and transition atomicity, immutable subject pins, notification/task intents, and concurrency",
+      "evidence": [
+        "packages/php/workflow/tests/Integration/Application/WorkflowRuntimeTest.php",
+        "packages/php/workflow/tests/Integration/Application/WorkflowCapabilityCompositionTest.php",
+        "packages/php/workflow/tests/Integration/Persistence/WorkflowStoreTest.php",
+        "packages/php/workflow/tests/Unit/Definition/WorkflowGraphTest.php"
+      ]
+    },
     "RUNTIME-FILE-MEDIA-001": {
       "description": "Tenant-private file metadata, local provider, isolation, Host API, and Admin Web behavior",
       "evidence": [

@@ -36,6 +36,13 @@ cross-module repository contract remains, but no longer exposes a PDO
 connection; its existing Workflow connection-identity port is owned by the next
 Workflow batch. These source changes do not qualify either Edition.
 
+EntitlementQuota and Workflow also retain their Tenant columns and ownership
+contracts while replacing the old PDO repositories with injected ThinkPHP
+stores. Workflow notification/task intents stay cross-domain business
+contracts; PDO identity is no longer part of those adapter APIs. Dynamic
+compensation, concurrency, rollback and both-Edition qualification remain
+required.
+
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
 Import/Export, and [`P1-ED01-R01`](../status/p1-ed01-r01-settings-persistence-scope-contract.md) for

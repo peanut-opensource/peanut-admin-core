@@ -1,6 +1,6 @@
 # Architecture
 
-Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. Most Core domains still expose PDO-backed persistence contracts; the transaction foundation plus ReferenceCodes, Settings and ArtifactRevision development source have begun the accepted ThinkPHP Model/Query/Db/Transaction convergence recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. Published 3.1.0 artifacts remain immutable and do not include these development changes.
+Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. Most Core domains still expose PDO-backed persistence contracts; the transaction foundation plus ReferenceCodes, Settings, ArtifactRevision, EntitlementQuota and Workflow development source have begun the accepted ThinkPHP Model/Query/Db/Transaction convergence recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. Published 3.1.0 artifacts remain immutable and do not include these development changes.
 
 ## Repository Layers
 
@@ -48,6 +48,14 @@ temporarily retains its pre-existing connection-identity port until the
 immediately following Workflow convergence batch. ArtifactRevision's registered
 database qualification and the absence of a production Application consumer
 remain explicit stops, so this source state is not a qualified candidate.
+EntitlementQuota and Workflow now use injected ThinkPHP stores and explicit
+transaction, idempotency and audit collaborators. Workflow's assignment,
+authorization, subject, attachment and side-effect business adapters no longer
+expose or receive PDO; notification and task intents remain genuine
+cross-domain contracts and execute inside the injected command transaction.
+Their MySQL rollback, compensation, concurrency and cross-domain suites still
+require the registered exclusive database resource and are not qualified by
+the non-database checks.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

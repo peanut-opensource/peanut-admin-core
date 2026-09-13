@@ -37,7 +37,12 @@ ArtifactRevision now also use injected ThinkPHP stores in development source.
 ArtifactRevision keeps its cross-module repository and Workflow resolver
 semantics, but removes the repository's PDO accessor and internal service
 assembly; its dynamic database, consumer-ownership and both-Edition gates remain
-pending.
+pending. EntitlementQuota and Workflow follow the same development boundary:
+their business repositories remain, their one implementations are ThinkPHP
+stores, Runtime dependencies are constructor-injected, and Workflow adapters
+carry business values rather than PDO identity. Their compensation, concurrency
+and cross-domain transaction evidence is still pending the registered database
+Gate.
 
 ## Tenant And Business Targets
 

@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\Tests\Support;
 
 use PDO;
-use PeanutAdmin\App\database\ThinkPhpConnectionFactory;
 use RuntimeException;
+use think\DbManager;
 use think\db\PDOConnection;
+use think\db\builder\Mysql as MysqlBuilder;
+use think\db\builder\Sqlite as SqliteBuilder;
+use think\db\connector\Mysql;
+use think\db\connector\Sqlite;
 
 final class ThinkPhpTestConnection
 {
@@ -15,34 +19,46 @@ final class ThinkPhpTestConnection
 
     public static function fromPdo(PDO $pdo): PDOConnection
     {
-        $databaseStatement = $pdo->query('SELECT DATABASE()');
-        $userStatement = $pdo->query('SELECT CURRENT_USER()');
-        $database = $databaseStatement === false ? false : $databaseStatement->fetchColumn();
-        $currentUser = $userStatement === false ? false : $userStatement->fetchColumn();
-        if (!is_string($database) || $database === '' || !is_string($currentUser) || $currentUser === '') {
-            throw new RuntimeException('Test database session is unavailable.');
-        }
-        $username = explode('@', $currentUser, 2)[0];
-        $password = $username === 'root'
-            ? (getenv('MYSQL_ROOT_PASSWORD') ?: 'peanut_admin_root_dev')
-            : (getenv('DB_PASSWORD') ?: 'peanut_admin_dev');
+        return match ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+            'mysql' => new SharedPdoMysqlConnection($pdo),
+            'sqlite' => new SharedPdoSqliteConnection($pdo),
+            default => throw new RuntimeException('Test database driver is unsupported.'),
+        };
+    }
+}
 
-        return ThinkPhpConnectionFactory::fromConfig([
-            'default' => 'mysql',
-            'connections' => [
-                'mysql' => [
-                    'type' => 'mysql',
-                    'hostname' => getenv('DB_HOST') ?: '127.0.0.1',
-                    'database' => $database,
-                    'username' => $username,
-                    'password' => $password,
-                    'hostport' => (int) (getenv('DB_PORT') ?: 3306),
-                    'charset' => 'utf8mb4',
-                    'prefix' => 'pa_',
-                    'fields_strict' => true,
-                    'break_reconnect' => false,
-                ],
-            ],
+final class SharedPdoMysqlConnection extends Mysql
+{
+    public function __construct(private readonly PDO $sharedPdo)
+    {
+        parent::__construct([
+            'type' => 'mysql',
+            'builder' => MysqlBuilder::class,
+            'prefix' => 'pa_',
         ]);
+        $this->setDb(new DbManager());
+    }
+
+    protected function createPdo($dsn, $username, $password, $params): PDO
+    {
+        return $this->sharedPdo;
+    }
+}
+
+final class SharedPdoSqliteConnection extends Sqlite
+{
+    public function __construct(private readonly PDO $sharedPdo)
+    {
+        parent::__construct([
+            'type' => 'sqlite',
+            'builder' => SqliteBuilder::class,
+            'prefix' => 'pa_',
+        ]);
+        $this->setDb(new DbManager());
+    }
+
+    protected function createPdo($dsn, $username, $password, $params): PDO
+    {
+        return $this->sharedPdo;
     }
 }
