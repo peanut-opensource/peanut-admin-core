@@ -6,6 +6,7 @@ namespace PeanutAdmin\App\Tests\Smoke;
 
 use PDO;
 use PeanutAdmin\App\notification\NotificationRuntimeFactory;
+use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
 use PeanutAdmin\Kernel\Override\OverrideException;
 use PeanutAdmin\Kernel\Override\ServiceOverrideRegistry;
 use PeanutAdmin\NotificationSms\Sms\DisabledSmsProvider;
@@ -50,7 +51,7 @@ final class ServiceOverrideHostWiringTest extends TestCase
         self::assertInstanceOf(DisabledSmsProvider::class, $app->make(SmsProvider::class));
         self::assertInstanceOf(
             LocalWorker::class,
-            NotificationRuntimeFactory::worker(new PDO('sqlite::memory:'), 1, 'worker_default'),
+            NotificationRuntimeFactory::worker(ThinkPhpTestConnection::fromPdo(new PDO('sqlite::memory:')), 1, 'worker_default'),
         );
     }
 
@@ -64,7 +65,7 @@ final class ServiceOverrideHostWiringTest extends TestCase
         self::assertInstanceOf(LocalDevSmsProvider::class, $app->make(SmsProvider::class));
         self::assertInstanceOf(
             LocalWorker::class,
-            NotificationRuntimeFactory::worker(new PDO('sqlite::memory:'), 1, 'worker_override'),
+            NotificationRuntimeFactory::worker(ThinkPhpTestConnection::fromPdo(new PDO('sqlite::memory:')), 1, 'worker_override'),
         );
     }
 

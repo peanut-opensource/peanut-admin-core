@@ -37,8 +37,11 @@ use PeanutAdmin\Kernel\Module\CompiledModuleRegistry;
 use PeanutAdmin\Kernel\Module\ModuleGuard;
 use PeanutAdmin\Kernel\Module\ModuleHostLayout;
 use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
+use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
+use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
 use PeanutAdmin\Kernel\Platform\Authorization\PdoPlatformAuthorizationRepository;
 use PeanutAdmin\Kernel\Platform\Authorization\PlatformAuthorizationEvaluator;
+use think\db\PDOConnection;
 use think\Request;
 use think\Response;
 
@@ -89,8 +92,12 @@ final class TenantModuleRuntime
         );
     }
 
-    public static function host(PDO $pdo, CompiledModuleRegistry $modules): ExternalOperationHost
+    public static function host(PDO|PDOConnection $database, CompiledModuleRegistry $modules): ExternalOperationHost
     {
+        $pdo = $database instanceof PDOConnection ? $database->connect() : $database;
+        $transactions = $database instanceof PDOConnection
+            ? new ThinkPhpTransactionManager($database)
+            : new PdoTransactionManager($database);
         $configuration = self::configuration();
         $permissions = new PermissionMiddleware(
             new TenantAuthorizationEvaluator(new PdoTenantAuthorizationRepository($pdo), new RevisionPermissionCache()),
@@ -111,7 +118,7 @@ final class TenantModuleRuntime
             new ModuleAvailabilityAdapter($modules, new ModuleGuard(new PdoModuleRuntimeRepository($pdo))),
             new PermissionAdapter($permissions),
             new TypedTargetAdapter($noTargets),
-            new AtomicOperationAdapter($pdo, new \PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager($pdo)),
+            new AtomicOperationAdapter($pdo, $transactions),
             new ProblemDetailsAdapter(),
         );
     }

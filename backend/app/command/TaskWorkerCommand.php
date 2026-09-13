@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\command;
 
-use PeanutAdmin\App\controller\api\v1\MemberAdminRuntime;
 use PeanutAdmin\App\notification\NotificationRuntimeFactory;
 use think\console\Command;
 use think\console\Input;
@@ -25,7 +24,7 @@ final class TaskWorkerCommand extends Command
         if (!is_int($tenant)) {
             throw new \InvalidArgumentException('A positive --tenant is required.');
         }
-        $status = NotificationRuntimeFactory::worker(MemberAdminRuntime::pdo(), $tenant, $worker)->runOnce();
+        $status = NotificationRuntimeFactory::worker(NotificationRuntimeFactory::connection(), $tenant, $worker)->runOnce();
         $output->writeln($status ?? 'idle');
         return 0;
     }
