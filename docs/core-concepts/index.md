@@ -48,6 +48,9 @@ repositories because authorization evaluation is consumed across Kernel,
 DataPermission and Host composition, while their production implementations
 now use only the existing ThinkPHP principal/RBAC/Module Models. Dynamic
 isolation and both-Edition qualification have not been rerun for those changes.
+The Menu Catalog follows the same boundary: Host, Workspace and Upgrade callers
+retain one business contract, and its implementation uses the existing Menu,
+Permission and Module Models without a Db facade.
 
 ## Tenant And Business Targets
 

@@ -48,6 +48,9 @@ repository contracts while their production implementations read principals,
 roles, Modules and permissions through native ThinkPHP Models. Explicit Tenant
 predicates and the existing authorization revision hashes remain unchanged;
 database and both-Edition qualification are still pending.
+The shared Menu Catalog also uses native Menu, Permission and Module Models for
+both deployment and Tenant projections; its explicit Tenant condition and
+cross-Host business contract remain intact.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and

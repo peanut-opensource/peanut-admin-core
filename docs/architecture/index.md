@@ -72,6 +72,9 @@ and permission state entirely through their existing ThinkPHP Models and ORM
 query expressions. Their cross-capability repositories remain business
 contracts; these source changes do not claim the pending database or
 both-Edition qualification.
+The Kernel Menu Catalog likewise keeps its Host/Workspace/Upgrade business
+contract while synchronization, retirement and active Module projection now
+use the existing Menu, Permission and Module Models instead of the Db facade.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.
