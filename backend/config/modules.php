@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $trustedRoots = [
-    'backend/app/Modules/Peanut/Settings',
-    'backend/app/Modules/Peanut/ReferenceCodes',
-    'backend/app/Modules/Peanut/FileMedia',
-    'backend/app/Modules/Peanut/TaskJob',
-    'backend/app/Modules/Peanut/NotificationSms',
-    'backend/app/Modules/Peanut/ImportExport',
-    'backend/app/Modules/Peanut/IntegrationSecurity',
-    'backend/app/Modules/Example/Target',
-    'backend/app/Modules/Example/Reference',
-    'backend/app/Modules/Example/WorkItem',
+    'backend/app/modules/peanut/settings',
+    'backend/app/modules/peanut/reference_codes',
+    'backend/app/modules/peanut/file_media',
+    'backend/app/modules/peanut/task_job',
+    'backend/app/modules/peanut/notification_sms',
+    'backend/app/modules/peanut/import_export',
+    'backend/app/modules/peanut/integration_security',
+    'backend/app/modules/example/target',
+    'backend/app/modules/example/reference',
+    'backend/app/modules/example/work_item',
 ];
 
 return [

@@ -2,7 +2,7 @@
 
 A Module is a reusable capability owner. It owns its schema, migrations, repositories, rules, protected resources, permissions, target types, menus, frontend contribution, and public contracts.
 
-Use the fictional modules under `backend/app/Modules/Example` as executable references. Do not copy product-specific code into the foundation.
+Use the fictional modules under `backend/app/modules/example` as executable references. Do not copy product-specific code into the foundation.
 
 ## 1. Choose A Stable Key
 
@@ -15,8 +15,8 @@ Module keys use lower-case dot-separated segments such as `example.work-item`. T
 An external host provides its own roots without changing the key:
 
 ```bash
-PA_MODULE_NAMESPACE_ROOT='Acme\Admin\Modules' \
-PA_MODULE_BACKEND_ROOT='backend/app/Modules' \
+PA_MODULE_NAMESPACE_ROOT='Acme\Admin\modules' \
+PA_MODULE_BACKEND_ROOT='backend/app/modules' \
 PA_MODULE_FRONTEND_ROOT='frontend/src/modules' \
 ./scripts/module-key example.work-item
 ```
@@ -40,7 +40,7 @@ The manifest must pass the versioned JSON Schema. A minimal capability declares 
   "license": "Apache-2.0",
   "lifecycle": { "protected": false },
   "backend": {
-    "provider": "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\ModuleProvider"
+    "provider": "PeanutAdmin\\App\\modules\\example\\work_item\\ModuleProvider"
   },
   "frontend": {},
   "database": { "owned_tables": [] },
@@ -215,11 +215,11 @@ use PeanutAdmin\Kernel\Module\ModuleHostLayout;
 
 $hostConfiguration = new ExternalHostConfiguration(
     new ModuleHostLayout(
-        'backend/app/Modules',
-        'Acme\\Admin\\Modules',
+        'backend/app/modules',
+        'Acme\\Admin\\modules',
         'frontend/src/modules',
     ),
-    ['backend/app/Modules/Fixture/Record'],
+    ['backend/app/modules/fixture/record'],
     '/api/v1',
     '/api/platform/v1',
     'docs/api/openapi.yaml',

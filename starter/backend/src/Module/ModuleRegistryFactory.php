@@ -25,8 +25,8 @@ final readonly class ModuleRegistryFactory
     public function compile(): CompiledModuleRegistry
     {
         $layout = new ModuleHostLayout(
-            'backend/src/Modules',
-            'ExampleHost\\App\\Modules',
+            'backend/src/modules',
+            'ExampleHost\\App\\modules',
             'frontend/src/modules',
         );
         /** @var array{kernel_version: string, roots: list<string>, frontend_components: list<string>, registered_client_keys: list<string>} $config */

@@ -5,14 +5,14 @@ declare(strict_types=1);
 return [
     'kernel_version' => '1.0.0',
     'roots' => [
-        'backend/src/Modules/Example/Greeting',
-        'backend/src/Modules/Peanut/Settings',
-        'backend/src/Modules/Peanut/ReferenceCodes',
-        'backend/src/Modules/Peanut/FileMedia',
-        'backend/src/Modules/Peanut/TaskJob',
-        'backend/src/Modules/Peanut/NotificationSms',
-        'backend/src/Modules/Peanut/ImportExport',
-        'backend/src/Modules/Peanut/IntegrationSecurity',
+        'backend/src/modules/example/greeting',
+        'backend/src/modules/peanut/settings',
+        'backend/src/modules/peanut/reference_codes',
+        'backend/src/modules/peanut/file_media',
+        'backend/src/modules/peanut/task_job',
+        'backend/src/modules/peanut/notification_sms',
+        'backend/src/modules/peanut/import_export',
+        'backend/src/modules/peanut/integration_security',
     ],
     'frontend_components' => [
         'example.greeting.page',

@@ -172,7 +172,7 @@ final class TenantModuleRuntime
         $moduleConfig = require $root . '/backend/config/modules.php';
         $authConfig = require $root . '/backend/config/auth.php';
         return new ExternalHostConfiguration(
-            new ModuleHostLayout('backend/app/Modules', 'PeanutAdmin\\App\\Modules', 'frontend/src/modules'),
+            new ModuleHostLayout('backend/app/modules', 'PeanutAdmin\\App\\modules', 'frontend/src/modules'),
             $moduleConfig['roots'],
             '/api/v1',
             '/api/platform/v1',

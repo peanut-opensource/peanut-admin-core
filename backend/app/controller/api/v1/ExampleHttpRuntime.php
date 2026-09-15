@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\controller\api\v1;
 
-use PeanutAdmin\App\Modules\Example\Target\Contracts\TargetIdSet;
+use PeanutAdmin\App\modules\example\target\contracts\TargetIdSet;
 use PeanutAdmin\DataPermission\Exception\DataAuthorizationException;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetSet;

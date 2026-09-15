@@ -62,8 +62,8 @@ final readonly class ModuleRegistryFactory
     private function layout(): ModuleHostLayout
     {
         return new ModuleHostLayout(
-            'backend/app/Modules',
-            'PeanutAdmin\\App\\Modules',
+            'backend/app/modules',
+            'PeanutAdmin\\App\\modules',
             'frontend/src/modules',
         );
     }

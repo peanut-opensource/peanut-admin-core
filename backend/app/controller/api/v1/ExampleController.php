@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\controller\api\v1;
 
-use PeanutAdmin\App\Modules\Example\Reference\Contracts\ReferenceQuery;
-use PeanutAdmin\App\Modules\Example\Target\Contracts\TargetQuery;
-use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\CreateWorkItem;
-use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemCommands;
-use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemPolicyPublication;
-use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemQuery;
-use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemView;
+use PeanutAdmin\App\modules\example\reference\contracts\ReferenceQuery;
+use PeanutAdmin\App\modules\example\target\contracts\TargetQuery;
+use PeanutAdmin\App\modules\example\work_item\contracts\CreateWorkItem;
+use PeanutAdmin\App\modules\example\work_item\contracts\WorkItemCommands;
+use PeanutAdmin\App\modules\example\work_item\contracts\WorkItemPolicyPublication;
+use PeanutAdmin\App\modules\example\work_item\contracts\WorkItemQuery;
+use PeanutAdmin\App\modules\example\work_item\contracts\WorkItemView;
 use PeanutAdmin\DataPermission\Exception\DataAuthorizationException;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;

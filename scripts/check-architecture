@@ -9,8 +9,8 @@ php -r '
 $mapping = json_decode(stream_get_contents(STDIN), true, 512, JSON_THROW_ON_ERROR);
 $expected = [
     "key" => "example.work-item",
-    "backend_path" => "backend/app/Modules/Example/WorkItem/",
-    "backend_namespace" => "PeanutAdmin\\App\\Modules\\Example\\WorkItem\\",
+    "backend_path" => "backend/app/modules/example/work_item/",
+    "backend_namespace" => "PeanutAdmin\\App\\modules\\example\\work_item\\",
     "frontend_path" => "frontend/src/modules/example-work-item/",
 ];
 if ($mapping !== $expected) {

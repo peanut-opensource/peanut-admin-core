@@ -535,8 +535,8 @@ final readonly class ReferenceCodeHttpService
 
         return new ExternalHostConfiguration(
             new ModuleHostLayout(
-                'backend/app/Modules',
-                'PeanutAdmin\\App\\Modules',
+                'backend/app/modules',
+                'PeanutAdmin\\App\\modules',
                 'frontend/src/modules',
             ),
             $moduleConfig['roots'],

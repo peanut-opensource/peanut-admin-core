@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ExampleHost\App\modules\example\greeting;
+
+use PeanutAdmin\Kernel\Module\ModuleKey;
+use PeanutAdmin\Kernel\Module\ModuleProvider;
+
+final class ExampleGreetingModuleProvider implements ModuleProvider
+{
+    public function moduleKey(): string
+    {
+        return ModuleKey::fromString('example.greeting')->value();
+    }
+
+    public function bindings(): array
+    {
+        return [];
+    }
+}

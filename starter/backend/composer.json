@@ -22,17 +22,17 @@
   },
   "autoload": {
     "psr-4": {
-      "ExampleHost\\App\\Modules\\": "src/Modules/",
+      "ExampleHost\\App\\modules\\": "src/modules/",
       "PeanutAdmin\\InternalStarter\\": "src/"
     },
     "exclude-from-classmap": [
-      "src/Modules/Peanut/Settings/Database/Migrations/",
-      "src/Modules/Peanut/ReferenceCodes/Database/Migrations/",
-      "src/Modules/Peanut/FileMedia/Database/Migrations/",
-      "src/Modules/Peanut/TaskJob/Database/Migrations/",
-      "src/Modules/Peanut/NotificationSms/Database/Migrations/",
-      "src/Modules/Peanut/ImportExport/Database/Migrations/",
-      "src/Modules/Peanut/IntegrationSecurity/Database/Migrations/"
+      "src/modules/peanut/settings/database/migrations/",
+      "src/modules/peanut/reference_codes/database/migrations/",
+      "src/modules/peanut/file_media/database/migrations/",
+      "src/modules/peanut/task_job/database/migrations/",
+      "src/modules/peanut/notification_sms/database/migrations/",
+      "src/modules/peanut/import_export/database/migrations/",
+      "src/modules/peanut/integration_security/database/migrations/"
     ]
   },
   "config": {

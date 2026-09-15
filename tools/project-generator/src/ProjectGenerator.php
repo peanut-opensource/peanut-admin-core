@@ -161,49 +161,49 @@ final class ProjectGenerator
     /** @var array<string, array{backend_root: string, frontend_component: string, frontend_host: string, backend_test: string, frontend_test: string}> */
     private const FEATURES = [
         'settings' => [
-            'backend_root' => 'backend/src/Modules/Peanut/Settings',
+            'backend_root' => 'backend/src/modules/peanut/settings',
             'frontend_component' => 'peanut.settings.page',
             'frontend_host' => 'frontend/src/modules/peanut-settings.ts',
             'backend_test' => 'backend/tests/settings.php',
             'frontend_test' => 'frontend/tests/settings.spec.ts',
         ],
         'reference-codes' => [
-            'backend_root' => 'backend/src/Modules/Peanut/ReferenceCodes',
+            'backend_root' => 'backend/src/modules/peanut/reference_codes',
             'frontend_component' => 'peanut.reference-codes.page',
             'frontend_host' => 'frontend/src/modules/peanut-reference-codes.ts',
             'backend_test' => 'backend/tests/reference-codes.php',
             'frontend_test' => 'frontend/tests/reference-codes.spec.ts',
         ],
         'file-media' => [
-            'backend_root' => 'backend/src/Modules/Peanut/FileMedia',
+            'backend_root' => 'backend/src/modules/peanut/file_media',
             'frontend_component' => 'peanut.file-media.page',
             'frontend_host' => 'frontend/src/modules/peanut-file-media.ts',
             'backend_test' => 'backend/tests/file-media.php',
             'frontend_test' => 'frontend/tests/file-media.spec.ts',
         ],
         'task-job' => [
-            'backend_root' => 'backend/src/Modules/Peanut/TaskJob',
+            'backend_root' => 'backend/src/modules/peanut/task_job',
             'frontend_component' => 'peanut.task-job.page',
             'frontend_host' => 'frontend/src/modules/peanut-task-job.ts',
             'backend_test' => 'backend/tests/task-job.php',
             'frontend_test' => 'frontend/tests/task-job.spec.ts',
         ],
         'notification-sms' => [
-            'backend_root' => 'backend/src/Modules/Peanut/NotificationSms',
+            'backend_root' => 'backend/src/modules/peanut/notification_sms',
             'frontend_component' => 'peanut.notification-sms.page',
             'frontend_host' => 'frontend/src/modules/peanut-notification-sms.ts',
             'backend_test' => 'backend/tests/notification-sms.php',
             'frontend_test' => 'frontend/tests/notification-sms.spec.ts',
         ],
         'import-export' => [
-            'backend_root' => 'backend/src/Modules/Peanut/ImportExport',
+            'backend_root' => 'backend/src/modules/peanut/import_export',
             'frontend_component' => 'peanut.import-export.page',
             'frontend_host' => 'frontend/src/modules/peanut-import-export.ts',
             'backend_test' => 'backend/tests/import-export.php',
             'frontend_test' => 'frontend/tests/import-export.spec.ts',
         ],
         'integration-security' => [
-            'backend_root' => 'backend/src/Modules/Peanut/IntegrationSecurity',
+            'backend_root' => 'backend/src/modules/peanut/integration_security',
             'frontend_component' => 'peanut.integration-security.page',
             'frontend_host' => 'frontend/src/modules/peanut-integration-security.ts',
             'backend_test' => 'backend/tests/integration-security.php',
@@ -680,7 +680,7 @@ final class ProjectGenerator
             new RecursiveDirectoryIterator($target, FilesystemIterator::SKIP_DOTS),
         );
         $doubleNamespace = str_replace('\\', '\\\\', $namespace);
-        $moduleNamespace = $namespace . '\\Modules';
+        $moduleNamespace = $namespace . '\\modules';
         $doubleModuleNamespace = str_replace('\\', '\\\\', $moduleNamespace);
         foreach ($iterator as $file) {
             if (!$file->isFile() || $file->isLink()) {
@@ -694,9 +694,9 @@ final class ProjectGenerator
                 throw new ProjectGeneratorException('PROJECT_GENERATION_FAILED', 'Could not read a generated source file.');
             }
             $contents = str_replace('PeanutAdmin\\\\InternalStarter', $doubleNamespace, $contents);
-            $contents = str_replace('ExampleHost\\\\App\\\\Modules', $doubleModuleNamespace, $contents);
+            $contents = str_replace('ExampleHost\\\\App\\\\modules', $doubleModuleNamespace, $contents);
             $contents = str_replace('PeanutAdmin\\InternalStarter', $namespace, $contents);
-            $contents = str_replace('ExampleHost\\App\\Modules', $moduleNamespace, $contents);
+            $contents = str_replace('ExampleHost\\App\\modules', $moduleNamespace, $contents);
             if (file_put_contents($file->getPathname(), $contents, LOCK_EX) === false) {
                 throw new ProjectGeneratorException('PROJECT_GENERATION_FAILED', 'Could not write a generated source file.');
             }
@@ -711,7 +711,7 @@ final class ProjectGenerator
             'admin_client_key' => $request->adminClientKey,
             'tenant_clients' => $request->tenantClients,
         ]);
-        $moduleRoots = ['backend/src/Modules/Example/Greeting'];
+        $moduleRoots = ['backend/src/modules/example/greeting'];
         $frontendComponents = ['example.greeting.page', 'peanut.ops-console.page'];
         foreach ($request->features as $feature) {
             $moduleRoots[] = self::FEATURES[$feature]['backend_root'];
@@ -783,7 +783,7 @@ final class ProjectGenerator
     private function adaptModuleMenus(string $target, array $features, string $adminClientKey): void
     {
         foreach ($features as $feature) {
-            $path = $target . '/' . self::FEATURES[$feature]['backend_root'] . '/Resources/menus.json';
+            $path = $target . '/' . self::FEATURES[$feature]['backend_root'] . '/resources/menus.json';
             try {
                 $menus = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
             } catch (Throwable) {
