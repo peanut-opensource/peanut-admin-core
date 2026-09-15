@@ -179,6 +179,33 @@
         ]
       },
       {
+        "stable_resource_id": "peanut-admin-core-311-offline-store-warm-recovery",
+        "purpose": "isolated pnpm store for focused Development recovery of root and Starter lockfile warming",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core 3.1.1 offline store warm recovery owner",
+        "host": "registry.npmjs.org",
+        "port": 443,
+        "database": null,
+        "schema": null,
+        "namespace": "/private/tmp/peanut-admin-core-311-offline-store-warm-recovery",
+        "service_type": "isolated pnpm v11 content-addressable development store",
+        "version": "Node 24.13.0; pnpm 11.13.0; root pnpm-lock.yaml sha256 f775f94199564097654d91266ccb3112e2089a8e0ef8aa908e94270acb438015; starter/pnpm-lock.yaml sha256 e9431e18a11138ebafeda70d808f26248af4a30ec703d5bb8c1b4458ef8d48d9",
+        "credential_ref": null,
+        "data_source": "the exact root and Starter pnpm locks at Core dev a836edb77bac156e6f47bae795b799d7518a7f51 plus public package metadata and tarballs from registry.npmjs.org with lock-recorded integrity",
+        "freshness_requirement": "the directory is absent before the focused run; the approved warm script fetches both exact frozen locks with network access, then the generated Starter installs frozen and offline from only this store",
+        "health_check": "pnpm 11.13.0 resolves the exact namespace; both root and Starter fetch operations exit 0; a freshly generated internal Starter completes pnpm install --frozen-lockfile --offline from the same store",
+        "fallback": "none; network access is limited to the explicit warm stage and the generated Starter validation remains offline",
+        "lifecycle": "single CORE-311-OFFLINE-STORE-WARM-CONTRACT-RECOVERY focused Development run",
+        "cleanup_responsibility": "the recovery owner moves only /private/tmp/peanut-admin-core-311-offline-store-warm-recovery and focused outputs to Trash after evidence reduction and proves the registered path absent",
+        "consumers": [
+          "scripts/warm-worktree-dependencies",
+          "scripts/create-internal-starter",
+          "generated Starter offline pnpm install"
+        ]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-cr02-pnpm-isolated-store-development",
         "purpose": "CR02-exclusive pnpm store for controlled preparation and offline regeneration of the audited root workspace lock",
         "environments": [

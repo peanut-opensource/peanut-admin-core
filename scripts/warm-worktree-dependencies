@@ -36,6 +36,11 @@ if [[ -n "$containing_git_root" ]]; then
   fi
 fi
 
-echo "Warming pnpm content store with network access allowed: $store_path"
+echo "Warming root pnpm content store with network access allowed: $store_path"
 pnpm --store-dir "$store_path" fetch --frozen-lockfile
+echo "Warming Starter pnpm content store with network access allowed: $store_path"
+(
+  cd starter
+  pnpm --store-dir "$store_path" fetch --frozen-lockfile
+)
 echo 'Dependency cache warm complete; run ./scripts/bootstrap-worktree-dependencies next.'
