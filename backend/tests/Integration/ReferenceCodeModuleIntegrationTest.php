@@ -53,6 +53,8 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
 
     private PDO $admin;
     private PDO $pdo;
+    private App $app;
+    private PDOConnection $connection;
     private int $tenantId;
     private int $memberId;
     private int $accountId;
@@ -108,12 +110,15 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
         putenv('AUTH_IDENTIFIER_HMAC_KEY=reference-code-host-integration-key');
 
         $root = dirname(__DIR__, 3);
-        $app = new App($root);
+        $app = new App($root . '/backend');
         $app->initialize();
+        $app->cache->clear();
         $connection = $app->db->connect();
         if (!$connection instanceof PDOConnection) {
             throw new RuntimeException('Reference-code integration requires the registered PDOConnection driver.');
         }
+        $this->app = $app;
+        $this->connection = $connection;
         $installationRoot = getenv('PEANUT_B04_INSTALL_ROOT');
         $installationRoot = is_string($installationRoot) && $installationRoot !== ''
             ? $installationRoot
@@ -183,15 +188,25 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
 
     protected function tearDown(): void
     {
-        if (isset($this->admin)) {
-            $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
-        }
-        foreach ($this->originalEnvironment as $name => $value) {
-            $value === false ? putenv($name) : putenv("{$name}={$value}");
-        }
-        if (isset($this->fixtureRoot)) {
-            @unlink($this->fixtureRoot . '/reference-code-sets.json');
-            @rmdir($this->fixtureRoot);
+        try {
+            if (isset($this->app)) {
+                $this->app->cache->clear();
+            }
+            if (isset($this->admin)) {
+                $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
+            }
+            foreach ($this->originalEnvironment as $name => $value) {
+                $value === false ? putenv($name) : putenv("{$name}={$value}");
+            }
+            if (isset($this->fixtureRoot)) {
+                @unlink($this->fixtureRoot . '/reference-code-sets.json');
+                @rmdir($this->fixtureRoot);
+            }
+        } finally {
+            if (isset($this->app)) {
+                restore_error_handler();
+                restore_exception_handler();
+            }
         }
     }
 
@@ -205,7 +220,7 @@ SQL, ['module_key' => 'peanut.reference-codes'])['key']);
 EXPLAIN SELECT tenant_id, module_key FROM pa_tenant_module
 WHERE tenant_id = :tenant_id AND module_key = :module_key FOR SHARE
 SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes'])['key']);
-        $this->pdo->beginTransaction();
+        $this->connection->startTrans();
         try {
             $lock = new ReflectionMethod(ReferenceCodeHttpService::class, 'lockModuleAvailability');
             $lock->invoke(null, $this->tenantId, 'peanut.reference-codes');
@@ -218,7 +233,7 @@ UPDATE pa_tenant_module SET updated_at = UTC_TIMESTAMP(3)
 WHERE tenant_id = :tenant_id AND module_key = :module_key
 SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes']);
         } finally {
-            $this->pdo->rollBack();
+            $this->connection->rollback();
         }
         $response = $this->create('sample-code', 'reference-create-0001', 'req_reference_create_0001');
 
@@ -356,6 +371,10 @@ DELETE role_permission FROM pa_role_permission role_permission
 JOIN pa_permission permission ON permission.id = role_permission.permission_id
 WHERE permission.`key` = 'peanut.reference-codes.manage'
 SQL);
+        self::assertSame(1, $this->pdo->exec(<<<SQL
+UPDATE pa_role SET authorization_revision = authorization_revision + 1, updated_at = UTC_TIMESTAMP(3)
+WHERE tenant_id = {$this->tenantId} AND `key` = 'core.tenant-owner'
+SQL));
         $denied = $this->create('permission-code', 'reference-permission-0001', 'req_reference_permission_0001');
 
         self::assertSame(403, $denied->getCode());
