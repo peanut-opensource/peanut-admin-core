@@ -14,7 +14,7 @@ use PeanutAdmin\DataPermission\Target\TargetCatalogQuery;
 use PeanutAdmin\DataPermission\Target\TargetOptionPage;
 use PeanutAdmin\Kernel\Module\ModuleException;
 use PeanutAdmin\Kernel\Tenancy\TenantScope;
-use think\facade\Db;
+use think\db\Query;
 
 final readonly class ThinkPhpTargetCatalogProvider implements ResourceTargetCatalogProvider
 {
@@ -47,12 +47,13 @@ final readonly class ThinkPhpTargetCatalogProvider implements ResourceTargetCata
             });
         }
         if (!$unrestricted) {
-            $allowedTargets = Db::name('data_permission_target')
-                ->field('target_id')
-                ->where('tenant_id', $context->tenant->tenantId)
-                ->whereIn('target_set_id', $targetSetIds)
-                ->where('status', 'active');
-            $records->whereIn('id', $allowedTargets);
+            $records->whereIn('id', function (Query $allowedTargets) use ($context, $targetSetIds): void {
+                $allowedTargets->name('data_permission_target')
+                    ->field('target_id')
+                    ->where('tenant_id', $context->tenant->tenantId)
+                    ->whereIn('target_set_id', $targetSetIds)
+                    ->where('status', 'active');
+            });
         }
 
         $total = (clone $records)->count();

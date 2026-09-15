@@ -6,16 +6,23 @@ namespace PeanutAdmin\Examples\ModuleContract;
 
 use DateTimeImmutable;
 use PDO;
-use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
 use PeanutAdmin\App\modules\example\reference\contracts\ReferenceQuery;
+use PeanutAdmin\App\modules\example\target\infrastructure\authorization\ThinkPhpTargetCatalogProvider;
 use PeanutAdmin\App\modules\example\target\infrastructure\authorization\ThinkPhpTargetResolver;
 use PeanutAdmin\App\modules\example\work_item\contracts\CreateWorkItem;
+use PeanutAdmin\App\modules\example\work_item\contracts\WorkItemQuery;
 use PeanutAdmin\App\modules\example\work_item\services\WorkItemCommandService;
 use PeanutAdmin\App\modules\example\work_item\services\WorkItemPolicyPublisher;
-use PeanutAdmin\App\modules\example\work_item\contracts\WorkItemQuery;
+use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
+use PeanutAdmin\DataPermission\Catalog\ResourceOperation;
+use PeanutAdmin\DataPermission\Context\AuthorizationContext;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
+use PeanutAdmin\DataPermission\Policy\EffectiveCondition;
+use PeanutAdmin\DataPermission\Policy\EffectiveConditionGroup;
+use PeanutAdmin\DataPermission\Policy\EffectivePolicySet;
+use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\DataPermission\Target\TargetCatalogQuery;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetSet;
@@ -25,7 +32,6 @@ use PeanutAdmin\Kernel\Module\ModuleException;
 use PeanutAdmin\Testing\Authorization\ThinkPhpAuthorizationFixtureSeeder;
 use PHPUnit\Framework\TestCase;
 use think\App;
-use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 
 final class ExampleModuleContractTest extends TestCase
 {
@@ -41,9 +47,14 @@ final class ExampleModuleContractTest extends TestCase
     private int $tenantId;
     private int $memberId;
     private int $accountId;
+    private int $foreignTargetSetId;
+    private mixed $initialErrorHandler;
+    private mixed $initialExceptionHandler;
 
     protected function setUp(): void
     {
+        $this->initialErrorHandler = self::currentErrorHandler();
+        $this->initialExceptionHandler = self::currentExceptionHandler();
         if (getenv('PEANUT_INTEGRATION') !== '1') {
             self::markTestSkipped('Run with PEANUT_INTEGRATION=1.');
         }
@@ -90,11 +101,20 @@ final class ExampleModuleContractTest extends TestCase
 
     protected function tearDown(): void
     {
-        if (isset($this->admin)) {
-            $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
-        }
-        foreach ($this->originalEnvironment as $name => $value) {
-            $value === false ? putenv($name) : putenv("{$name}={$value}");
+        try {
+            if (isset($this->admin)) {
+                $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
+            }
+            foreach ($this->originalEnvironment as $name => $value) {
+                $value === false ? putenv($name) : putenv("{$name}={$value}");
+            }
+        } finally {
+            if (self::currentErrorHandler() !== $this->initialErrorHandler) {
+                restore_error_handler();
+            }
+            if (self::currentExceptionHandler() !== $this->initialExceptionHandler) {
+                restore_exception_handler();
+            }
         }
     }
 
@@ -113,6 +133,52 @@ final class ExampleModuleContractTest extends TestCase
             new TargetCatalogQuery('example.project', '', 1, 20),
         );
         self::assertSame(['1', '2'], array_column($options->items, 'id'));
+
+        $operation = new ResourceOperation(
+            0,
+            0,
+            'example.work-item',
+            'example.work-item',
+            ThinkPhpTargetCatalogProvider::class,
+            'tenant_owned',
+            'list',
+            'allow',
+            'many',
+            'all',
+            [],
+            [],
+        );
+        $provider = new ThinkPhpTargetCatalogProvider();
+        $foreignPolicies = new EffectivePolicySet([
+            new EffectiveConditionGroup(1, 1, 1, [
+                new EffectiveCondition(
+                    1,
+                    'core.specified_objects',
+                    $this->foreignTargetSetId,
+                    'example.project',
+                    ['1', '3'],
+                    2,
+                ),
+            ]),
+        ], null);
+        $foreignOnly = $provider->searchAllowedTargets(
+            new AuthorizationContext($tenant, $foreignPolicies->primaryDepartmentId),
+            $operation,
+            new TargetCatalogQuery('example.project', '', 1, 20),
+            $foreignPolicies,
+        );
+        self::assertSame([], $foreignOnly->items);
+        self::assertSame(0, $foreignOnly->total);
+
+        $emptyPolicies = new EffectivePolicySet([], null);
+        $empty = $provider->searchAllowedTargets(
+            new AuthorizationContext($tenant, $emptyPolicies->primaryDepartmentId),
+            $operation,
+            new TargetCatalogQuery('example.project', '', 1, 20),
+            $emptyPolicies,
+        );
+        self::assertSame([], $empty->items);
+        self::assertSame(0, $empty->total);
 
         $query = $this->app->make(ReferenceQuery::class);
         $projectA = new TypedResourceTargetCollection([new TypedResourceTargetSet('example.project', ['1'])]);
@@ -207,6 +273,7 @@ final class ExampleModuleContractTest extends TestCase
         $readProjects = $seeder->targetSet($this->tenantId, $this->memberId, 'example.project', ['1', '2']);
         $writeProjects = $seeder->targetSet($this->tenantId, $this->memberId, 'example.project', ['1']);
         $queues = $seeder->targetSet($this->tenantId, $this->memberId, 'example.queue', ['1']);
+        $this->foreignTargetSetId = $this->seedForeignTargetSet($seeder);
         $seeder->allowTargetGroups(
             $this->tenantId,
             $roleId,
@@ -241,6 +308,41 @@ final class ExampleModuleContractTest extends TestCase
             'example.work-item',
             'policy-publish',
             [['example.project' => $readProjects]],
+        );
+    }
+
+    private function seedForeignTargetSet(ThinkPhpAuthorizationFixtureSeeder $seeder): int
+    {
+        $now = '2026-07-16 12:00:00.000';
+        $tenant = $this->pdo->prepare(<<<'SQL'
+INSERT INTO pa_tenant (code, name, display_name, status, activated_at, created_at, updated_at)
+VALUES ('foreign-fixture', 'Foreign Fixture', 'Foreign Fixture', 'active', :activated_at, :created_at, :updated_at)
+SQL);
+        $tenant->execute([
+            'activated_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $foreignTenantId = (int) $this->pdo->lastInsertId();
+
+        $member = $this->pdo->prepare(<<<'SQL'
+INSERT INTO pa_tenant_member
+    (tenant_id, account_id, member_no, display_name, status, joined_at, created_at, updated_at)
+VALUES (:tenant_id, :account_id, 'foreign-owner', 'Foreign Owner', 'active', :joined_at, :created_at, :updated_at)
+SQL);
+        $member->execute([
+            'tenant_id' => $foreignTenantId,
+            'account_id' => $this->accountId,
+            'joined_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return $seeder->targetSet(
+            $foreignTenantId,
+            (int) $this->pdo->lastInsertId(),
+            'example.project',
+            ['1', '3'],
         );
     }
 
@@ -281,5 +383,21 @@ final class ExampleModuleContractTest extends TestCase
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
+    }
+
+    private static function currentErrorHandler(): mixed
+    {
+        $current = set_error_handler(static fn(): bool => false);
+        restore_error_handler();
+
+        return $current;
+    }
+
+    private static function currentExceptionHandler(): mixed
+    {
+        $current = set_exception_handler(static function (\Throwable $exception): void {});
+        restore_exception_handler();
+
+        return $current;
     }
 }
