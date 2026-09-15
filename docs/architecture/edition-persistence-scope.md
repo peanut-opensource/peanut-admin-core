@@ -61,6 +61,9 @@ cross-Host business contract remain intact.
 Module Runtime mutation likewise retains explicit Tenant ownership and
 database-atomic revision increments while using the native Tenant and Module
 Models for both physical Edition layouts.
+Tenant Module configuration uses those Models inside the native transaction and
+preserves its locked expected-revision update, authorization invalidation and
+audit write in both layouts.
 System/default Tenant resolution uses the same native Tenant Model in both
 layouts, while entry-host binding preserves its explicit Tenant identity and
 fail-closed cardinality checks.

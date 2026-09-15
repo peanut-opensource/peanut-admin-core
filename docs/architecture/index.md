@@ -84,6 +84,9 @@ use the existing Menu, Permission and Module Models instead of the Db facade.
 Module Runtime availability and Tenant enable/disable use the same native
 Tenant and Module Models while preserving row locks, atomic revision increments
 and the separate deployment/Tenant mutation contracts.
+Tenant Module configuration keeps its ThinkPHP transaction, locked read,
+compare-and-swap revision and audit boundary while its table access uses the
+same Tenant/Module Models; the JSON field is projected raw before API decoding.
 System and Standalone-default Tenant resolution also use the native Tenant
 Model; entry-host binding already uses its dedicated Model and retains strict
 cardinality and fail-closed validation.
