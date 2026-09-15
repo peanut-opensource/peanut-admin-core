@@ -387,11 +387,12 @@
         "credential_ref": "compose.yaml synthetic development fixture environment; values are not repeated in this registry",
         "data_source": "the active Core development tree and freshly generated synthetic fixtures only",
         "freshness_requirement": "the Compose project, MySQL volume, listener and every script-owned database are absent before the focused run",
-        "health_check": "Docker reports the peanut-admin-core-311-dbtime-dev mysql service healthy and a PDO connection to 127.0.0.1:33436 reports MySQL 8.4.10",
+        "health_check": "Docker reports the peanut-admin-core-311-dbtime-dev mysql service healthy and a PDO connection to 127.0.0.1:33436 reports MySQL 8.4.10; the complete Reference Codes integration group and a fresh generated Starter backend/tests/reference-codes.php exit 0",
         "fallback": "none",
         "lifecycle": "one Development-mode database-time compatibility validation",
         "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-dbtime-dev with volumes and orphans, then proves its containers, volume, network, listener and generated databases are absent",
         "consumers": [
+          "packages/php/reference-codes/tests/Integration",
           "packages/php/file-media/tests/Integration/FileServiceTest.php",
           "packages/php/task-job/tests/feature-harness.php",
           "packages/php/notification-sms/tests/mysql-harness.php",
