@@ -85,6 +85,11 @@ attachments, outbox delivery state, rate buckets and notification events.
 Kernel TenantMember remains the authority for actor and recipient membership;
 message/outbox revision checks, rate-window locks and recipient snapshot checks
 are unchanged.
+Integration Security now uses owning Models for machine identities, webhook
+endpoints, deliveries, attempts and security events, and reuses Kernel's
+TenantSession/Token Models for device revocation. Its ten explicit
+transactions retain rotation, lease recovery, delivery completion, retention
+cleanup and audit ordering; the Db facade is not used for business tables.
 Their MySQL rollback, compensation, concurrency and cross-domain suites still
 require the registered exclusive database resource and are not qualified by
 the non-database checks.

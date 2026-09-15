@@ -52,6 +52,11 @@ Notification/SMS also uses owning Models for templates, messages, attachments,
 outbox delivery, rate buckets and events, plus the Kernel TenantMember Model
 for actor/recipient validation. Optimistic revisions, recipient snapshots and
 locked rate windows remain unchanged and dynamically unqualified.
+Integration Security uses owning Models for machine and webhook state and the
+Kernel TenantSession/Token Models for device revocation. Machine rotation,
+webhook lease recovery/completion, retention cleanup and security audit writes
+remain grouped by their existing transaction boundaries and dynamically
+unqualified.
 Kernel Tenant and Platform Authorization likewise retain their business
 repositories because authorization evaluation is consumed across Kernel,
 DataPermission and Host composition, while their production implementations

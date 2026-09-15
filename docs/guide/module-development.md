@@ -242,6 +242,11 @@ messages, attachments, delivery outbox, rate buckets and events. Actor and
 recipient membership is read through Kernel's TenantMember Model; do not copy
 that shared table into a notification-owned representation.
 
+Integration modules own machine identity, webhook endpoint, delivery, attempt
+and security-event Models. Device inventory/revocation must reuse Kernel's
+TenantSession and TenantSessionToken Models, while rotations, webhook leases,
+attempt records and audit changes stay inside their explicit transactions.
+
 The host must store only a safe, redacted terminal response. It must not store
 credentials, secrets, SQL, stack traces, raw authorization input, or hidden
 target existence. An expected denial may record a redacted `denied` audit and

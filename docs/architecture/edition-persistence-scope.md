@@ -114,6 +114,10 @@ Notification/SMS owns Models for its template, message, attachment, outbox,
 rate-bucket and event tables, while actor and recipient checks use the
 Kernel-owned TenantMember Model. Explicit Tenant predicates, optimistic
 revisions, rate locks and recipient snapshots remain part of the contract.
+Integration Security owns Models for machine identities and webhook endpoint,
+delivery, attempt and security-event state. Session device reads/revocation use
+Kernel TenantSession/Token Models; explicit transactions continue to bind
+credential rotation, webhook leases, attempts, delivery state and audit writes.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
