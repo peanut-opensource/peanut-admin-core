@@ -20,13 +20,12 @@ use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
-use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, ResourceQueryPolicyProvider, ResourceTargetPolicyProvider, ResourceCreatePolicyProvider
 {
     public function moduleKey(): string { return 'peanut.integration-security'; }
     public function bindings(): array { return []; }
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void { $registry->registerResourceProvider(self::class, $this); }
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry): void { $registry->registerResourceProvider(self::class, $this); }
     public function tenantConstraint(AuthorizationContext $context, ResourceOperation $operation): QueryConstraint { return new TenantEquals(new ColumnReference('identity.tenant_id'), $context->tenant->tenantId); }
     public function requestedTargetConstraint(AuthorizationContext $context, ResourceOperation $operation, TypedResourceTargetCollection $targets): QueryConstraint { return $targets->sets === [] ? new AlwaysTrue() : new AlwaysFalse(); }
     public function compilePredicate(AuthorizationContext $context, ResourceOperation $operation, EffectivePolicySet $policies): QueryConstraint { return $this->tenantConstraint($context, $operation); }

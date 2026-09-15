@@ -6,27 +6,21 @@ namespace PeanutAdmin\App\command;
 
 use Composer\InstalledVersions;
 use DateTimeImmutable;
-use PDO;
 use PeanutAdmin\App\module\ModuleRegistryFactory;
 use PeanutAdmin\App\module\OpisTenantModuleConfigValidator;
-use PeanutAdmin\App\referencecode\ReferenceCodeRuntimeFactory;
-use PeanutAdmin\App\setting\SettingsRuntimeFactory;
+use PeanutAdmin\App\referencecode\ReferenceCodeHttpService;
+use PeanutAdmin\App\referencecode\PreBootstrapReferenceCodeDefinitionSynchronizer;
+use PeanutAdmin\App\setting\PreBootstrapSettingDefinitionSynchronizer;
+use PeanutAdmin\App\setting\SettingDefinitionCatalog;
 use PeanutAdmin\Kernel\Module\ModuleException;
-use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
+use PeanutAdmin\Kernel\Module\Persistence\ThinkPhpModuleRuntimeRepository;
 use PeanutAdmin\Kernel\Module\TenantModuleManager;
 use PeanutAdmin\Kernel\Package as KernelPackage;
-use think\db\PDOConnection;
+use think\facade\Db;
 
 final readonly class InstallProductProfileApplier
 {
-    private PDO $pdo;
-
-    public function __construct(
-        private string $root,
-        private PDOConnection $connection,
-    ) {
-        $this->pdo = $connection->connect();
-    }
+    public function __construct(private string $root) {}
 
     /** @return array{enabled_modules: list<string>, role_templates: list<string>, default_department_id: int|null} */
     public function apply(int $tenantId, InstallProductProfile $profile): array
@@ -44,12 +38,18 @@ final readonly class InstallProductProfileApplier
         if ($unknown !== []) {
             throw new ModuleException('MODULE_NOT_INSTALLED', 'Profile references unknown module: ' . $unknown[0]);
         }
-        SettingsRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
-        ReferenceCodeRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
+        (new PreBootstrapSettingDefinitionSynchronizer())->synchronize(
+            (new SettingDefinitionCatalog())->fromModules($registry),
+            new DateTimeImmutable('now'),
+        );
+        (new PreBootstrapReferenceCodeDefinitionSynchronizer())->synchronize(
+            ReferenceCodeHttpService::definitionRegistry($registry),
+            new DateTimeImmutable('now'),
+        );
 
         $manager = new TenantModuleManager(
             $registry,
-            new PdoModuleRuntimeRepository($this->pdo),
+            new ThinkPhpModuleRuntimeRepository(),
             new OpisTenantModuleConfigValidator(),
         );
         $enabled = [];
@@ -83,24 +83,21 @@ final readonly class InstallProductProfileApplier
             return null;
         }
         $now = gmdate('Y-m-d H:i:s.000');
-        $statement = $this->pdo->prepare(<<<'SQL'
-INSERT IGNORE INTO pa_department (tenant_id, code, name, created_at, updated_at)
-VALUES (:tenant_id, :code, :name, :created_at, :updated_at)
-SQL);
-        $statement->execute([
-            'tenant_id' => $tenantId,
-            'code' => $department['code'],
-            'name' => $department['name'],
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-        $query = $this->pdo->prepare(<<<'SQL'
-SELECT id FROM pa_department WHERE tenant_id = :tenant_id AND code = :code
-SQL);
-        $query->execute(['tenant_id' => $tenantId, 'code' => $department['code']]);
-        $id = $query->fetchColumn();
+        $query = Db::name('department')
+            ->where('tenant_id', $tenantId)
+            ->where('code', $department['code']);
+        $id = $query->value('id');
+        if ($id === null) {
+            $id = Db::name('department')->insertGetId([
+                'tenant_id' => $tenantId,
+                'code' => $department['code'],
+                'name' => $department['name'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
 
-        return $id === false ? null : (int) $id;
+        return (int)$id;
     }
 
     private function kernelPath(): string

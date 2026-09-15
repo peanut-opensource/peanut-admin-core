@@ -8,21 +8,22 @@ use PHPUnit\Framework\TestCase;
 
 final class SettingsSecurityTest extends TestCase
 {
-    public function testHostUsesPackageAndR02WithoutAParallelSettingSqlModel(): void
+    public function testServiceUsesNativeTransactionsAndModelsWithoutParallelPersistence(): void
     {
         $root = dirname(__DIR__, 3);
-        $factory = (string) file_get_contents($root . '/backend/app/setting/SettingsRuntimeFactory.php');
+        $service = (string) file_get_contents($root . '/backend/app/setting/SettingsHttpService.php');
+        $admin = (string) file_get_contents($root . '/packages/php/settings/src/Application/SettingAdminService.php');
         $tenant = (string) file_get_contents($root . '/backend/app/controller/api/v1/SettingsController.php');
         $platform = (string) file_get_contents(
             $root . '/backend/app/controller/api/platform/v1/PlatformSettingsController.php',
         );
 
-        self::assertStringContainsString('ExternalOperationHost', $factory);
-        self::assertStringContainsString('AtomicOperationAdapter', $factory);
-        self::assertStringContainsString('SettingAdminService', $factory);
-        self::assertStringContainsString('SettingStore', $factory);
-        self::assertStringNotContainsString('pa_setting_', $factory);
-        self::assertStringNotContainsString('IdempotencyMiddleware', $factory);
+        self::assertStringContainsString('Db::transaction(', $service);
+        self::assertStringContainsString('TenantSettingValue', $admin);
+        self::assertStringNotContainsString('AtomicOperationAdapter', $service . $admin);
+        self::assertStringNotContainsString('SettingStore', $service . $admin);
+        self::assertStringNotContainsString('PDO', $service . $admin);
+        self::assertStringNotContainsString('IdempotencyMiddleware', $service);
         self::assertStringNotContainsString('PDO', $tenant);
         self::assertStringNotContainsString('PDO', $platform);
         self::assertStringNotContainsString('pa_setting_', $tenant . $platform);
@@ -31,7 +32,7 @@ final class SettingsSecurityTest extends TestCase
     public function testAuditMetadataBuilderCannotAcceptValuesOrSecretMaterial(): void
     {
         $factory = (string) file_get_contents(
-            dirname(__DIR__, 3) . '/backend/app/setting/SettingsRuntimeFactory.php',
+            dirname(__DIR__, 3) . '/backend/app/setting/SettingsHttpService.php',
         );
         self::assertMatchesRegularExpression(
             '/private static function auditMetadata\(.*?return \[\s*'

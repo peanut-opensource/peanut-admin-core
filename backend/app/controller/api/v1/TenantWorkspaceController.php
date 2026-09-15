@@ -5,17 +5,13 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\controller\api\v1;
 
 use PeanutAdmin\App\controller\api\MenuDiagnosticRuntime;
-use PeanutAdmin\App\module\OpisTenantModuleConfigValidator;
-use PeanutAdmin\App\module\RuntimeModuleRegistry;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
 use PeanutAdmin\Kernel\Authorization\Application\Etag;
-use PeanutAdmin\Kernel\Authorization\PdoTenantAuthorizationRepository;
-use PeanutAdmin\Kernel\Authorization\RevisionPermissionCache;
 use PeanutAdmin\Kernel\Authorization\TenantAuthorizationEvaluator;
+use PeanutAdmin\Kernel\Menu\MenuCatalogRepository;
 use PeanutAdmin\Kernel\Menu\MenuDefinition;
 use PeanutAdmin\Kernel\Menu\MenuRegistry;
-use PeanutAdmin\Kernel\Menu\PdoMenuCatalogRepository;
 use PeanutAdmin\Kernel\Module\TenantModuleConfigurationService;
 use PeanutAdmin\Kernel\Tenancy\Application\TenantWorkspaceQueryService;
 use think\Request;
@@ -23,6 +19,13 @@ use think\Response;
 
 final class TenantWorkspaceController
 {
+    public function __construct(
+        private readonly TenantWorkspaceQueryService $workspace,
+        private readonly TenantModuleConfigurationService $moduleConfiguration,
+        private readonly MenuCatalogRepository $menus,
+        private readonly TenantAuthorizationEvaluator $authorization,
+    ) {}
+
     #[OpenApiHandlerContract]
     public function show(Request $request): Response
     {
@@ -66,18 +69,11 @@ final class TenantWorkspaceController
                     'The config field must be a JSON object.',
                 );
             }
-            $module = (new TenantModuleConfigurationService(
-                MemberAdminRuntime::pdo(),
-                RuntimeModuleRegistry::compile(),
-                new OpisTenantModuleConfigValidator(),
-            ))->update(
-                $context->tenantId,
+            $module = $this->moduleConfiguration->update(
+                $context,
                 $moduleKey,
                 $config,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $module, 'etag' => Etag::format((int) $module['revision'])];
@@ -123,19 +119,13 @@ final class TenantWorkspaceController
     {
         return MemberAdminRuntime::run($request, function () use ($request): array {
             $context = MemberAdminRuntime::context($request);
-            $pdo = MemberAdminRuntime::pdo();
-            $repository = new PdoMenuCatalogRepository($pdo);
-            $deployment = array_fill_keys($repository->activeDeploymentModules(), true);
-            $tenant = array_fill_keys($repository->activeTenantModules($context->tenantId), true);
-            $permissions = new TenantAuthorizationEvaluator(
-                new PdoTenantAuthorizationRepository($pdo),
-                new RevisionPermissionCache(),
-            );
-            $visible = (new MenuRegistry($repository->activeDefinitions('tenant')))->visible(
+            $deployment = array_fill_keys($this->menus->activeDeploymentModules(), true);
+            $tenant = array_fill_keys($this->menus->activeTenantModules($context->tenantId), true);
+            $visible = (new MenuRegistry($this->menus->activeDefinitions('tenant')))->visible(
                 $context->clientKey,
                 static fn(string $module): bool => $module === 'core' || isset($deployment[$module]),
                 static fn(string $module): bool => $module === 'core' || isset($tenant[$module]),
-                static fn(string $permission): bool => $permissions->allows($context, $permission),
+                fn(string $permission): bool => $this->authorization->allows($context, $permission),
             );
 
             return [
@@ -150,29 +140,23 @@ final class TenantWorkspaceController
     {
         return MemberAdminRuntime::run($request, function () use ($request): array {
             $context = MemberAdminRuntime::context($request);
-            $pdo = MemberAdminRuntime::pdo();
-            $repository = new PdoMenuCatalogRepository($pdo);
-            $deployment = array_fill_keys($repository->activeDeploymentModules(), true);
-            $tenant = array_fill_keys($repository->activeTenantModules($context->tenantId), true);
-            $permissions = new TenantAuthorizationEvaluator(
-                new PdoTenantAuthorizationRepository($pdo),
-                new RevisionPermissionCache(),
-            );
+            $deployment = array_fill_keys($this->menus->activeDeploymentModules(), true);
+            $tenant = array_fill_keys($this->menus->activeTenantModules($context->tenantId), true);
 
             return ['data' => MenuDiagnosticRuntime::explain(
-                $repository->activeDefinitions('tenant'),
+                $this->menus->activeDefinitions('tenant'),
                 'tenant',
                 $context->clientKey,
                 static fn(string $module): bool => $module === 'core' || isset($deployment[$module]),
                 static fn(string $module): bool => $module === 'core' || isset($tenant[$module]),
-                static fn(string $permission): bool => $permissions->allows($context, $permission),
+                fn(string $permission): bool => $this->authorization->allows($context, $permission),
             )];
         });
     }
 
     private function service(): TenantWorkspaceQueryService
     {
-        return new TenantWorkspaceQueryService(MemberAdminRuntime::pdo());
+        return $this->workspace;
     }
 
     /**

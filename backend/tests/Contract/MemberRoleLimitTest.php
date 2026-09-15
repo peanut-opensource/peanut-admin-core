@@ -6,6 +6,7 @@ namespace PeanutAdmin\App\Tests\Contract;
 
 use DateTimeImmutable;
 use PeanutAdmin\App\controller\api\v1\MemberController;
+use PeanutAdmin\Kernel\Audit\AuditService;
 use PeanutAdmin\Kernel\Auth\TenantContext;
 use PeanutAdmin\Kernel\Auth\ValidatedTenantSession;
 use PeanutAdmin\Kernel\Membership\Application\MemberAdminService;
@@ -35,7 +36,8 @@ final class MemberRoleLimitTest extends TestCase
             $request = (new Request())
                 ->withRoute(['tenant_context' => $context])
                 ->withPost(['role_ids' => $roleIds]);
-            $response = (new MemberController())->replaceRoles($request, '11');
+            $response = (new MemberController(new MemberAdminService(new AuditService())))
+                ->replaceRoles($request, '11');
 
             self::assertSame(422, $response->getCode());
             self::assertSame('MEMBER_ROLE_LIMIT_EXCEEDED', $response->getData()['code']);

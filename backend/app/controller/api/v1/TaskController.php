@@ -11,20 +11,22 @@ use think\Response;
 
 final class TaskController
 {
+    public function __construct(private readonly TaskHttpRuntime $runtime) {}
+
     #[OpenApiHandlerContract] public function index(Request $request): Response
     {
-        return TaskHttpRuntime::list($request);
+        return $this->runtime->list($request);
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function show(Request $request, string $jobKey): Response
     {
-        return TaskHttpRuntime::detail($request, $jobKey);
+        return $this->runtime->detail($request, $jobKey);
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function cancel(Request $request, string $jobKey): Response
     {
-        return TaskHttpRuntime::cancel($request, $jobKey);
+        return $this->runtime->cancel($request, $jobKey);
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function retry(Request $request, string $jobKey): Response
     {
-        return TaskHttpRuntime::retry($request, $jobKey);
+        return $this->runtime->retry($request, $jobKey);
     }
 }

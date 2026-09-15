@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\importexport;
 
-use PDO;
 use PeanutAdmin\ImportExport\Application\ImportExportException;
 use PeanutAdmin\ImportExport\Contract\ColumnDefinition;
 use PeanutAdmin\ImportExport\Contract\DataProvider;
@@ -12,10 +11,10 @@ use PeanutAdmin\ImportExport\Contract\ExportBatch;
 use PeanutAdmin\ImportExport\Contract\RowIssue;
 use PeanutAdmin\ImportExport\Contract\SchemaDefinition;
 use PeanutAdmin\Kernel\Context\AuthorizedOperationContext;
+use think\facade\Db;
 
 final readonly class TenantMemberDirectoryProvider implements DataProvider
 {
-    public function __construct(private PDO $pdo) {}
     public function key(): string
     {
         return 'tenant.member-directory';
@@ -51,9 +50,11 @@ final readonly class TenantMemberDirectoryProvider implements DataProvider
         if ($this->validateImport($context, $row) !== []) {
             throw ImportExportException::schemaMismatch();
         }
-        $statement = $this->pdo->prepare('UPDATE pa_tenant_member SET display_name=:display_name, updated_at=UTC_TIMESTAMP(3) WHERE tenant_id=:tenant_id AND member_no=:member_no AND status<>\'left\'');
-        $statement->execute(['display_name' => $row['display_name'],'tenant_id' => $context->tenantContext->tenantId,'member_no' => $row['member_no']]);
-        if ($statement->rowCount() > 1) {
+        $affected = Db::name('tenant_member')->where('tenant_id', $context->tenantContext->tenantId)
+            ->where('member_no', $row['member_no'])->where('status', '<>', 'left')->update([
+                'display_name' => $row['display_name'], 'updated_at' => Db::raw('UTC_TIMESTAMP(3)'),
+            ]);
+        if ($affected > 1) {
             throw ImportExportException::internal();
         }
     }
@@ -63,12 +64,9 @@ final readonly class TenantMemberDirectoryProvider implements DataProvider
         if (!is_int($after) || $limit < 1 || $limit > 500) {
             throw ImportExportException::invalid();
         }
-        $statement = $this->pdo->prepare('SELECT id,member_no,display_name,member_type,status FROM pa_tenant_member WHERE tenant_id=:tenant_id AND id>:after ORDER BY id LIMIT :limit');
-        $statement->bindValue('tenant_id', $context->tenantContext->tenantId, PDO::PARAM_INT);
-        $statement->bindValue('after', $after, PDO::PARAM_INT);
-        $statement->bindValue('limit', $limit, PDO::PARAM_INT);
-        $statement->execute();
-        $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $rows = Db::name('tenant_member')->where('tenant_id', $context->tenantContext->tenantId)
+            ->where('id', '>', $after)->order('id')->limit($limit)
+            ->field('id,member_no,display_name,member_type,status')->select()->toArray();
         $next = count($rows) === $limit ? (string) $rows[array_key_last($rows)]['id'] : null;
         return new ExportBatch(array_values(array_map(static fn(array $r): array => ['member_no' => self::exportValue($r['member_no'] ?? null),'display_name' => self::exportValue($r['display_name'] ?? null),'member_type' => self::exportValue($r['member_type'] ?? null),'status' => self::exportValue($r['status'] ?? null)], $rows)), $next);
     }

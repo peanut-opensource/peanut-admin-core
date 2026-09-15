@@ -727,7 +727,6 @@ final class ProjectGenerator
             'frontend_components' => $frontendComponents,
             'registered_client_keys' => $registeredClients,
         ]);
-        $this->adaptTenantClientRuntimeFactory($target);
         $this->adaptModuleMenus($target, $request->features, $request->adminClientKey);
         $this->writeClients($target . '/frontend/src/clients.ts', $request->tenantClients);
         $this->writeClientVerification($target . '/frontend/verification/clients.spec.ts', $request->tenantClients);
@@ -778,48 +777,6 @@ final class ProjectGenerator
         $contents = "<?php\n\ndeclare(strict_types=1);\n\nreturn " . var_export($values, true) . ";\n";
         $contents = preg_replace('/^ {2}/m', '    ', $contents) ?? $contents;
         $this->write($path, $contents);
-    }
-
-    private function adaptTenantClientRuntimeFactory(string $target): void
-    {
-        $path = $target . '/backend/src/Auth/TenantAuthRuntimeFactory.php';
-        $contents = file_get_contents($path);
-        if (!is_string($contents)) {
-            throw new ProjectGeneratorException('PROJECT_TEMPLATE_INVALID', 'Tenant Client Host factory is missing.');
-        }
-        $legacy = <<<'PHP'
-        $config = require $root . '/backend/config/auth.php';
-        $clientKeys = $config['tenant_clients'] ?? null;
-        if (!is_array($clientKeys) || !array_is_list($clientKeys)) {
-            throw new RuntimeException('Starter Tenant Client configuration is invalid.');
-        }
-        $this->clients = new TenantClientRegistry(array_map('strval', $clientKeys));
-PHP;
-        $structured = <<<'PHP'
-        $config = require $root . '/backend/config/auth.php';
-        $definitions = $config['tenant_clients'] ?? null;
-        $adminClientKey = $config['admin_client_key'] ?? null;
-        if (!is_array($definitions) || !array_is_list($definitions) || !is_string($adminClientKey)) {
-            throw new RuntimeException('Starter Tenant Client configuration is invalid.');
-        }
-        $clientKeys = [];
-        foreach ($definitions as $definition) {
-            if (!is_array($definition)
-                || !is_string($definition['key'] ?? null)
-                || !is_string($definition['api_prefix'] ?? null)) {
-                throw new RuntimeException('Starter Tenant Client configuration is invalid.');
-            }
-            $clientKeys[] = $definition['key'];
-        }
-        if (!in_array($adminClientKey, $clientKeys, true)) {
-            throw new RuntimeException('Starter admin Client is not registered.');
-        }
-        $this->clients = new TenantClientRegistry($clientKeys);
-PHP;
-        if (substr_count($contents, $legacy) !== 1) {
-            throw new ProjectGeneratorException('PROJECT_TEMPLATE_INVALID', 'Tenant Client Host factory contract drifted.');
-        }
-        $this->write($path, str_replace($legacy, $structured, $contents));
     }
 
     /** @param list<string> $features */

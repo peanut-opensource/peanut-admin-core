@@ -7,21 +7,16 @@ namespace PeanutAdmin\App\middleware;
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
-use PDO;
 use PeanutAdmin\Kernel\Auth\TenantContext;
 use PeanutAdmin\Kernel\Authorization\AuthorizationException;
-use PeanutAdmin\Kernel\Module\ModuleGuard as KernelModuleGuard;
-use PeanutAdmin\Kernel\Module\ModuleRuntimeRepository;
-use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
+use PeanutAdmin\Kernel\Module\ModuleAvailabilityService;
+use PeanutAdmin\Kernel\Tenancy\TenantScope;
 use think\Request;
 use think\Response;
 
 final class ModuleGuard
 {
-    public function __construct(
-        private readonly PDO $pdo,
-        private readonly ?ModuleRuntimeRepository $repository = null,
-    ) {}
+    public function __construct(private readonly ModuleAvailabilityService $modules) {}
 
     public function handle(Request $request, Closure $next, string $moduleKey): Response
     {
@@ -32,9 +27,11 @@ final class ModuleGuard
             throw new AuthorizationException('CONTEXT_TENANT_REQUIRED');
         }
 
-        $guard = new KernelModuleGuard($this->repository ?? new PdoModuleRuntimeRepository($this->pdo));
-        $guard->assertDeployment($moduleKey);
-        $guard->assertTenant($context->tenantId, $moduleKey, new DateTimeImmutable('now', new DateTimeZone('UTC')));
+        $this->modules->assertAvailable(
+            TenantScope::fromTrustedContext($context->tenantId, $context->requestId),
+            $moduleKey,
+            new DateTimeImmutable('now', new DateTimeZone('UTC')),
+        );
 
         return $next($request);
     }

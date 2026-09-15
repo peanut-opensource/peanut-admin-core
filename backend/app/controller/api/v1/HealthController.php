@@ -9,9 +9,11 @@ use think\Response;
 
 final class HealthController
 {
+    public function __construct(private readonly HealthCheckService $health) {}
+
     public function show(): Response
     {
-        $report = HealthCheckService::fromEnvironment()->check();
+        $report = $this->health->check();
 
         return Response::create($report->toArray(), 'json', $report->httpStatus())
             ->header(['Cache-Control' => 'no-store']);

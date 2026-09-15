@@ -4,33 +4,32 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\controller\api\v1;
 
-use PDO;
-use PeanutAdmin\App\authorization\DataPermissionRuntimeFactory;
-use PeanutAdmin\App\module\RuntimeModuleRegistry;
-use PeanutAdmin\App\Modules\Example\Reference\Contracts\ReferenceRuntimeProvider;
-use PeanutAdmin\App\Modules\Example\Target\Contracts\TargetRuntimeProvider;
+use PeanutAdmin\App\Modules\Example\Reference\Contracts\ReferenceQuery;
+use PeanutAdmin\App\Modules\Example\Target\Contracts\TargetQuery;
 use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\CreateWorkItem;
 use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemCommands;
+use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemPolicyPublication;
 use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemQuery;
-use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemRuntimeProvider;
 use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemView;
-use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
 use PeanutAdmin\DataPermission\Exception\DataAuthorizationException;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
 use PeanutAdmin\Kernel\Authorization\Application\Etag;
-use PeanutAdmin\Kernel\Membership\Application\MemberAdminService;
 use PeanutAdmin\Kernel\Module\ModuleException;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
-use RuntimeException;
 use think\Request;
 use think\Response;
-use think\db\PDOConnection;
-use think\facade\Db;
 
 final class ExampleController
 {
+    public function __construct(
+        private readonly WorkItemQuery $workItemQuery,
+        private readonly WorkItemCommands $workItemCommands,
+        private readonly WorkItemPolicyPublication $workItemPolicies,
+        private readonly ReferenceQuery $referenceQuery,
+        private readonly TargetQuery $targetQuery,
+    ) {}
+
     #[OpenApiHandlerContract]
     public function listWorkItems(Request $request): Response
     {
@@ -170,9 +169,7 @@ final class ExampleController
                     'Reference search is invalid.',
                 );
             }
-            $connection = self::connection();
-            $pdo = $connection->connect();
-            $items = $this->referenceProvider()->referenceQuery($pdo, $this->authorization($connection))->candidates(
+            $items = $this->referenceQuery->candidates(
                 MemberAdminRuntime::context($request),
                 ExampleHttpRuntime::queryTargets($request, 1),
                 'use',
@@ -211,21 +208,14 @@ final class ExampleController
                 );
             }
             $targets = ExampleHttpRuntime::policyTargets($body);
-            $connection = self::connection();
-            $pdo = $connection->connect();
-            $policyId = $this->workItemProvider()->workItemPolicyPublication(
-                $pdo,
-                $this->authorization($connection),
-                new PdoAuditRepository($pdo),
-            )->publish(
+            $policyId = $this->workItemPolicies->publish(
                 $context,
                 $targets,
                 ExampleHttpRuntime::requiredString($body, 'name'),
                 $config,
             );
-            $targetQuery = $this->targetProvider()->targetQuery($pdo);
             $labels = [];
-            foreach ($targetQuery->findMany($context->tenantId, 'example.project', $targets->sets[0]->targetIds) as $target) {
+            foreach ($this->targetQuery->findMany($context->tenantId, 'example.project', $targets->sets[0]->targetIds) as $target) {
                 $labels[$target->id] = $target->name;
             }
             $publications = array_map(static fn(string $targetId): array => [
@@ -268,85 +258,12 @@ final class ExampleController
 
     private function workItems(): WorkItemQuery
     {
-        $connection = self::connection();
-        $pdo = $connection->connect();
-
-        return $this->workItemProvider()->workItemQuery(
-            $pdo,
-            $this->authorization($connection),
-            $this->targetProvider()->targetQuery($pdo),
-        );
+        return $this->workItemQuery;
     }
 
     private function commands(): WorkItemCommands
     {
-        $connection = self::connection();
-        $pdo = $connection->connect();
-
-        return $this->workItemProvider()->workItemCommands(
-            $pdo,
-            $this->authorization($connection),
-            new PdoAuditRepository($pdo),
-            new MemberAdminService($pdo),
-        );
-    }
-
-    private function targetProvider(): TargetRuntimeProvider
-    {
-        /** @var TargetRuntimeProvider */
-        return $this->moduleProvider('example.target', TargetRuntimeProvider::class);
-    }
-
-    private function referenceProvider(): ReferenceRuntimeProvider
-    {
-        /** @var ReferenceRuntimeProvider */
-        return $this->moduleProvider('example.reference', ReferenceRuntimeProvider::class);
-    }
-
-    private function workItemProvider(): WorkItemRuntimeProvider
-    {
-        /** @var WorkItemRuntimeProvider */
-        return $this->moduleProvider('example.work-item', WorkItemRuntimeProvider::class);
-    }
-
-    /** @param class-string $contract */
-    private function moduleProvider(string $moduleKey, string $contract): object
-    {
-        /** @var array<string, object>|null $providers */
-        static $providers = null;
-        if ($providers === null) {
-            $providers = [];
-            foreach (RuntimeModuleRegistry::compile(dirname(__DIR__, 5))->modules as $module) {
-                $key = $module->data['key'] ?? null;
-                $backend = $module->data['backend'] ?? null;
-                $providerClass = is_array($backend) ? ($backend['provider'] ?? null) : null;
-                if (!is_string($key) || !is_string($providerClass) || !class_exists($providerClass)) {
-                    continue;
-                }
-                $providers[$key] = new $providerClass();
-            }
-        }
-        $provider = $providers[$moduleKey] ?? null;
-        if ($provider instanceof $contract) {
-            return $provider;
-        }
-
-        throw new ModuleException('MODULE_CONTRACT_MISSING', "Module {$moduleKey} runtime contract is unavailable.");
-    }
-
-    private function authorization(PDOConnection $connection): DataPermissionEngine
-    {
-        return DataPermissionRuntimeFactory::create($connection);
-    }
-
-    private static function connection(): PDOConnection
-    {
-        $connection = Db::connect();
-        if (!$connection instanceof PDOConnection) {
-            throw new RuntimeException('DATA_PERMISSION_DATABASE_CONNECTION_UNSUPPORTED');
-        }
-
-        return $connection;
+        return $this->workItemCommands;
     }
 
     /** @return array<string, mixed> */

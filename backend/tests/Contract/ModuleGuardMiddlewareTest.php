@@ -5,26 +5,56 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\Tests\Contract;
 
 use DateTimeImmutable;
-use PDO;
 use PeanutAdmin\App\middleware\ModuleGuard;
 use PeanutAdmin\Kernel\Auth\TenantContext;
 use PeanutAdmin\Kernel\Auth\ValidatedTenantSession;
+use PeanutAdmin\Kernel\Module\ModuleAvailabilityService;
 use PeanutAdmin\Kernel\Module\ModuleException;
-use PeanutAdmin\Kernel\Module\ModuleInstallationRecord;
-use PeanutAdmin\Kernel\Module\ModuleRuntimeRepository;
-use PeanutAdmin\Kernel\Module\TenantModuleRecord;
-use PHPUnit\Framework\TestCase;
+use PeanutAdmin\Kernel\Tests\Integration\Schema\DatabaseTestCase;
 use think\Request;
 use think\Response;
 
-final class ModuleGuardMiddlewareTest extends TestCase
+require_once dirname(__DIR__, 3) . '/packages/php/kernel/tests/Integration/Schema/DatabaseTestCase.php';
+
+final class ModuleGuardMiddlewareTest extends DatabaseTestCase
 {
+    private const NOW = '2026-07-16 12:00:00.000';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->runner->migrate();
+        $this->insert('pa_tenant', [
+            'id' => 9,
+            'code' => 'module-guard',
+            'name' => 'Module Guard',
+            'display_name' => 'Module Guard',
+            'status' => 'active',
+            'created_at' => self::NOW,
+            'updated_at' => self::NOW,
+        ]);
+        $this->insert('pa_module_installation', [
+            'module_key' => 'example.work-item',
+            'installed_version' => '1.0.0',
+            'manifest_schema_version' => 1,
+            'manifest_digest' => str_repeat('a', 64),
+            'status' => 'active',
+            'created_at' => self::NOW,
+            'updated_at' => self::NOW,
+        ]);
+    }
+
     public function testEnabledModuleContinuesWithTrustedTenantContext(): void
     {
-        $middleware = new ModuleGuard($this->createStub(PDO::class), $this->repository(
-            new ModuleInstallationRecord('example.work-item', '1.0.0', 'active', 1, 'digest'),
-            new TenantModuleRecord(9, 'example.work-item', 'enabled', null, null, 1),
-        ));
+        $this->insert('pa_tenant_module', [
+            'tenant_id' => 9,
+            'module_key' => 'example.work-item',
+            'status' => 'enabled',
+            'source' => 'manual',
+            'created_at' => self::NOW,
+            'updated_at' => self::NOW,
+        ]);
+        $middleware = new ModuleGuard(new ModuleAvailabilityService());
         $request = (new Request())->withRoute(['tenant_context' => $this->context()]);
 
         $response = $middleware->handle(
@@ -38,10 +68,7 @@ final class ModuleGuardMiddlewareTest extends TestCase
 
     public function testDisabledModuleStopsBeforeTheController(): void
     {
-        $middleware = new ModuleGuard($this->createStub(PDO::class), $this->repository(
-            new ModuleInstallationRecord('example.work-item', '1.0.0', 'active', 1, 'digest'),
-            null,
-        ));
+        $middleware = new ModuleGuard(new ModuleAvailabilityService());
         $request = (new Request())->withRoute(['tenant_context' => $this->context()]);
 
         try {
@@ -75,30 +102,4 @@ final class ModuleGuardMiddlewareTest extends TestCase
         ), 'req_module_guard');
     }
 
-    private function repository(
-        ?ModuleInstallationRecord $installation,
-        ?TenantModuleRecord $tenantModule,
-    ): ModuleRuntimeRepository {
-        return new class ($installation, $tenantModule) implements ModuleRuntimeRepository {
-            public function __construct(
-                private readonly ?ModuleInstallationRecord $installation,
-                private readonly ?TenantModuleRecord $tenantModule,
-            ) {}
-
-            public function installation(string $moduleKey): ?ModuleInstallationRecord
-            {
-                return $this->installation;
-            }
-
-            public function tenantModule(int $tenantId, string $moduleKey): ?TenantModuleRecord
-            {
-                return $this->tenantModule;
-            }
-
-            public function enabledDependents(int $tenantId, string $moduleKey): array
-            {
-                return [];
-            }
-        };
-    }
 }

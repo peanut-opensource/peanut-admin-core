@@ -6,5 +6,5 @@ cd "$ROOT"
 
 exec php -r '
 require "vendor/autoload.php";
-exit(PeanutAdmin\App\command\HealthCli::run());
+exit(PeanutAdmin\App\command\HealthCli::run(getcwd()));
 '

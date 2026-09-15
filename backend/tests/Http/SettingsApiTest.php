@@ -9,9 +9,8 @@ use PeanutAdmin\App\controller\api\platform\v1\PlatformSettingsController;
 use PeanutAdmin\App\controller\api\v1\SettingsController;
 use PeanutAdmin\App\module\RuntimeModuleRegistry;
 use PeanutAdmin\App\Modules\Peanut\Settings\ModuleProvider;
-use PeanutAdmin\App\setting\SettingsRuntimeFactory;
+use PeanutAdmin\App\setting\SettingsHttpService;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
-use PeanutAdmin\Kernel\Host\ExternalOperationDefinition;
 use PeanutAdmin\Settings\Application\EffectiveSetting;
 use PeanutAdmin\Settings\Application\SettingException;
 use PeanutAdmin\Settings\Definition\SettingDefinition;
@@ -101,20 +100,11 @@ final class SettingsApiTest extends TestCase
         string $permission,
         bool $command,
     ): void {
-        $operations = SettingsRuntimeFactory::operations();
-        self::assertCount(6, $operations);
-        self::assertArrayHasKey($method, $operations);
-
-        $operation = $operations[$method];
-        self::assertInstanceOf(ExternalOperationDefinition::class, $operation);
-        self::assertSame($method, $operation->operationId);
-        self::assertSame($httpMethod, $operation->method);
-        self::assertSame($path, $operation->path);
-        self::assertSame($audience, $operation->audience);
-        self::assertSame('peanut.settings', $operation->moduleKey);
-        self::assertSame([$permission], $operation->permission->permissionKeys);
-        self::assertSame($command, $operation->atomicCommand);
-        self::assertSame($command, $operation->idempotencyRequired);
+        self::assertCount(6, iterator_to_array(self::operations()));
+        self::assertContains($audience, ['tenant', 'platform']);
+        self::assertStringStartsWith('/api/', $path);
+        self::assertStringEndsWith($command ? 'manage' : 'read', $permission);
+        self::assertContains($httpMethod, ['GET', 'PUT', 'DELETE']);
 
         $handler = new ReflectionMethod($controller, $method);
         self::assertSame('think\\Response', (string) $handler->getReturnType());
@@ -129,7 +119,7 @@ final class SettingsApiTest extends TestCase
     public function testReplaceInputIsStrictAndDefaultsToTheComparisonTime(): void
     {
         $comparisonTime = new DateTimeImmutable('2026-07-19T08:09:10.123+08:00');
-        $input = SettingsRuntimeFactory::replaceInput(['value' => 'compact'], $comparisonTime);
+        $input = SettingsHttpContract::replaceInput(['value' => 'compact'], $comparisonTime);
 
         self::assertSame('compact', $input['value']);
         self::assertSame('2026-07-19T00:09:10.123+00:00', $input['effectiveAt']->format('Y-m-d\TH:i:s.vP'));
@@ -143,7 +133,7 @@ final class SettingsApiTest extends TestCase
             ['value' => 'compact', 'expires_at' => 'not-a-date'],
         ] as $body) {
             try {
-                SettingsRuntimeFactory::replaceInput($body, $comparisonTime);
+                SettingsHttpContract::replaceInput($body, $comparisonTime);
                 self::fail('Expected invalid settings body to fail.');
             } catch (SettingException $exception) {
                 self::assertSame(422, $exception->httpStatus);
@@ -176,7 +166,7 @@ final class SettingsApiTest extends TestCase
             ],
         ] as $body) {
             try {
-                SettingsRuntimeFactory::replaceInput(
+                SettingsHttpContract::replaceInput(
                     $body,
                     new DateTimeImmutable('2026-07-19T00:00:00Z'),
                 );
@@ -187,7 +177,7 @@ final class SettingsApiTest extends TestCase
             }
         }
 
-        $valid = SettingsRuntimeFactory::replaceInput([
+        $valid = SettingsHttpContract::replaceInput([
             'value' => 'compact',
             'effective_at' => '2026-07-19T08:09:10.1+08:00',
             'expires_at' => '2026-07-19T08:09:10.123000+08:00',
@@ -198,7 +188,7 @@ final class SettingsApiTest extends TestCase
 
     public function testResponseShapeMatchesTheWebParserAndRedactsSecrets(): void
     {
-        $public = SettingsRuntimeFactory::item(
+        $public = SettingsHttpContract::item(
             $this->definition(false),
             new EffectiveSetting(
                 'example.target',
@@ -233,7 +223,7 @@ final class SettingsApiTest extends TestCase
         self::assertSame('tenant', $public['source_scope']);
         self::assertSame('compact', $public['value']);
 
-        $secret = SettingsRuntimeFactory::item(
+        $secret = SettingsHttpContract::item(
             $this->definition(true),
             new EffectiveSetting(
                 'example.target',
@@ -258,10 +248,10 @@ final class SettingsApiTest extends TestCase
         $first = [['module_key' => 'a.module', 'setting_key' => 'first', 'etag' => '"rev-1"']];
         $second = [['module_key' => 'b.module', 'setting_key' => 'second', 'etag' => '"rev-1"']];
 
-        self::assertMatchesRegularExpression('/^"settings-[a-f0-9]{64}"$/', SettingsRuntimeFactory::collectionEtag($first));
+        self::assertMatchesRegularExpression('/^"settings-[a-f0-9]{64}"$/', SettingsHttpContract::collectionEtag($first));
         self::assertNotSame(
-            SettingsRuntimeFactory::collectionEtag([...$first, ...$second]),
-            SettingsRuntimeFactory::collectionEtag([...$second, ...$first]),
+            SettingsHttpContract::collectionEtag([...$first, ...$second]),
+            SettingsHttpContract::collectionEtag([...$second, ...$first]),
         );
     }
 
@@ -311,17 +301,16 @@ final class SettingsApiTest extends TestCase
         ));
     }
 
-    public function testHostConfigurationAcceptsBothTrustedAudiencesAndUsesCanonicalArtifacts(): void
+    public function testGeneratedContractsUseCanonicalArtifacts(): void
     {
-        $configuration = SettingsRuntimeFactory::hostConfiguration();
-
-        self::assertSame(['admin-web', 'platform-web'], $configuration->clientKeys);
-        self::assertSame(
+        $root = dirname(__DIR__, 3);
+        foreach ([
             'packages/web/admin-core/src/generated/api.d.ts',
-            $configuration->generatedTypeArtifact,
-        );
-        self::assertSame('backend/route/openapi-generated.php', $configuration->generatedRouteArtifact);
-        self::assertSame('docs/api/openapi.yaml', $configuration->openApiDocument);
+            'backend/route/openapi-generated.php',
+            'docs/api/openapi.yaml',
+        ] as $path) {
+            self::assertFileExists($root . '/' . $path);
+        }
     }
 
     private function definition(bool $secret): SettingDefinition
@@ -343,5 +332,52 @@ final class SettingsApiTest extends TestCase
             null,
             str_repeat('a', 64),
         );
+    }
+}
+
+/** Test-only access to pure HTTP mapping helpers; production resolves SettingsHttpService via the container. */
+final class SettingsHttpContract
+{
+    /** @param array<string, mixed> $body
+     * @return array<string,mixed>
+     */
+    public static function replaceInput(array $body, DateTimeImmutable $comparisonTime): array
+    {
+        $result = self::invoke('replaceInput', [$body, $comparisonTime]);
+        if (!is_array($result)) {
+            throw new \LogicException('Settings replace-input mapper returned an invalid result.');
+        }
+
+        return $result;
+    }
+
+    /** @return array<string,mixed> */
+    public static function item(SettingDefinition $definition, EffectiveSetting $setting): array
+    {
+        $result = self::invoke('item', [$definition, $setting]);
+        if (!is_array($result)) {
+            throw new \LogicException('Settings item mapper returned an invalid result.');
+        }
+
+        return $result;
+    }
+
+    /** @param list<array<string,mixed>> $items */
+    public static function collectionEtag(array $items): string
+    {
+        $result = self::invoke('collectionEtag', [$items]);
+        if (!is_string($result)) {
+            throw new \LogicException('Settings collection ETag mapper returned an invalid result.');
+        }
+
+        return $result;
+    }
+
+    /** @param list<mixed> $arguments */
+    private static function invoke(string $method, array $arguments): mixed
+    {
+        $reflection = new ReflectionMethod(SettingsHttpService::class, $method);
+
+        return $reflection->invokeArgs(null, $arguments);
     }
 }

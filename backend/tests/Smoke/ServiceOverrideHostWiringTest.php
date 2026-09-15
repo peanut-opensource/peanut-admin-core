@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\Tests\Smoke;
 
-use PDO;
-use PeanutAdmin\App\notification\NotificationRuntimeFactory;
-use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
+use PeanutAdmin\App\task\TaskWorkerService;
 use PeanutAdmin\Kernel\Override\OverrideException;
 use PeanutAdmin\Kernel\Override\ServiceOverrideRegistry;
 use PeanutAdmin\NotificationSms\Sms\DisabledSmsProvider;
 use PeanutAdmin\NotificationSms\Sms\LocalDevSmsProvider;
 use PeanutAdmin\NotificationSms\Sms\SmsProvider;
-use PeanutAdmin\TaskJob\Execution\LocalWorker;
 use PHPUnit\Framework\TestCase;
 use think\App;
 
@@ -49,10 +46,7 @@ final class ServiceOverrideHostWiringTest extends TestCase
         $registry = $app->make(ServiceOverrideRegistry::class);
         self::assertSame('default', $registry->resolve('peanut.notification.service.sms-provider')->source);
         self::assertInstanceOf(DisabledSmsProvider::class, $app->make(SmsProvider::class));
-        self::assertInstanceOf(
-            LocalWorker::class,
-            NotificationRuntimeFactory::worker(ThinkPhpTestConnection::fromPdo(new PDO('sqlite::memory:')), 1, 'worker_default'),
-        );
+        self::assertInstanceOf(TaskWorkerService::class, $app->make(TaskWorkerService::class));
     }
 
     public function testHostBindsExplicitApplicationOverride(): void
@@ -63,10 +57,7 @@ final class ServiceOverrideHostWiringTest extends TestCase
         $registry = $app->make(ServiceOverrideRegistry::class);
         self::assertSame('application', $registry->resolve('peanut.notification.service.sms-provider')->source);
         self::assertInstanceOf(LocalDevSmsProvider::class, $app->make(SmsProvider::class));
-        self::assertInstanceOf(
-            LocalWorker::class,
-            NotificationRuntimeFactory::worker(ThinkPhpTestConnection::fromPdo(new PDO('sqlite::memory:')), 1, 'worker_override'),
-        );
+        self::assertInstanceOf(TaskWorkerService::class, $app->make(TaskWorkerService::class));
     }
 
     public function testInvalidApplicationOverrideFailsHostStartup(): void

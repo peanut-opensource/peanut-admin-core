@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\authorization\DataPermissionRuntimeFactory;
-use PeanutAdmin\App\middleware\TenantAuthRuntimeFactory;
-use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Authorization\PdoReferenceScopeProvider;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\PdoTargetResolver;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Persistence\PdoTargetQuery;
-use PeanutAdmin\App\Modules\Example\WorkItem\Infrastructure\Persistence\PdoWorkItemQuery;
+use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Authorization\ThinkPhpReferenceScopeProvider;
+use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ThinkPhpTargetResolver;
+use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemQuery;
+use PeanutAdmin\App\Modules\Example\WorkItem\Model\WorkItem;
 use PeanutAdmin\DataPermission\Context\AuthorizationContext;
-use PeanutAdmin\DataPermission\Constraint\PdoQueryConstraintCompiler;
+use PeanutAdmin\DataPermission\Constraint\ThinkPhpQueryConstraintApplier;
+use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
+use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetSet;
 use PeanutAdmin\Kernel\Auth\TenantAuthentication;
-use PeanutAdmin\Testing\Authorization\PdoAuthorizationFixtureSeeder;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
+use PeanutAdmin\Kernel\Tenancy\TenantScope;
+use PeanutAdmin\Testing\Authorization\ThinkPhpAuthorizationFixtureSeeder;
+use think\App;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
@@ -85,7 +88,7 @@ try {
         $root . '/schemas/product-profile.schema.json',
     );
     $password = 'Performance-P0-Only-2026!';
-    $installation = (new InstallWorkflow($root, $connection))->run(
+    $installation = (new InstallWorkflow($root))->run(
         $profile,
         'performance@example.test',
         $password,
@@ -183,7 +186,7 @@ VALUES %s
 SQL, implode(', ', $workItemValues)))->execute($workItemParameters);
     }
 
-    $authorizationFixture = new PdoAuthorizationFixtureSeeder($pdo);
+    $authorizationFixture = new ThinkPhpAuthorizationFixtureSeeder();
     $roleId = $authorizationFixture->roleForMember($tenantId, $memberId);
     $authorizationFixture->grantPermissions($tenantId, $roleId, ['example.work-item.read']);
     $authorizationFixture->allowTargetGroups(
@@ -195,7 +198,9 @@ SQL, implode(', ', $workItemValues)))->execute($workItemParameters);
         [['example.project' => $targetSetId]],
     );
 
-    $auth = TenantAuthRuntimeFactory::create(pdo: $pdo);
+    $app = new App($root . '/backend');
+    $app->initialize();
+    $auth = $app->make(TenantAuthService::class);
     $initial = $auth->login(
         'performance@example.test',
         $password,
@@ -207,23 +212,26 @@ SQL, implode(', ', $workItemValues)))->execute($workItemParameters);
     if (!$initial instanceof TenantAuthentication) {
         throw new RuntimeException('Performance fixture login unexpectedly required tenant selection.');
     }
-    $resolver = new PdoTargetResolver($pdo);
-    $authorization = DataPermissionRuntimeFactory::create(
-        $connection,
-        $root,
-    );
-    $workItems = new PdoWorkItemQuery($pdo, $authorization, new PdoTargetQuery($pdo));
+    $runtime = $app->make(DataPermissionRuntimeRegistry::class);
+    $resolver = $runtime->targetResolvers->get(ThinkPhpTargetResolver::class);
+    $authorization = $app->make(DataPermissionEngine::class);
+    $workItems = $app->make(WorkItemQuery::class);
     $results = [];
     foreach ([10, 500, 5000] as $size) {
         $ids = array_slice($projectIds, 0, $size);
         $typedSet = new TypedResourceTargetSet('example.project', $ids);
         $typedTargets = new TypedResourceTargetCollection([$typedSet]);
-        $compiled = (new PdoQueryConstraintCompiler())->compile($authorization->queryConstraint(
+        $query = WorkItem::scope(
+            'tenant',
+            TenantScope::fromTrustedContext($initial->context->tenantId, 'performance-qualification'),
+        );
+        (new ThinkPhpQueryConstraintApplier())->apply($query, $authorization->queryConstraint(
             $initial->context,
             'example.work-item',
             'list',
             $typedTargets,
         ));
+        $sqlParameterCount = count($query->getBind(false));
         $resolved = $resolver->resolveAndValidate($initial->context, $typedSet);
         if (count($resolved->targets->sets[0]->targetIds) !== $size) {
             throw new RuntimeException("Typed-target resolver changed the {$size}-target set.");
@@ -255,7 +263,7 @@ SQL, implode(', ', $workItemValues)))->execute($workItemParameters);
             3,
         ) + [
             'operations_per_sample' => $operationsPerSample,
-            'sql_parameters_per_query' => count($compiled->parameters),
+            'sql_parameters_per_query' => $sqlParameterCount,
             'page_size' => 20,
         ];
     }
@@ -319,7 +327,7 @@ SQL, implode(', ', $workItemValues)))->execute($workItemParameters);
     $targets = new TypedResourceTargetCollection([
         new TypedResourceTargetSet('example.project', array_map('strval', range(1, 10))),
     ]);
-    $scope = new PdoReferenceScopeProvider($pdo);
+    $scope = new ThinkPhpReferenceScopeProvider();
     $results['shared-master-scope'] = benchmark(
         static function () use ($scope, $authorizationContext, $targets, $referenceId): void {
             for ($index = 0; $index < 20; ++$index) {

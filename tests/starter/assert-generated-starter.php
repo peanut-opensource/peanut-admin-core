@@ -18,7 +18,6 @@ $required = [
     'backend/config/auth.php',
     'backend/public/index.php',
     'backend/src/Module/ModuleRegistryFactory.php',
-    'backend/src/Auth/TenantAuthRuntimeFactory.php',
     'backend/src/FileMedia/FileMediaStorageFactory.php',
     'backend/src/FileMedia/LocalPrivateStorageProvider.php',
     'backend/src/Modules/Example/Greeting/ExampleGreetingModuleProvider.php',

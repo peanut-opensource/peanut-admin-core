@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\Modules\Example\Target;
 
-use PDO;
 use PeanutAdmin\App\Modules\Example\Target\Contracts\TargetQuery;
 use PeanutAdmin\App\Modules\Example\Target\Contracts\TargetRuntimeProvider;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\PdoTargetCatalogProvider;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\PdoTargetResolver;
+use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ThinkPhpTargetCatalogProvider;
+use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ThinkPhpTargetResolver;
 use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ProjectPolicyProvider;
 use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\QueuePolicyProvider;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Persistence\PdoTargetQuery;
+use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Persistence\ThinkPhpTargetQuery;
 use PeanutAdmin\DataPermission\Constraint\ColumnReference;
 use PeanutAdmin\DataPermission\Provider\ConditionProviderRegistry;
 use PeanutAdmin\DataPermission\Provider\ThinkPhpDepartmentHierarchyProvider;
@@ -21,7 +20,6 @@ use PeanutAdmin\DataPermission\Provider\StandardResourcePolicyProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
-use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, TargetRuntimeProvider
 {
@@ -35,11 +33,10 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return [TargetRuntimeProvider::class => self::class];
     }
 
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry): void
     {
-        $pdo = $connection->connect();
-        $departments = new ThinkPhpDepartmentHierarchyProvider($connection);
-        $targetSets = new ThinkPhpTargetSetMembershipProvider($connection);
+        $departments = new ThinkPhpDepartmentHierarchyProvider();
+        $targetSets = new ThinkPhpTargetSetMembershipProvider();
         $project = new ProjectPolicyProvider(new StandardResourcePolicyProvider(
             new ProviderColumnMap(
                 new ColumnReference('target.tenant_id'),
@@ -64,15 +61,15 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         ));
         $registry->registerResourceProvider(ProjectPolicyProvider::class, $project);
         $registry->registerResourceProvider(QueuePolicyProvider::class, $queue);
-        $registry->registerTargetResolver(PdoTargetResolver::class, new PdoTargetResolver($pdo));
+        $registry->registerTargetResolver(ThinkPhpTargetResolver::class, new ThinkPhpTargetResolver());
         $registry->registerTargetCatalogProvider(
-            PdoTargetCatalogProvider::class,
-            new PdoTargetCatalogProvider($pdo),
+            ThinkPhpTargetCatalogProvider::class,
+            new ThinkPhpTargetCatalogProvider(),
         );
     }
 
-    public function targetQuery(PDO $pdo): TargetQuery
+    public function targetQuery(): TargetQuery
     {
-        return new PdoTargetQuery($pdo);
+        return new ThinkPhpTargetQuery();
     }
 }

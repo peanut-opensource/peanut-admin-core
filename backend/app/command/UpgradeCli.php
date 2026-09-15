@@ -14,6 +14,7 @@ use PeanutAdmin\App\upgrade\UpgradePlan;
 use PeanutAdmin\App\upgrade\UpgradePreflight;
 use PeanutAdmin\Kernel\Module\ModuleException;
 use Throwable;
+use think\App;
 
 final class UpgradeCli
 {
@@ -42,7 +43,7 @@ final class UpgradeCli
             }
             $options = self::options($arguments);
             if ($options === null) {
-                $result = UpgradeWorkflow::fromEnvironment($root)->assertCurrentReleaseNoop();
+                $result = self::workflow($root)->assertCurrentReleaseNoop();
                 fwrite(STDOUT, json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES) . "\n");
 
                 return 0;
@@ -62,7 +63,7 @@ final class UpgradeCli
             } else {
                 $report = ExecutionReport::success(
                     $plan,
-                    UpgradeWorkflow::fromEnvironment($root)->run($plan),
+                    self::workflow($root)->run($plan),
                 );
             }
             fwrite(STDOUT, json_encode($report, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES) . "\n");
@@ -87,6 +88,12 @@ final class UpgradeCli
 
             return 1;
         }
+    }
+
+    private static function workflow(string $root): UpgradeWorkflow
+    {
+        (new App($root))->initialize();
+        return new UpgradeWorkflow($root);
     }
 
     /** @param list<string> $arguments

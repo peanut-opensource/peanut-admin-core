@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\command;
 
-use PeanutAdmin\App\notification\NotificationRuntimeFactory;
+use PeanutAdmin\App\task\TaskWorkerService;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
@@ -12,6 +12,11 @@ use think\console\Output;
 
 final class TaskWorkerCommand extends Command
 {
+    public function __construct(private readonly TaskWorkerService $workerService)
+    {
+        parent::__construct();
+    }
+
     protected function configure(): void
     {
         $this->setName('peanut:task-worker')->setDescription('Run one trusted Tenant task')->addOption('tenant', null, Option::VALUE_REQUIRED, 'Tenant ID')->addOption('worker', null, Option::VALUE_REQUIRED, 'Stable worker ID');
@@ -24,7 +29,7 @@ final class TaskWorkerCommand extends Command
         if (!is_int($tenant)) {
             throw new \InvalidArgumentException('A positive --tenant is required.');
         }
-        $status = NotificationRuntimeFactory::worker(NotificationRuntimeFactory::connection(), $tenant, $worker)->runOnce();
+        $status = $this->workerService->runOnce($tenant, $worker);
         $output->writeln($status ?? 'idle');
         return 0;
     }

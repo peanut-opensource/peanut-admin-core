@@ -6,28 +6,26 @@ namespace PeanutAdmin\Examples\ModuleContract;
 
 use DateTimeImmutable;
 use PDO;
-use PeanutAdmin\App\authorization\DataPermissionRuntimeFactory;
 use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Persistence\PdoReferenceQuery;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\PdoTargetResolver;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Persistence\PdoTargetQuery;
+use PeanutAdmin\App\Modules\Example\Reference\Contracts\ReferenceQuery;
+use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ThinkPhpTargetResolver;
 use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\CreateWorkItem;
 use PeanutAdmin\App\Modules\Example\WorkItem\Application\WorkItemCommandService;
 use PeanutAdmin\App\Modules\Example\WorkItem\Application\WorkItemPolicyPublisher;
-use PeanutAdmin\App\Modules\Example\WorkItem\Infrastructure\Persistence\PdoWorkItemQuery;
+use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemQuery;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
 use PeanutAdmin\DataPermission\Target\TargetCatalogQuery;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetSet;
 use PeanutAdmin\Kernel\Auth\TenantContext;
 use PeanutAdmin\Kernel\Auth\ValidatedTenantSession;
-use PeanutAdmin\Kernel\Membership\Application\MemberAdminService;
 use PeanutAdmin\Kernel\Module\ModuleException;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
-use PeanutAdmin\Testing\Authorization\PdoAuthorizationFixtureSeeder;
+use PeanutAdmin\Testing\Authorization\ThinkPhpAuthorizationFixtureSeeder;
 use PHPUnit\Framework\TestCase;
+use think\App;
+use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 
 final class ExampleModuleContractTest extends TestCase
 {
@@ -36,6 +34,10 @@ final class ExampleModuleContractTest extends TestCase
     private PDO $admin;
     private PDO $pdo;
     private DataPermissionEngine $authorization;
+    private App $app;
+
+    /** @var array<string, string|false> */
+    private array $originalEnvironment = [];
     private int $tenantId;
     private int $memberId;
     private int $accountId;
@@ -51,7 +53,15 @@ final class ExampleModuleContractTest extends TestCase
         $this->pdo = $this->connect(self::DATABASE);
         $connection = ThinkPhpTestConnection::fromPdo($this->pdo);
         $root = dirname(__DIR__, 2);
-        $result = (new InstallWorkflow($root, $connection))->run(
+        foreach (['DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'] as $name) {
+            $this->originalEnvironment[$name] = getenv($name);
+        }
+        putenv('DB_HOST=127.0.0.1');
+        putenv('DB_PORT=' . (getenv('MYSQL_PORT') ?: '3306'));
+        putenv('DB_DATABASE=' . self::DATABASE);
+        putenv('DB_USERNAME=root');
+        putenv('DB_PASSWORD=' . (getenv('MYSQL_ROOT_PASSWORD') ?: 'peanut_admin_root_dev'));
+        $result = (new InstallWorkflow($root))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',
@@ -73,10 +83,9 @@ final class ExampleModuleContractTest extends TestCase
         );
         $this->seedBusinessFixtures();
         $this->seedAuthorization();
-        $this->authorization = DataPermissionRuntimeFactory::create(
-            $connection,
-            $root,
-        );
+        $this->app = new App($root . '/backend');
+        $this->app->initialize();
+        $this->authorization = $this->app->make(DataPermissionEngine::class);
     }
 
     protected function tearDown(): void
@@ -84,12 +93,15 @@ final class ExampleModuleContractTest extends TestCase
         if (isset($this->admin)) {
             $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
         }
+        foreach ($this->originalEnvironment as $name => $value) {
+            $value === false ? putenv($name) : putenv("{$name}={$value}");
+        }
     }
 
     public function testTypedTargetsUnifiedReferenceAndWorkItemContracts(): void
     {
         $tenant = $this->tenantContext();
-        $resolver = new PdoTargetResolver($this->pdo);
+        $resolver = $this->app->make(DataPermissionRuntimeRegistry::class)->targetResolvers->get(ThinkPhpTargetResolver::class);
         $project = $resolver->resolveAndValidate($tenant, new TypedResourceTargetSet('example.project', ['1']));
         $queue = $resolver->resolveAndValidate($tenant, new TypedResourceTargetSet('example.queue', ['1'], 'related'));
         self::assertSame('example.project', $project->targets->sets[0]->targetResourceKey);
@@ -102,7 +114,7 @@ final class ExampleModuleContractTest extends TestCase
         );
         self::assertSame(['1', '2'], array_column($options->items, 'id'));
 
-        $query = new PdoReferenceQuery($this->pdo, $this->authorization);
+        $query = $this->app->make(ReferenceQuery::class);
         $projectA = new TypedResourceTargetCollection([new TypedResourceTargetSet('example.project', ['1'])]);
         $projectB = new TypedResourceTargetCollection([new TypedResourceTargetSet('example.project', ['2'])]);
         self::assertSame(['private-a', 'public-ref'], array_map(
@@ -118,30 +130,21 @@ final class ExampleModuleContractTest extends TestCase
             new TypedResourceTargetSet('example.project', ['1']),
             new TypedResourceTargetSet('example.queue', ['1'], 'related'),
         ]);
-        $workItemId = (new WorkItemCommandService(
-            $this->pdo,
-            $this->authorization,
-            new PdoAuditRepository($this->pdo),
-            new MemberAdminService($this->pdo),
-        ))->create(
+        $workItemId = ($this->app->make(WorkItemCommandService::class))->create(
             $tenant,
             $createTargets,
             new CreateWorkItem('1', '1', '2', 'Fixture work item'),
         );
         self::assertSame('1', $workItemId);
 
-        $page = (new PdoWorkItemQuery($this->pdo, $this->authorization, new PdoTargetQuery($this->pdo)))->list(
+        $page = ($this->app->make(WorkItemQuery::class))->list(
             $tenant,
             new TypedResourceTargetCollection([new TypedResourceTargetSet('example.project', ['1', '2'])]),
         );
         self::assertCount(1, $page->items);
         self::assertSame(1, $page->total);
 
-        $policyId = (new WorkItemPolicyPublisher(
-            $this->pdo,
-            $this->authorization,
-            new PdoAuditRepository($this->pdo),
-        ))->publish(
+        $policyId = ($this->app->make(WorkItemPolicyPublisher::class))->publish(
             $tenant,
             new TypedResourceTargetCollection([new TypedResourceTargetSet('example.project', ['1', '2'])]),
             'Fixture policy',
@@ -154,7 +157,7 @@ final class ExampleModuleContractTest extends TestCase
     public function testCategoryConfusionPrivateScopeAndBulkWriteFailClosed(): void
     {
         $tenant = $this->tenantContext();
-        $resolver = new PdoTargetResolver($this->pdo);
+        $resolver = $this->app->make(DataPermissionRuntimeRegistry::class)->targetResolvers->get(ThinkPhpTargetResolver::class);
         try {
             $resolver->resolveAndValidate($tenant, new TypedResourceTargetSet('example.queue', ['2']));
             self::fail('Project ID must not be interpreted as Queue ID.');
@@ -162,12 +165,7 @@ final class ExampleModuleContractTest extends TestCase
             self::assertSame('AUTHZ_TARGET_NOT_FOUND', $exception->errorCode);
         }
 
-        $service = new WorkItemCommandService(
-            $this->pdo,
-            $this->authorization,
-            new PdoAuditRepository($this->pdo),
-            new MemberAdminService($this->pdo),
-        );
+        $service = $this->app->make(WorkItemCommandService::class);
         try {
             $service->create(
                 $tenant,
@@ -195,7 +193,7 @@ final class ExampleModuleContractTest extends TestCase
 
     private function seedAuthorization(): void
     {
-        $seeder = new PdoAuthorizationFixtureSeeder($this->pdo);
+        $seeder = new ThinkPhpAuthorizationFixtureSeeder();
         $roleId = $seeder->roleForMember($this->tenantId, $this->memberId);
         $seeder->grantPermissions($this->tenantId, $roleId, [
             'example.target.read',

@@ -8,19 +8,20 @@ use Composer\InstalledVersions;
 use DateTimeImmutable;
 use DateTimeZone;
 use PDO;
-use PeanutAdmin\App\database\ThinkPhpConnectionFactory;
 use PeanutAdmin\App\module\ModuleRegistryFactory;
-use PeanutAdmin\App\referencecode\ReferenceCodeRuntimeFactory;
-use PeanutAdmin\App\setting\SettingsRuntimeFactory;
+use PeanutAdmin\App\referencecode\ReferenceCodeHttpService;
+use PeanutAdmin\App\referencecode\PreBootstrapReferenceCodeDefinitionSynchronizer;
+use PeanutAdmin\App\setting\PreBootstrapSettingDefinitionSynchronizer;
+use PeanutAdmin\App\setting\SettingDefinitionCatalog;
 use PeanutAdmin\App\upgrade\MigrationInventory;
 use PeanutAdmin\App\upgrade\RepositoryUpgradeTargetVerifier;
 use PeanutAdmin\App\upgrade\TargetMigrationInventory;
 use PeanutAdmin\App\upgrade\UpgradePlan;
 use PeanutAdmin\DataPermission\Package as DataPermissionPackage;
 use PeanutAdmin\Kernel\Authorization\ModuleAuthorizationCatalogSynchronizer;
-use PeanutAdmin\Kernel\Authorization\Persistence\PdoAuthorizationCatalogRepository;
+use PeanutAdmin\Kernel\Authorization\Persistence\ThinkPhpAuthorizationCatalogRepository;
 use PeanutAdmin\Kernel\Menu\MenuCatalogSynchronizer;
-use PeanutAdmin\Kernel\Menu\PdoMenuCatalogRepository;
+use PeanutAdmin\Kernel\Menu\ThinkPhpMenuCatalogRepository;
 use PeanutAdmin\Kernel\Migration\MigrationRecord;
 use PeanutAdmin\Kernel\Migration\ModuleMigrationLedger;
 use PeanutAdmin\Kernel\Module\CompiledModuleRegistry;
@@ -33,6 +34,7 @@ use Phinx\Migration\MigrationInterface;
 use RuntimeException;
 use think\console\Input;
 use think\db\PDOConnection;
+use think\facade\Db;
 use think\migration\NullOutput;
 use Throwable;
 
@@ -40,18 +42,19 @@ final readonly class UpgradeWorkflow
 {
     private PDO $pdo;
 
-    public function __construct(
-        private string $root,
-        private PDOConnection $connection,
-    ) {
-        $this->pdo = $connection->connect();
+    public function __construct(private string $root) {
+        $connection = Db::connect();
+        if (!$connection instanceof PDOConnection) {
+            throw new RuntimeException('DATABASE_CONNECTION_UNSUPPORTED');
+        }
+        // Install/upgrade is the explicit driver-level boundary used by Phinx.
+        $pdo = $connection->connect();
+        if (!$pdo instanceof PDO) {
+            throw new RuntimeException('DATABASE_CONNECTION_UNAVAILABLE');
+        }
+        $this->pdo = $pdo;
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    }
-
-    public static function fromEnvironment(string $root): self
-    {
-        return new self($root, ThinkPhpConnectionFactory::fromEnvironment($root));
     }
 
     /**
@@ -191,14 +194,20 @@ final readonly class UpgradeWorkflow
             $applied += $this->applyModulePlan($registry->modules[$index], $plan, $batch);
         }
         (new ModuleAuthorizationCatalogSynchronizer(
-            new PdoAuthorizationCatalogRepository($this->pdo),
+            new ThinkPhpAuthorizationCatalogRepository(),
         ))->synchronize($registry);
-        (new MenuCatalogSynchronizer(new PdoMenuCatalogRepository($this->pdo)))->synchronize($registry);
+        (new MenuCatalogSynchronizer(new ThinkPhpMenuCatalogRepository()))->synchronize($registry);
         if ($this->tableExists('pa_setting_definition')) {
-            SettingsRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
+            (new PreBootstrapSettingDefinitionSynchronizer())->synchronize(
+                (new SettingDefinitionCatalog())->fromModules($registry),
+                new DateTimeImmutable('now'),
+            );
         }
         if ($this->tableExists('pa_reference_code_set')) {
-            ReferenceCodeRuntimeFactory::synchronizeDefinitions($this->connection, $registry, new DateTimeImmutable('now'));
+            (new PreBootstrapReferenceCodeDefinitionSynchronizer())->synchronize(
+                ReferenceCodeHttpService::definitionRegistry($registry),
+                new DateTimeImmutable('now'),
+            );
         }
 
         return [
@@ -364,7 +373,7 @@ SQL);
     private function assertDefinitionState(CompiledModuleRegistry $registry): void
     {
         $expectedSettings = [];
-        foreach (SettingsRuntimeFactory::definitionRegistry($registry)->all() as $definition) {
+        foreach ((new SettingDefinitionCatalog())->fromModules($registry)->all() as $definition) {
             $expectedSettings[$definition->qualifiedKey()] = $definition->digest . ':active';
         }
         $this->assertDefinitionRows(
@@ -375,7 +384,7 @@ SQL);
         );
 
         $expectedReferenceCodes = [];
-        foreach (ReferenceCodeRuntimeFactory::definitionRegistry($registry)->all() as $definition) {
+        foreach (ReferenceCodeHttpService::definitionRegistry($registry)->all() as $definition) {
             $expectedReferenceCodes[$definition->qualifiedKey()] = $definition->digest . ':active';
         }
         $this->assertDefinitionRows(

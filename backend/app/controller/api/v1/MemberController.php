@@ -13,6 +13,8 @@ use think\Response;
 
 final class MemberController
 {
+    public function __construct(private readonly MemberAdminService $members) {}
+
     #[OpenApiHandlerContract]
     public function index(Request $request): Response
     {
@@ -55,13 +57,10 @@ final class MemberController
             $context = MemberAdminRuntime::context($request);
             $body = MemberAdminRuntime::body($request);
             $member = $this->service()->createPending(
-                $context->tenantId,
+                $context,
                 (string) ($body['email'] ?? ''),
                 (string) ($body['display_name'] ?? ''),
                 isset($body['initial_password']) ? (string) $body['initial_password'] : null,
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return [
@@ -82,7 +81,7 @@ final class MemberController
             $service = $this->service();
             $current = $service->get($context->tenantId, (int) $memberId);
             $member = $service->update(
-                $context->tenantId,
+                $context,
                 (int) $memberId,
                 array_key_exists('display_name', $body)
                     ? ($body['display_name'] === null ? null : (string) $body['display_name'])
@@ -91,9 +90,6 @@ final class MemberController
                     ? ($body['primary_department_id'] === null ? null : (int) $body['primary_department_id'])
                     : ($current['primary_department_id'] === null ? null : (int) $current['primary_department_id']),
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $member, 'etag' => Etag::format((int) $member['revision'])];
@@ -114,13 +110,10 @@ final class MemberController
                 );
             }
             $member = $this->service()->replaceRoles(
-                $context->tenantId,
+                $context,
                 (int) $memberId,
                 array_values(array_map(static fn(mixed $id): int => (int) $id, $rawRoleIds)),
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $member, 'etag' => Etag::format((int) $member['revision'])];
@@ -150,12 +143,9 @@ final class MemberController
         return MemberAdminRuntime::run($request, function () use ($request, $memberId, $operation): array {
             $context = MemberAdminRuntime::context($request);
             $arguments = [
-                $context->tenantId,
+                $context,
                 (int) $memberId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             ];
             $service = $this->service();
             $member = match ($operation) {
@@ -170,6 +160,6 @@ final class MemberController
 
     private function service(): MemberAdminService
     {
-        return new MemberAdminService(MemberAdminRuntime::pdo());
+        return $this->members;
     }
 }

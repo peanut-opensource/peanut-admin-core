@@ -6,6 +6,7 @@ namespace PeanutAdmin\App\http;
 
 use PeanutAdmin\App\middleware\RequestIdMiddleware;
 use PeanutAdmin\DataPermission\Exception\DataAuthorizationException;
+use PeanutAdmin\FileMedia\Application\FileMediaException;
 use PeanutAdmin\Kernel\Api\ApiException;
 use PeanutAdmin\Kernel\Api\ProblemDetails;
 use PeanutAdmin\Kernel\Api\RequestId;
@@ -13,6 +14,7 @@ use PeanutAdmin\Kernel\Auth\AuthException;
 use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
 use PeanutAdmin\Kernel\Authorization\AuthorizationException;
 use PeanutAdmin\Kernel\Module\ModuleException;
+use PeanutAdmin\Settings\Application\SettingException;
 use think\exception\Handle;
 use think\exception\HttpException;
 use think\Request;
@@ -60,6 +62,23 @@ final class ApiExceptionHandler extends Handle
                 'AUTHZ_DATA_DENIED',
                 404,
                 'The requested resource does not exist or is not accessible.',
+            ),
+            $exception instanceof FileMediaException => new ApiException(
+                $exception->errorCode,
+                $exception->httpStatus,
+                $exception->getMessage(),
+            ),
+            $exception instanceof SettingException => new ApiException(
+                $exception->errorCode,
+                $exception->httpStatus,
+                match ($exception->httpStatus) {
+                    404 => 'The requested setting is unavailable.',
+                    412 => 'The setting revision has changed.',
+                    422 => 'The setting request is invalid.',
+                    428 => 'A strong setting precondition is required.',
+                    503 => 'The settings service is unavailable.',
+                    default => 'The setting request could not be completed.',
+                },
             ),
             $exception instanceof ModuleException => new ApiException(
                 $exception->errorCode,

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace PeanutAdmin\Tests\Recovery;
 
 use PDO;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\PdoTargetResolver;
-use PeanutAdmin\Kernel\Auth\Persistence\PdoTenantAuthRepository;
+use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ThinkPhpTargetResolver;
+use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
+use PeanutAdmin\Kernel\Auth\Persistence\ThinkPhpTenantAuthRepository;
 use PeanutAdmin\Kernel\Auth\SystemClock;
 use PeanutAdmin\Kernel\Auth\TenantAuthentication;
 use PeanutAdmin\Kernel\Auth\TenantAuthService;
@@ -14,7 +15,6 @@ use PeanutAdmin\Kernel\Auth\TenantSelectionRequired;
 use PeanutAdmin\Kernel\Auth\TokenIssuer;
 use PeanutAdmin\Kernel\Identity\PasswordHasher;
 use PeanutAdmin\Kernel\Module\ModuleException;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetSet;
 use PHPUnit\Framework\TestCase;
 
@@ -41,9 +41,9 @@ final class RecoveryAcceptanceTest extends TestCase
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ],
         );
+        ThinkPhpTestConnection::fromPdo($this->pdo);
         $this->auth = new TenantAuthService(
-            new PdoTransactionManager($this->pdo),
-            new PdoTenantAuthRepository($this->pdo),
+            new ThinkPhpTenantAuthRepository(),
             new PasswordHasher(),
             new SystemClock(),
             new TokenIssuer(),
@@ -82,7 +82,7 @@ final class RecoveryAcceptanceTest extends TestCase
         $alphaProjectId = (string) $this->pdo
             ->query("SELECT id FROM pa_example_project WHERE code = 'alpha-project'")
             ->fetchColumn();
-        $resolver = new PdoTargetResolver($this->pdo);
+        $resolver = new ThinkPhpTargetResolver();
         self::assertSame(
             $alphaProjectId,
             $resolver->resolveAndValidate(

@@ -55,9 +55,9 @@ final class InstallWorkflowIntegrationTest extends TestCase
             $root . '/profiles/reference-admin.json',
             $root . '/schemas/product-profile.schema.json',
         );
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
         $workflow = new InstallWorkflow(
             $root,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
         );
 
         $result = $workflow->run(

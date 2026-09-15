@@ -150,9 +150,9 @@ final class SettingsUpgradeTest extends TestCase
 
     public function testUpgradeInstallsAndSynchronizesSettingsIdempotently(): void
     {
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
         $workflow = new UpgradeWorkflow(
             dirname(__DIR__, 3),
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
         );
 
         $first = $workflow->installEmptyDatabase();
@@ -242,9 +242,9 @@ SQL));
                 static fn(string $value): string => strstr($value, ':', true) ?: $value,
                 $preUpgradeTableSignatures,
             );
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
             $upgrade = (new UpgradeWorkflow(
                 $targetRoot,
-                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
             ))
                 ->run($this->upgradePlan($targetRoot, $oldRoot));
             self::assertSame(13, $upgrade['applied_module_migrations']);
@@ -654,7 +654,7 @@ if ($mode === 'install') {
         $oldRoot . '/profiles/reference-admin.json',
         $oldRoot . '/schemas/product-profile.schema.json',
     );
-    $result = (new InstallWorkflow($oldRoot, $pdo))->run(
+    $result = (new InstallWorkflow($oldRoot))->run(
         $profile,
         requiredEnvironment('OLD_LOCK_FIXTURE_EMAIL'),
         requiredEnvironment('OLD_LOCK_FIXTURE_PASSWORD'),

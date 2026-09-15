@@ -941,7 +941,6 @@ paths:
       x-handler: 'PeanutAdmin\App\controller\api\v1\SettingsController::replaceTenantSetting'
       x-module-key: peanut.settings
       x-permission: peanut.settings.manage
-      x-host-atomic-idempotency: true
       parameters:
         - { $ref: '#/components/parameters/IfMatchOptional' }
         - { $ref: '#/components/parameters/IfNoneMatchAny' }
@@ -958,7 +957,6 @@ paths:
       x-handler: 'PeanutAdmin\App\controller\api\v1\SettingsController::unsetTenantSetting'
       x-module-key: peanut.settings
       x-permission: peanut.settings.manage
-      x-host-atomic-idempotency: true
       parameters:
         - { $ref: '#/components/parameters/IfMatch' }
         - { $ref: '#/components/parameters/IdempotencyKey' }
@@ -1292,7 +1290,6 @@ paths:
       summary: replaceDeploymentSetting
       x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformSettingsController::replaceDeploymentSetting'
       x-permission: platform.settings.manage
-      x-host-atomic-idempotency: true
       parameters:
         - { $ref: '#/components/parameters/IfMatchOptional' }
         - { $ref: '#/components/parameters/IfNoneMatchAny' }
@@ -1308,7 +1305,6 @@ paths:
       summary: unsetDeploymentSetting
       x-handler: 'PeanutAdmin\App\controller\api\platform\v1\PlatformSettingsController::unsetDeploymentSetting'
       x-permission: platform.settings.manage
-      x-host-atomic-idempotency: true
       parameters:
         - { $ref: '#/components/parameters/IfMatch' }
         - { $ref: '#/components/parameters/IdempotencyKey' }

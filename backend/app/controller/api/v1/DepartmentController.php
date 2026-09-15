@@ -12,6 +12,8 @@ use think\Response;
 
 final class DepartmentController
 {
+    public function __construct(private readonly DepartmentAdminService $departments) {}
+
     #[OpenApiHandlerContract]
     public function index(Request $request): Response
     {
@@ -53,14 +55,11 @@ final class DepartmentController
             $context = MemberAdminRuntime::context($request);
             $body = MemberAdminRuntime::body($request);
             $department = $this->service()->create(
-                $context->tenantId,
+                $context,
                 (string) ($body['code'] ?? ''),
                 (string) ($body['name'] ?? ''),
                 isset($body['parent_id']) ? (int) $body['parent_id'] : null,
                 (int) ($body['sort_order'] ?? 0),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return [
@@ -79,15 +78,12 @@ final class DepartmentController
             $context = MemberAdminRuntime::context($request);
             $body = MemberAdminRuntime::body($request);
             $department = $this->service()->update(
-                $context->tenantId,
+                $context,
                 (int) $departmentId,
                 (string) ($body['code'] ?? ''),
                 (string) ($body['name'] ?? ''),
                 (int) ($body['sort_order'] ?? 0),
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $department, 'etag' => Etag::format((int) $department['revision'])];
@@ -101,13 +97,10 @@ final class DepartmentController
             $context = MemberAdminRuntime::context($request);
             $body = MemberAdminRuntime::body($request);
             $department = $this->service()->move(
-                $context->tenantId,
+                $context,
                 (int) $departmentId,
                 isset($body['parent_id']) ? (int) $body['parent_id'] : null,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $department, 'etag' => Etag::format((int) $department['revision'])];
@@ -120,12 +113,9 @@ final class DepartmentController
         return MemberAdminRuntime::run($request, function () use ($request, $departmentId): array {
             $context = MemberAdminRuntime::context($request);
             $department = $this->service()->archive(
-                $context->tenantId,
+                $context,
                 (int) $departmentId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $department, 'etag' => Etag::format((int) $department['revision'])];
@@ -134,6 +124,6 @@ final class DepartmentController
 
     private function service(): DepartmentAdminService
     {
-        return new DepartmentAdminService(MemberAdminRuntime::pdo());
+        return $this->departments;
     }
 }

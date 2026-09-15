@@ -6,18 +6,21 @@ namespace PeanutAdmin\App\middleware;
 
 use Closure;
 use PeanutAdmin\Kernel\Auth\AuthException;
+use PeanutAdmin\Kernel\Auth\PlatformAuthService;
 use think\Request;
 use think\Response;
 
 final class PlatformGuard
 {
+    public function __construct(private readonly PlatformAuthService $auth) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         $authorization = $request->header('authorization');
         if (!is_string($authorization) || !str_starts_with($authorization, 'Bearer ')) {
             throw new AuthException('AUTH_TOKEN_INVALID', 401);
         }
-        $context = PlatformAuthRuntimeFactory::create()->context(
+        $context = $this->auth->context(
             substr($authorization, 7),
             RequestIdMiddleware::current($request),
         );

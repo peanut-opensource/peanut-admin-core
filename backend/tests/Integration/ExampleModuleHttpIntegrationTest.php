@@ -7,9 +7,9 @@ namespace PeanutAdmin\App\Tests\Integration;
 use PDO;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\middleware\TenantAuthRuntimeFactory;
 use PeanutAdmin\Kernel\Auth\TenantAuthentication;
-use PeanutAdmin\Testing\Authorization\PdoAuthorizationFixtureSeeder;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
+use PeanutAdmin\Testing\Authorization\ThinkPhpAuthorizationFixtureSeeder;
 use PHPUnit\Framework\TestCase;
 use think\App;
 use think\Request;
@@ -65,9 +65,9 @@ final class ExampleModuleHttpIntegrationTest extends TestCase
 
         $root = dirname(__DIR__, 3);
         $password = 'Example-Http-P0-Only-2026!';
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo);
         $installation = (new InstallWorkflow(
             $root,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
         ))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
@@ -87,7 +87,9 @@ final class ExampleModuleHttpIntegrationTest extends TestCase
         $this->memberId = (int) $installation['tenant']['owner_member_id'];
         $this->seedExampleData();
         $this->seedAuthorization();
-        $authentication = TenantAuthRuntimeFactory::create(pdo: $this->pdo)->login(
+        $app = new App($root . '/backend');
+        $app->initialize();
+        $authentication = $app->make(TenantAuthService::class)->login(
             'http-owner@example.test',
             $password,
             'http-test',
@@ -256,7 +258,7 @@ SQL);
 
     private function seedAuthorization(): void
     {
-        $seeder = new PdoAuthorizationFixtureSeeder($this->pdo);
+        $seeder = new ThinkPhpAuthorizationFixtureSeeder();
         $roleId = $seeder->roleForMember($this->tenantId, $this->memberId);
         $seeder->grantPermissions($this->tenantId, $roleId, [
             'example.reference.use',

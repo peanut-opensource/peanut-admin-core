@@ -4,36 +4,32 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\Tests\Integration;
 
-use DateTimeImmutable;
 use PDO;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\filemedia\FileDeliveryHttpRuntime;
-use PeanutAdmin\App\filemedia\FileRuntimeFactory;
-use PeanutAdmin\App\filemedia\LocalPrivateStorageProvider;
-use PeanutAdmin\App\module\RuntimeModuleRegistry;
-use PeanutAdmin\Kernel\Auth\TenantContext;
-use PeanutAdmin\Kernel\Auth\ValidatedTenantSession;
+use PeanutAdmin\Kernel\Auth\TenantAuthentication;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
+use think\App;
 use think\Request;
 use think\Response;
-use think\db\PDOConnection;
 
 final class FileMediaModuleIntegrationTest extends TestCase
 {
     private const DATABASE = 'peanut_admin_c02_file_media_host_test';
+    private const EMAIL = 'file-owner@example.test';
+    private const PASSWORD = 'File-Media-C02-2026!';
 
     private PDO $admin;
     private PDO $pdo;
-    private PDOConnection $connection;
     private int $tenantId;
     private int $memberId;
-    private int $accountId;
     private string $storageRoot;
     private string $uploadPath;
+    private string $accessToken;
 
     /** @var array<string, string|false> */
     private array $originalEnvironment = [];
@@ -71,7 +67,6 @@ final class FileMediaModuleIntegrationTest extends TestCase
                 PDO::ATTR_EMULATE_PREPARES => false,
             ],
         );
-        $this->connection = \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo);
         foreach ([
             'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD', 'AUTH_IDENTIFIER_HMAC_KEY',
             'FILE_MEDIA_STORAGE_ROOT', 'FILE_MEDIA_DELIVERY_BASE_URL', 'FILE_MEDIA_DELIVERY_SIGNING_KEY',
@@ -84,40 +79,47 @@ final class FileMediaModuleIntegrationTest extends TestCase
         putenv('DB_USERNAME=root');
         putenv("DB_PASSWORD={$password}");
         putenv('AUTH_IDENTIFIER_HMAC_KEY=file-media-host-integration-key');
+        $this->storageRoot = sys_get_temp_dir() . '/peanut-file-media-host-' . bin2hex(random_bytes(8));
+        putenv('FILE_MEDIA_STORAGE_ROOT=' . $this->storageRoot);
+        putenv('FILE_MEDIA_DELIVERY_BASE_URL=https://peanut-admin.test');
+        putenv('FILE_MEDIA_DELIVERY_SIGNING_KEY=' . str_repeat('s', 32));
 
         $root = dirname(__DIR__, 3);
+        $app = new App($root . '/backend');
+        $app->initialize();
         $installation = (new InstallWorkflow(
             $root,
-            $this->connection,
         ))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',
             ),
-            'file-owner@example.test',
-            'File-Media-C02-2026!',
+            self::EMAIL,
+            self::PASSWORD,
             'File Owner',
             [
                 'code' => 'file-media-host',
                 'name' => 'File Media Host',
-                'owner_email' => 'file-owner@example.test',
+                'owner_email' => self::EMAIL,
                 'owner_name' => 'File Owner',
             ],
         );
         $this->tenantId = (int) $installation['tenant']['tenant_id'];
         $this->memberId = (int) $installation['tenant']['owner_member_id'];
-        $this->accountId = (int) $this->scalar(
-            'SELECT account_id FROM pa_tenant_member WHERE tenant_id = ? AND id = ?',
-            [$this->tenantId, $this->memberId],
-        );
         $this->grantPermissions();
-        $this->storageRoot = sys_get_temp_dir() . '/peanut-file-media-host-' . bin2hex(random_bytes(8));
-        putenv('FILE_MEDIA_STORAGE_ROOT=' . $this->storageRoot);
-        putenv('FILE_MEDIA_DELIVERY_BASE_URL=https://peanut-admin.test');
-        putenv('FILE_MEDIA_DELIVERY_SIGNING_KEY=' . str_repeat('s', 32));
         $this->uploadPath = tempnam(sys_get_temp_dir(), 'peanut-file-http-')
             ?: throw new RuntimeException('Could not create the File/Media upload fixture.');
         file_put_contents($this->uploadPath, "host multipart bytes\n");
+        $authentication = $app->make(TenantAuthService::class)->login(
+            self::EMAIL,
+            self::PASSWORD,
+            'file-media-host',
+            '127.0.0.1',
+            'File Media integration',
+            'req_file_media_login_0001',
+        );
+        self::assertInstanceOf(TenantAuthentication::class, $authentication);
+        $this->accessToken = $authentication->tokens->access->expose();
     }
 
     protected function tearDown(): void
@@ -134,17 +136,12 @@ final class FileMediaModuleIntegrationTest extends TestCase
 
     public function testMultipartLifecycleHeadersTenantScopeAndAuditRedaction(): void
     {
-        $created = FileRuntimeFactory::upload(
-            $this->request(
+        $created = $this->http($this->request(
                 'POST',
                 '/api/v1/files',
                 'req_file_create_0001',
                 files: $this->uploadFiles('../private report.txt'),
-            ),
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-            $this->storage(),
-        );
+            ));
         self::assertSame(201, $created->getCode(), json_encode($created->getData(), JSON_THROW_ON_ERROR));
         $file = $created->getData()['data'] ?? null;
         self::assertIsArray($file);
@@ -162,21 +159,15 @@ final class FileMediaModuleIntegrationTest extends TestCase
             self::assertArrayNotHasKey($forbidden, $file);
         }
 
-        $list = FileRuntimeFactory::list(
-            $this->request('GET', '/api/v1/files', 'req_file_list_0001', query: ['page' => '1', 'page_size' => '20']),
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-        );
+        $list = $this->http($this->request(
+            'GET', '/api/v1/files', 'req_file_list_0001', query: ['page' => '1', 'page_size' => '20'],
+        ));
         self::assertSame(200, $list->getCode());
         self::assertSame($fileKey, $list->getData()['data']['items'][0]['file_key'] ?? null);
 
-        $download = FileRuntimeFactory::download(
-            $this->request('GET', "/api/v1/files/{$fileKey}/content", 'req_file_download_0001'),
-            $fileKey,
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-            $this->storage(),
-        );
+        $download = $this->http($this->request(
+            'GET', "/api/v1/files/{$fileKey}/content", 'req_file_download_0001',
+        ));
         self::assertSame(200, $download->getCode());
         self::assertSame("host multipart bytes\n", $download->getContent());
         self::assertSame('text/plain', $download->getHeader('Content-Type'));
@@ -184,12 +175,9 @@ final class FileMediaModuleIntegrationTest extends TestCase
         self::assertSame('private, no-store', $download->getHeader('Cache-Control'));
         self::assertStringStartsWith('attachment; filename="private_report.txt";', $download->getHeader('Content-Disposition'));
 
-        $archived = FileRuntimeFactory::archive(
-            $this->request('DELETE', "/api/v1/files/{$fileKey}", 'req_file_archive_0001', headers: ['if-match' => '"rev-1"']),
-            $fileKey,
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-        );
+        $archived = $this->http($this->request(
+            'DELETE', "/api/v1/files/{$fileKey}", 'req_file_archive_0001', headers: ['if-match' => '"rev-1"'],
+        ));
         self::assertSame(200, $archived->getCode());
         self::assertSame('archived', $archived->getData()['data']['status'] ?? null);
         self::assertSame('"rev-2"', $archived->getHeader('ETag'));
@@ -198,13 +186,9 @@ final class FileMediaModuleIntegrationTest extends TestCase
             $archived->getData()['data']['archived_at'] ?? '',
         );
 
-        $denied = FileRuntimeFactory::download(
-            $this->request('GET', "/api/v1/files/{$fileKey}/content", 'req_file_archived_download_0001'),
-            $fileKey,
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-            $this->storage(),
-        );
+        $denied = $this->http($this->request(
+            'GET', "/api/v1/files/{$fileKey}/content", 'req_file_archived_download_0001',
+        ));
         self::assertSame(404, $denied->getCode());
         self::assertSame('FILE_NOT_FOUND', $denied->getData()['code'] ?? null);
         self::assertSame(3, (int) $this->scalar(<<<'SQL'
@@ -228,77 +212,55 @@ JOIN pa_permission permission ON permission.id = role_permission.permission_id
 WHERE role_permission.tenant_id = {$this->tenantId}
   AND permission.`key` = 'peanut.file-media.read'
 SQL);
-        $denied = FileRuntimeFactory::list(
-            $this->request('GET', '/api/v1/files', 'req_file_permission_denied_0001'),
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-        );
+        $denied = $this->http($this->request('GET', '/api/v1/files', 'req_file_permission_denied_0001'));
         self::assertSame(403, $denied->getCode());
         self::assertSame('AUTHZ_PERMISSION_DENIED', $denied->getData()['code'] ?? null);
 
-        $wrongAudience = FileRuntimeFactory::list(
-            $this->request('GET', '/api/v1/files', 'req_file_wrong_audience_0001', trustedContext: false),
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-        );
+        $wrongAudience = $this->http($this->request(
+            'GET', '/api/v1/files', 'req_file_wrong_audience_0001', trustedContext: false,
+        ));
         self::assertSame(401, $wrongAudience->getCode());
 
-        $undeclared = FileRuntimeFactory::upload(
-            $this->request(
+        $undeclared = $this->http($this->request(
                 'POST',
                 '/api/v1/files',
                 'req_file_undeclared_0001',
                 body: ['tenant_id' => 99],
                 files: $this->uploadFiles('report.txt'),
-            ),
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-            $this->storage(),
-        );
+            ));
         self::assertSame(422, $undeclared->getCode());
         self::assertSame('FILE_UPLOAD_INVALID', $undeclared->getData()['code'] ?? null);
         self::assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM pa_file_object'));
 
         $this->grantPermissions();
 
-        $unknown = FileRuntimeFactory::detail(
-            $this->request('GET', '/api/v1/files/file_' . str_repeat('f', 32), 'req_file_unknown_0001'),
-            'file_' . str_repeat('f', 32),
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-        );
-        $malformed = FileRuntimeFactory::detail(
-            $this->request('GET', '/api/v1/files/not-a-key', 'req_file_malformed_0001'),
-            'not-a-key',
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-        );
+        $unknown = $this->http($this->request(
+            'GET', '/api/v1/files/file_' . str_repeat('f', 32), 'req_file_unknown_0001',
+        ));
+        $malformed = $this->http($this->request(
+            'GET', '/api/v1/files/not-a-key', 'req_file_malformed_0001',
+        ));
         self::assertSame(404, $unknown->getCode());
         self::assertSame($unknown->getData()['code'] ?? null, $malformed->getData()['code'] ?? null);
     }
 
     public function testSignedDeliveryNeedsNoBearerAndIsAuditedAsSingleUseTenantSystemWork(): void
     {
-        $created = FileRuntimeFactory::upload(
-            $this->request(
+        $created = $this->http($this->request(
                 'POST',
                 '/api/v1/files',
                 'req_file_delivery_create_0001',
                 files: $this->uploadFiles('preview.txt'),
-            ),
-            $this->connection,
-            RuntimeModuleRegistry::compile(),
-            $this->storage(),
-        );
+            ));
         self::assertSame(201, $created->getCode());
         $fileKey = $created->getData()['data']['file_key'] ?? null;
         self::assertIsString($fileKey);
 
-        $grant = FileDeliveryHttpRuntime::grant($this->request(
+        $grant = $this->http($this->request(
             'POST',
             "/api/v1/files/{$fileKey}/delivery-grants",
             'req_file_delivery_grant_0001',
-        ), $fileKey, $this->connection);
+        ));
         self::assertSame(201, $grant->getCode(), json_encode($grant->getData(), JSON_THROW_ON_ERROR));
         $uri = $grant->getData()['data']['delivery_uri'] ?? null;
         self::assertIsString($uri);
@@ -313,7 +275,7 @@ SQL);
             trustedContext: false,
         );
         self::assertNull($deliveryRequest->header('authorization'));
-        $delivery = FileDeliveryHttpRuntime::deliver($deliveryRequest, $fileKey, $this->connection);
+        $delivery = $this->http($deliveryRequest);
         self::assertSame(200, $delivery->getCode(), json_encode($delivery->getData(), JSON_THROW_ON_ERROR));
         self::assertSame("host multipart bytes\n", $delivery->getContent());
         self::assertSame('tenant_system', $this->scalar(<<<'SQL'
@@ -321,7 +283,7 @@ SELECT actor_type FROM pa_tenant_audit_event
 WHERE tenant_id = ? AND event_type = 'tenant.file.delivered' AND request_id = ?
 SQL, [$this->tenantId, 'req_file_delivery_public_0001']));
 
-        $replay = FileDeliveryHttpRuntime::deliver($deliveryRequest, $fileKey, $this->connection);
+        $replay = $this->http($deliveryRequest);
         self::assertSame(403, $replay->getCode());
         self::assertSame('FILE_DELIVERY_DENIED', $replay->getData()['code'] ?? null);
     }
@@ -339,17 +301,12 @@ BEGIN
 END
 SQL);
         try {
-            $response = FileRuntimeFactory::upload(
-                $this->request(
+            $response = $this->http($this->request(
                     'POST',
                     '/api/v1/files',
                     'req_file_audit_failure_0001',
                     files: $this->uploadFiles('report.txt'),
-                ),
-                $this->connection,
-                RuntimeModuleRegistry::compile(),
-                $this->storage(),
-            );
+                ));
         } finally {
             $this->pdo->exec('DROP TRIGGER IF EXISTS fail_file_media_created_audit');
         }
@@ -358,16 +315,6 @@ SQL);
         self::assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM pa_file_object'));
         self::assertSame([], $this->storedFiles());
         self::assertStringNotContainsString('synthetic audit failure', json_encode($response->getData(), JSON_THROW_ON_ERROR));
-    }
-
-    private function storage(): LocalPrivateStorageProvider
-    {
-        $root = dirname(__DIR__, 3);
-
-        return new LocalPrivateStorageProvider($this->storageRoot, [
-            $root . '/backend/public',
-            $root . '/frontend',
-        ]);
     }
 
     /**
@@ -402,28 +349,31 @@ SQL);
                 'accept' => 'application/json',
                 'content-type' => $files === [] ? 'application/json' : 'multipart/form-data',
                 'x-request-id' => $requestId,
+                ...($trustedContext ? ['authorization' => 'Bearer ' . $this->accessToken] : []),
                 ...$headers,
             ]);
         if ($body !== []) {
             $request->withInput(json_encode($body, JSON_THROW_ON_ERROR));
         }
-        if (!$trustedContext) {
-            return $request;
-        }
+        return $request;
+    }
 
-        return $request->withRoute(['tenant_context' => TenantContext::fromValidatedSession(
-            new ValidatedTenantSession(
-                1,
-                'file-media-session',
-                $this->tenantId,
-                $this->accountId,
-                $this->memberId,
-                'admin-web',
-                new DateTimeImmutable('2030-01-01T00:00:00.000Z'),
-                1,
-            ),
-            $requestId,
-        )]);
+    private function http(Request $request): Response
+    {
+        $outputLevel = ob_get_level();
+        $app = new App(dirname(__DIR__, 3) . '/backend');
+        $http = $app->http;
+        try {
+            $response = $http->run($request);
+            $http->end($response);
+            return $response;
+        } finally {
+            while (ob_get_level() > $outputLevel) {
+                ob_end_clean();
+            }
+            restore_error_handler();
+            restore_exception_handler();
+        }
     }
 
     private function grantPermissions(): void

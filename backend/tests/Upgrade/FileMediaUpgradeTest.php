@@ -53,9 +53,9 @@ final class FileMediaUpgradeTest extends TestCase
 
     public function testCleanUpgradeAndRepeatedUpgradeKeepFileMediaCoexisting(): void
     {
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo);
         $workflow = new UpgradeWorkflow(
             dirname(__DIR__, 3),
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
         );
         $first = $workflow->installEmptyDatabase();
         $second = $workflow->assertCurrentReleaseNoop();

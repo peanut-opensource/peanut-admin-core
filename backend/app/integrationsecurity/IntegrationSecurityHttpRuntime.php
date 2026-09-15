@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\integrationsecurity;
 
 use DateTimeImmutable;
-use PDO;
-use PeanutAdmin\App\controller\api\v1\MemberAdminRuntime;
 use PeanutAdmin\App\http\TenantModuleRuntime;
-use PeanutAdmin\App\module\RuntimeModuleRegistry;
 use PeanutAdmin\IntegrationSecurity\Application\IntegrationSecurityException;
 use PeanutAdmin\IntegrationSecurity\Application\MachineIdentity;
+use PeanutAdmin\IntegrationSecurity\Application\MachineIdentityService;
 use PeanutAdmin\IntegrationSecurity\Application\SessionDevice;
+use PeanutAdmin\IntegrationSecurity\Application\SessionSecurityService;
+use PeanutAdmin\IntegrationSecurity\Application\WebhookDeliveryLogService;
 use PeanutAdmin\IntegrationSecurity\Application\WebhookEndpoint;
+use PeanutAdmin\IntegrationSecurity\Application\WebhookService;
 use PeanutAdmin\Kernel\Api\ApiException;
 use PeanutAdmin\Kernel\Host\ExternalOperationResponse;
 use PeanutAdmin\Kernel\Host\ExternalOperationResult;
@@ -21,107 +22,114 @@ use think\Response;
 
 final class IntegrationSecurityHttpRuntime
 {
-    public static function machines(Request $request): Response
+    public function __construct(
+        private readonly MachineIdentityService $machines,
+        private readonly WebhookService $webhooks,
+        private readonly WebhookDeliveryLogService $deliveries,
+        private readonly SessionSecurityService $sessions,
+        private readonly TenantModuleRuntime $runtime,
+    ) {}
+
+    public function machines(Request $request): Response
     {
-        return self::read($request, 'listMachineIdentities', '/api/v1/integration-security/machine-identities', 'machine.read', 'machine-read', static fn(PDO $pdo, $context) => array_map(self::machine(...), IntegrationSecurityRuntimeFactory::machines($pdo)->list($context)));
+        return $this->read($request, 'listMachineIdentities', '/api/v1/integration-security/machine-identities', 'machine.read', 'machine-read', fn($context) => array_map(self::machine(...), $this->machines->list($context)));
     }
-    public static function webhooks(Request $request): Response
+    public function webhooks(Request $request): Response
     {
-        return self::read($request, 'listWebhookEndpoints', '/api/v1/integration-security/webhooks', 'webhook.read', 'webhook-read', static fn(PDO $pdo, $context) => array_map(self::webhook(...), IntegrationSecurityRuntimeFactory::webhooks($pdo)->list($context)));
+        return $this->read($request, 'listWebhookEndpoints', '/api/v1/integration-security/webhooks', 'webhook.read', 'webhook-read', fn($context) => array_map(self::webhook(...), $this->webhooks->list($context)));
     }
-    public static function sessions(Request $request): Response
+    public function sessions(Request $request): Response
     {
-        return self::read($request, 'listIntegrationSessions', '/api/v1/integration-security/sessions', 'session.read', 'session-read', static fn(PDO $pdo, $context) => array_map(self::session(...), IntegrationSecurityRuntimeFactory::sessions($pdo)->list($context)));
+        return $this->read($request, 'listIntegrationSessions', '/api/v1/integration-security/sessions', 'session.read', 'session-read', fn($context) => array_map(self::session(...), $this->sessions->list($context)));
     }
 
-    public static function deliveries(Request $request): Response
+    public function deliveries(Request $request): Response
     {
-        return self::page($request, 'listWebhookDeliveries', '/api/v1/integration-security/deliveries', static fn(PDO $pdo, $context, int $page, int $size) => IntegrationSecurityRuntimeFactory::deliveries($pdo)->deliveries($context, $page, $size));
+        return $this->page($request, 'listWebhookDeliveries', '/api/v1/integration-security/deliveries', fn($context, int $page, int $size) => $this->deliveries->deliveries($context, $page, $size));
     }
 
-    public static function attempts(Request $request, string $deliveryKey): Response
+    public function attempts(Request $request, string $deliveryKey): Response
     {
-        return self::page($request, 'listWebhookDeliveryAttempts', '/api/v1/integration-security/deliveries/{delivery_key}/attempts', static fn(PDO $pdo, $context, int $page, int $size) => IntegrationSecurityRuntimeFactory::deliveries($pdo)->attempts($context, $deliveryKey, $page, $size), '/api/v1/integration-security/deliveries/' . rawurlencode($deliveryKey) . '/attempts');
+        return $this->page($request, 'listWebhookDeliveryAttempts', '/api/v1/integration-security/deliveries/{delivery_key}/attempts', fn($context, int $page, int $size) => $this->deliveries->attempts($context, $deliveryKey, $page, $size), '/api/v1/integration-security/deliveries/' . rawurlencode($deliveryKey) . '/attempts');
     }
 
-    public static function createMachine(Request $request): Response
+    public function createMachine(Request $request): Response
     {
-        return self::command($request, 'createMachineIdentity', 'POST', '/api/v1/integration-security/machine-identities', '/api/v1/integration-security/machine-identities', 'machine.manage', 'machine-manage', static function (PDO $pdo, $context, array $payload) {
+        return $this->command($request, 'createMachineIdentity', 'POST', '/api/v1/integration-security/machine-identities', '/api/v1/integration-security/machine-identities', 'machine.manage', 'machine-manage', function ($context, array $payload) {
             self::keys($payload, ['name','scopes','expires_at']);
-            $result = IntegrationSecurityRuntimeFactory::machines($pdo)->create($context, self::string($payload, 'name'), self::strings($payload, 'scopes'), self::instant($payload['expires_at']));
+            $result = $this->machines->create($context, self::string($payload, 'name'), self::strings($payload, 'scopes'), self::instant($payload['expires_at']));
             $identity = self::machine($result->identity);
             return [201, ['data' => ['identity' => $identity,'token' => $result->token]], ['data' => $identity], $result->identity->identityKey, $result->identity->revision];
         }, true);
     }
 
-    public static function rotateMachine(Request $request, string $identityKey): Response
+    public function rotateMachine(Request $request, string $identityKey): Response
     {
-        return self::command($request, 'rotateMachineIdentity', 'POST', '/api/v1/integration-security/machine-identities/{identity_key}/rotate', '/api/v1/integration-security/machine-identities/' . rawurlencode($identityKey) . '/rotate', 'machine.manage', 'machine-manage', static function (PDO $pdo, $context, array $payload, int $revision) use ($identityKey) {
+        return $this->command($request, 'rotateMachineIdentity', 'POST', '/api/v1/integration-security/machine-identities/{identity_key}/rotate', '/api/v1/integration-security/machine-identities/' . rawurlencode($identityKey) . '/rotate', 'machine.manage', 'machine-manage', function ($context, array $payload, int $revision) use ($identityKey) {
             self::keys($payload, []);
-            $result = IntegrationSecurityRuntimeFactory::machines($pdo)->rotate($context, $identityKey, $revision);
+            $result = $this->machines->rotate($context, $identityKey, $revision);
             $identity = self::machine($result->identity);
             return [200, ['data' => ['identity' => $identity,'token' => $result->token]], ['data' => $identity], $result->identity->identityKey, $result->identity->revision];
         }, true);
     }
 
-    public static function revokeMachine(Request $request, string $identityKey): Response
+    public function revokeMachine(Request $request, string $identityKey): Response
     {
-        return self::command($request, 'revokeMachineIdentity', 'DELETE', '/api/v1/integration-security/machine-identities/{identity_key}', '/api/v1/integration-security/machine-identities/' . rawurlencode($identityKey), 'machine.manage', 'machine-manage', static function (PDO $pdo, $context, array $payload, int $revision) use ($identityKey) {
+        return $this->command($request, 'revokeMachineIdentity', 'DELETE', '/api/v1/integration-security/machine-identities/{identity_key}', '/api/v1/integration-security/machine-identities/' . rawurlencode($identityKey), 'machine.manage', 'machine-manage', function ($context, array $payload, int $revision) use ($identityKey) {
             self::keys($payload, []);
-            $identity = IntegrationSecurityRuntimeFactory::machines($pdo)->revoke($context, $identityKey, $revision);
+            $identity = $this->machines->revoke($context, $identityKey, $revision);
             return [200,['data' => self::machine($identity)],null,$identity->identityKey,$identity->revision];
         });
     }
 
-    public static function createWebhook(Request $request): Response
+    public function createWebhook(Request $request): Response
     {
-        return self::command($request, 'createWebhookEndpoint', 'POST', '/api/v1/integration-security/webhooks', '/api/v1/integration-security/webhooks', 'webhook.manage', 'webhook-manage', static function (PDO $pdo, $context, array $payload) {
+        return $this->command($request, 'createWebhookEndpoint', 'POST', '/api/v1/integration-security/webhooks', '/api/v1/integration-security/webhooks', 'webhook.manage', 'webhook-manage', function ($context, array $payload) {
             self::keys($payload, ['name','url','events']);
-            $result = IntegrationSecurityRuntimeFactory::webhooks($pdo)->create($context, self::string($payload, 'name'), self::string($payload, 'url'), self::strings($payload, 'events'));
+            $result = $this->webhooks->create($context, self::string($payload, 'name'), self::string($payload, 'url'), self::strings($payload, 'events'));
             $endpoint = self::webhook($result->endpoint);
             return [201,['data' => ['endpoint' => $endpoint,'signing_secret' => $result->signingSecret]],['data' => $endpoint],$result->endpoint->endpointKey,$result->endpoint->revision];
         }, true);
     }
 
-    public static function rotateWebhook(Request $request, string $endpointKey): Response
+    public function rotateWebhook(Request $request, string $endpointKey): Response
     {
-        return self::command($request, 'rotateWebhookSecret', 'POST', '/api/v1/integration-security/webhooks/{endpoint_key}/rotate-secret', '/api/v1/integration-security/webhooks/' . rawurlencode($endpointKey) . '/rotate-secret', 'webhook.manage', 'webhook-manage', static function (PDO $pdo, $context, array $payload, int $revision) use ($endpointKey) {
+        return $this->command($request, 'rotateWebhookSecret', 'POST', '/api/v1/integration-security/webhooks/{endpoint_key}/rotate-secret', '/api/v1/integration-security/webhooks/' . rawurlencode($endpointKey) . '/rotate-secret', 'webhook.manage', 'webhook-manage', function ($context, array $payload, int $revision) use ($endpointKey) {
             self::keys($payload, []);
-            $result = IntegrationSecurityRuntimeFactory::webhooks($pdo)->rotateSecret($context, $endpointKey, $revision);
+            $result = $this->webhooks->rotateSecret($context, $endpointKey, $revision);
             $endpoint = self::webhook($result->endpoint);
             return [200,['data' => ['endpoint' => $endpoint,'signing_secret' => $result->signingSecret]],['data' => $endpoint],$endpointKey,$result->endpoint->revision];
         }, true);
     }
 
-    public static function disableWebhook(Request $request, string $endpointKey): Response
+    public function disableWebhook(Request $request, string $endpointKey): Response
     {
-        return self::command($request, 'disableWebhookEndpoint', 'DELETE', '/api/v1/integration-security/webhooks/{endpoint_key}', '/api/v1/integration-security/webhooks/' . rawurlencode($endpointKey), 'webhook.manage', 'webhook-manage', static function (PDO $pdo, $context, array $payload, int $revision) use ($endpointKey) {
+        return $this->command($request, 'disableWebhookEndpoint', 'DELETE', '/api/v1/integration-security/webhooks/{endpoint_key}', '/api/v1/integration-security/webhooks/' . rawurlencode($endpointKey), 'webhook.manage', 'webhook-manage', function ($context, array $payload, int $revision) use ($endpointKey) {
             self::keys($payload, []);
-            $endpoint = IntegrationSecurityRuntimeFactory::webhooks($pdo)->disable($context, $endpointKey, $revision);
+            $endpoint = $this->webhooks->disable($context, $endpointKey, $revision);
             return [200,['data' => self::webhook($endpoint)],null,$endpointKey,$endpoint->revision];
         });
     }
 
-    public static function revokeSession(Request $request, string $sessionKey): Response
+    public function revokeSession(Request $request, string $sessionKey): Response
     {
-        return self::command($request, 'revokeIntegrationSession', 'POST', '/api/v1/integration-security/sessions/{session_key}/revoke', '/api/v1/integration-security/sessions/' . rawurlencode($sessionKey) . '/revoke', 'session.revoke', 'session-revoke', static function (PDO $pdo, $context, array $payload) use ($sessionKey) {
+        return $this->command($request, 'revokeIntegrationSession', 'POST', '/api/v1/integration-security/sessions/{session_key}/revoke', '/api/v1/integration-security/sessions/' . rawurlencode($sessionKey) . '/revoke', 'session.revoke', 'session-revoke', function ($context, array $payload) use ($sessionKey) {
             self::keys($payload, []);
-            $session = IntegrationSecurityRuntimeFactory::sessions($pdo)->revoke($context, $sessionKey);
+            $session = $this->sessions->revoke($context, $sessionKey);
             return [200,['data' => self::session($session)],null,$sessionKey,1];
         });
     }
 
-    private static function read(Request $request, string $id, string $path, string $permission, string $operation, callable $handler): Response
+    private function read(Request $request, string $id, string $path, string $permission, string $operation, callable $handler): Response
     {
-        $pdo = MemberAdminRuntime::pdo();
         $op = TenantModuleRuntime::operation($id, 'GET', $path, 'peanut.integration-security', 'peanut.integration-security.' . $permission);
         $external = TenantModuleRuntime::request($request, $op, $path);
-        $response = TenantModuleRuntime::host($pdo, RuntimeModuleRegistry::compile())->read($op, $external, static function ($authorized, $query) use ($pdo, $handler, $operation) {
+        $response = $this->runtime->host()->read($op, $external, static function ($authorized, $query) use ($handler, $operation) {
             try {
                 self::keys($query->body['payload'] ?? null, []);
                 if (($query->body['query'] ?? null) !== []) {
                     throw IntegrationSecurityException::invalid();
-                }return new ExternalOperationResponse(200, ['data' => ['items' => $handler($pdo, TenantModuleRuntime::authorizedContext($authorized, 'peanut.integration-security', $operation))]]);
+                }return new ExternalOperationResponse(200, ['data' => ['items' => $handler(TenantModuleRuntime::authorizedContext($authorized, 'peanut.integration-security', $operation))]]);
             } catch (IntegrationSecurityException $e) {
                 throw self::problem($e);
             }
@@ -129,19 +137,18 @@ final class IntegrationSecurityHttpRuntime
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
 
-    private static function page(Request $request, string $id, string $template, callable $handler, ?string $path = null): Response
+    private function page(Request $request, string $id, string $template, callable $handler, ?string $path = null): Response
     {
         $path ??= $template;
-        $pdo = MemberAdminRuntime::pdo();
         $op = TenantModuleRuntime::operation($id, 'GET', $template, 'peanut.integration-security', 'peanut.integration-security.delivery.read');
         $external = TenantModuleRuntime::request($request, $op, $path);
-        $response = TenantModuleRuntime::host($pdo, RuntimeModuleRegistry::compile())->read($op, $external, static function ($authorized, $query) use ($pdo, $handler) {
+        $response = $this->runtime->host()->read($op, $external, static function ($authorized, $query) use ($handler) {
             try {
                 self::keys($query->body['payload'] ?? null, []);
                 $q = $query->body['query'] ?? null;
                 if (!is_array($q) || array_diff(array_keys($q), ['page','page_size']) !== []) {
                     throw IntegrationSecurityException::invalid();
-                }$page = $handler($pdo, TenantModuleRuntime::authorizedContext($authorized, 'peanut.integration-security', 'delivery-read'), TenantModuleRuntime::positiveInt($q['page'] ?? '1', 10000), TenantModuleRuntime::positiveInt($q['page_size'] ?? '20', 100));
+                }$page = $handler(TenantModuleRuntime::authorizedContext($authorized, 'peanut.integration-security', 'delivery-read'), TenantModuleRuntime::positiveInt($q['page'] ?? '1', 10000), TenantModuleRuntime::positiveInt($q['page_size'] ?? '20', 100));
                 return new ExternalOperationResponse(200, ['data' => $page->jsonSerialize()]);
             } catch (IntegrationSecurityException $e) {
                 throw self::problem($e);
@@ -150,24 +157,23 @@ final class IntegrationSecurityHttpRuntime
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
 
-    private static function command(Request $request, string $id, string $method, string $template, string $path, string $permission, string $operation, callable $handler, bool $oneTime = false): Response
+    private function command(Request $request, string $id, string $method, string $template, string $path, string $permission, string $operation, callable $handler, bool $oneTime = false): Response
     {
-        $pdo = MemberAdminRuntime::pdo();
         $op = TenantModuleRuntime::operation($id, $method, $template, 'peanut.integration-security', 'peanut.integration-security.' . $permission, true, true);
         $external = TenantModuleRuntime::request($request, $op, $path);
-        $response = TenantModuleRuntime::host($pdo, RuntimeModuleRegistry::compile())->command($op, $external, static function ($authorized, $command, PDO $transaction) use ($handler, $operation, $id, $oneTime) {
+        $response = $this->runtime->host()->command($op, $external, static function ($authorized, $command) use ($handler, $operation, $id, $oneTime) {
             try {
                 $payload = $command->body['payload'] ?? null;
                 if (!is_array($payload) || ($command->body['query'] ?? null) !== []) {
                     throw IntegrationSecurityException::invalid();
                 }$revision = TenantModuleRuntime::expectedRevision($command, true) ?? 1;
-                [$status,$body,$replay,$key,$nextRevision] = $handler($transaction, TenantModuleRuntime::authorizedContext($authorized, 'peanut.integration-security', $operation), $payload, $revision);
+                [$status,$body,$replay,$key,$nextRevision] = $handler(TenantModuleRuntime::authorizedContext($authorized, 'peanut.integration-security', $operation), $payload, $revision);
                 $headers = in_array($id, ['rotateMachineIdentity','rotateWebhookSecret'], true) ? ['ETag' => '"rev-' . $nextRevision . '"'] : [];
                 return new ExternalOperationResult($status, $body, 'tenant.integration-security.changed', 'peanut.integration-security.' . $operation, ['operation' => $id,'revision' => $nextRevision], 'integration-security', $key, $oneTime ? $replay : null, $headers);
             } catch (IntegrationSecurityException $e) {
                 throw self::problem($e);
             }
-        }, guard: TenantModuleRuntime::commandGuard('peanut.integration-security'));
+        }, guard: $this->runtime->commandGuard('peanut.integration-security'));
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
 

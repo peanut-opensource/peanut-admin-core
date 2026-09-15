@@ -7,14 +7,7 @@ use PeanutAdmin\DataPermission\Package as DataPermissionPackage;
 use PeanutAdmin\InternalStarter\Module\ModuleRegistryFactory;
 use PeanutAdmin\Kernel\Auth\TenantContext;
 use PeanutAdmin\Kernel\Auth\ValidatedTenantSession;
-use PeanutAdmin\Kernel\Identity\PasswordHasher;
 use PeanutAdmin\Kernel\Package as KernelPackage;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoIdentityRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoMembershipRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoPlatformRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTenantRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
 use PeanutAdmin\Kernel\Platform\Bootstrap\BootstrapService;
 use PeanutAdmin\ReferenceCodes\Application\ReferenceCodeAdminService;
 use PeanutAdmin\ReferenceCodes\Application\ReferenceCodeQuery;
@@ -122,6 +115,7 @@ try {
             ],
         ],
     ]);
+    think\Container::getInstance()->instance(DbManager::class, $db);
     $connection = $db->connect();
     if (!$connection instanceof think\db\PDOConnection) {
         throw new RuntimeException('Starter Reference Codes requires a ThinkPHP PDO connection.');
@@ -139,16 +133,7 @@ try {
         throw new RuntimeException('Starter committed a reference-code set or value.');
     }
 
-    $transactions = new PdoTransactionManager($pdo);
-    $bootstrap = new BootstrapService(
-        $transactions,
-        new PdoIdentityRepository($pdo),
-        new PdoTenantRepository($pdo),
-        new PdoMembershipRepository($pdo),
-        new PdoPlatformRepository($pdo),
-        new PdoAuditRepository($pdo),
-        new PasswordHasher(),
-    );
+    $bootstrap = new BootstrapService();
     $platform = $bootstrap->bootstrapPlatformOwner(
         'starter-reference-owner@example.test',
         'Starter-reference-password-2026!',
@@ -184,7 +169,7 @@ try {
     $definitions = (new ReferenceCodeSetLoader())->load('peanut.reference-codes', $definitionFixture);
     $definitionRegistry = new ReferenceCodeSetRegistry();
     $definitionRegistry->registerModule('peanut.reference-codes', $definitions);
-    $store = new ReferenceCodeStore($connection);
+    $store = new ReferenceCodeStore();
     $synchronized = $store->synchronize(
         $definitionRegistry,
         new DateTimeImmutable('2020-01-01T00:00:00.000Z'),

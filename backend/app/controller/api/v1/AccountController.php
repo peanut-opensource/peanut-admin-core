@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\controller\api\v1;
 
 use PeanutAdmin\App\controller\api\AuthHttpRuntime;
-use PeanutAdmin\App\middleware\TenantAccountRuntimeFactory;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Kernel\Auth\TenantClient;
 use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
@@ -16,17 +15,15 @@ use think\Response;
 
 final class AccountController
 {
+    public function __construct(private readonly AccountSelfService $accounts) {}
+
     #[OpenApiHandlerContract]
     public function show(Request $request): Response
     {
         return MemberAdminRuntime::run($request, function () use ($request): array {
             $context = MemberAdminRuntime::context($request);
 
-            return ['data' => $this->service()->profile(
-                $context->tenantId,
-                $context->memberId,
-                $context->accountId,
-            )];
+            return ['data' => $this->service()->profile($context)];
         });
     }
 
@@ -63,12 +60,9 @@ final class AccountController
             }
 
             return ['data' => $this->service()->updateProfile(
-                $context->tenantId,
-                $context->memberId,
-                $context->accountId,
+                $context,
                 $body['display_name'],
                 $avatarUri,
-                $context->requestId,
             )];
         });
     }
@@ -105,15 +99,11 @@ final class AccountController
 
         try {
             $service->changePassword(
-                $context->tenantId,
-                $context->memberId,
-                $context->accountId,
-                $context->sessionKey,
+                $context,
                 $body['current_password'],
                 $body['new_password'],
                 AuthHttpRuntime::ipAddress($request),
                 AuthHttpRuntime::userAgent($request),
-                $context->requestId,
             );
         } catch (AdminAccessException $exception) {
             if ($exception->errorCode !== 'PASSWORD_CHANGE_RATE_LIMITED') {
@@ -157,6 +147,6 @@ final class AccountController
 
     private function service(): AccountSelfService
     {
-        return TenantAccountRuntimeFactory::create();
+        return $this->accounts;
     }
 }

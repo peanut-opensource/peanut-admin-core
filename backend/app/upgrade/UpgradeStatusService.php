@@ -15,22 +15,6 @@ final readonly class UpgradeStatusService
         private ?string $environment,
     ) {}
 
-    public static function fromEnvironment(): self
-    {
-        $release = getenv('UPGRADE_RELEASE_MANIFEST');
-        $backup = getenv('UPGRADE_BACKUP_MANIFEST');
-        $environment = getenv('APP_ENVIRONMENT');
-
-        return new self(
-            dirname(__DIR__, 3),
-            is_string($release) && $release !== '' ? $release : null,
-            is_string($backup) && $backup !== '' ? $backup : null,
-            is_string($environment) && preg_match('/^[a-z][a-z0-9_-]{0,31}$/D', $environment) === 1
-                ? $environment
-                : null,
-        );
-    }
-
     /** @return array<string, mixed> */
     public function status(): array
     {

@@ -5,31 +5,35 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\notification;
 
 use PeanutAdmin\App\http\TenantModuleRuntime;
-use PeanutAdmin\App\module\RuntimeModuleRegistry;
 use PeanutAdmin\Kernel\Api\ApiException;
 use PeanutAdmin\Kernel\Host\ExternalOperationResponse;
 use PeanutAdmin\Kernel\Host\ExternalOperationResult;
 use PeanutAdmin\NotificationSms\Application\NotificationException;
 use PeanutAdmin\NotificationSms\Application\NotificationMessage;
-use think\db\PDOConnection;
+use PeanutAdmin\NotificationSms\Application\NotificationService;
+use PeanutAdmin\NotificationSms\Task\NotificationOutboxDispatcher;
 use think\Request;
 use think\Response;
 
-final class NotificationHttpRuntime
+final readonly class NotificationHttpRuntime
 {
-    public static function inbox(Request $request): Response
+    public function __construct(
+        private NotificationService $notifications,
+        private NotificationOutboxDispatcher $dispatcher,
+        private TenantModuleRuntime $runtime,
+    ) {}
+
+    public function inbox(Request $request): Response
     {
-        $connection = NotificationRuntimeFactory::connection();
-        $modules = RuntimeModuleRegistry::compile();
         $op = TenantModuleRuntime::operation('listNotifications', 'GET', '/api/v1/notifications', 'peanut.notification-sms', 'peanut.notification-sms.read');
         $external = TenantModuleRuntime::request($request, $op, '/api/v1/notifications');
-        $response = TenantModuleRuntime::host($connection, $modules)->read($op, $external, static function ($authorized, $query) use ($connection) {
+        $response = $this->runtime->host()->read($op, $external, function ($authorized, $query) {
             try {
                 self::empty($query->body['payload'] ?? null);
                 $raw = $query->body['query'] ?? null;
                 if (!is_array($raw) || array_diff(array_keys($raw), ['status','page','page_size']) !== []) {
                     throw NotificationException::invalid();
-                }$result = NotificationRuntimeFactory::service($connection)->inbox(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'read'), is_string($raw['status'] ?? null) ? $raw['status'] : 'all', TenantModuleRuntime::positiveInt($raw['page'] ?? '1', 10000), TenantModuleRuntime::positiveInt($raw['page_size'] ?? '20', 100));
+                }$result = $this->notifications->inbox(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'read'), is_string($raw['status'] ?? null) ? $raw['status'] : 'all', TenantModuleRuntime::positiveInt($raw['page'] ?? '1', 10000), TenantModuleRuntime::positiveInt($raw['page_size'] ?? '20', 100));
                 return new ExternalOperationResponse(200, ['data' => ['items' => array_map(static fn(NotificationMessage $message) => $message->toArray(), $result['items'])],'page' => $result['page'],'page_size' => $result['page_size'],'total' => $result['total']]);
             } catch (NotificationException $e) {
                 throw self::problem($e);
@@ -38,72 +42,69 @@ final class NotificationHttpRuntime
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
 
-    public static function markRead(Request $request, string $messageKey): Response
+    public function markRead(Request $request, string $messageKey): Response
     {
-        return self::command($request, 'markNotificationRead', '/api/v1/notifications/{message_key}/read', '/api/v1/notifications/' . rawurlencode($messageKey) . '/read', static function ($authorized, $command, PDOConnection $connection) use ($messageKey) {
+        return $this->command($request, 'markNotificationRead', '/api/v1/notifications/{message_key}/read', '/api/v1/notifications/' . rawurlencode($messageKey) . '/read', function ($authorized, $command) use ($messageKey) {
             self::noInput($command->body);
             $revision = TenantModuleRuntime::expectedRevision($command);
             if ($revision === null) {
                 throw NotificationException::invalid();
-            }$message = NotificationRuntimeFactory::service($connection)->markRead(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'read'), $messageKey, $revision);
+            }$message = $this->notifications->markRead(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'read'), $messageKey, $revision);
             return new ExternalOperationResult(200, ['data' => $message->toArray()], 'tenant.notification.read', 'peanut.notification-sms.read', ['revision' => $message->revision], 'notification', $message->messageKey);
         }, 'peanut.notification-sms.read');
     }
 
-    public static function bulk(Request $request): Response
+    public function bulk(Request $request): Response
     {
-        return self::command($request, 'bulkUpdateNotifications', '/api/v1/notifications/bulk', '/api/v1/notifications/bulk', static function ($authorized, $command, PDOConnection $connection) {
+        return $this->command($request, 'bulkUpdateNotifications', '/api/v1/notifications/bulk', '/api/v1/notifications/bulk', function ($authorized, $command) {
             $payload = self::payload($command->body, ['message_keys','action']);
-            $changed = NotificationRuntimeFactory::service($connection)->bulk(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'read'), self::strings($payload, 'message_keys'), is_string($payload['action']) ? $payload['action'] : '');
+            $changed = $this->notifications->bulk(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'read'), self::strings($payload, 'message_keys'), is_string($payload['action']) ? $payload['action'] : '');
             return new ExternalOperationResult(200, ['data' => ['changed' => $changed]], 'tenant.notification.bulk.updated', 'peanut.notification-sms.read', ['changed' => $changed]);
         }, 'peanut.notification-sms.read');
     }
 
-    public static function putTemplate(Request $request, string $templateKey): Response
+    public function putTemplate(Request $request, string $templateKey): Response
     {
-        return self::command($request, 'putNotificationTemplate', '/api/v1/notification-templates/{template_key}', '/api/v1/notification-templates/' . rawurlencode($templateKey), static function ($authorized, $command, PDOConnection $connection) use ($templateKey) {
+        return $this->command($request, 'putNotificationTemplate', '/api/v1/notification-templates/{template_key}', '/api/v1/notification-templates/' . rawurlencode($templateKey), function ($authorized, $command) use ($templateKey) {
             $p = self::payload($command->body, ['name','subject_template','body_template','channels','variables']);
-            $template = NotificationRuntimeFactory::service($connection)->putTemplate(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'manage'), $templateKey, self::string($p, 'name'), self::string($p, 'subject_template'), self::string($p, 'body_template'), self::strings($p, 'channels'), self::strings($p, 'variables'), TenantModuleRuntime::expectedRevision($command, true));
+            $template = $this->notifications->putTemplate(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'manage'), $templateKey, self::string($p, 'name'), self::string($p, 'subject_template'), self::string($p, 'body_template'), self::strings($p, 'channels'), self::strings($p, 'variables'), TenantModuleRuntime::expectedRevision($command, true));
             return new ExternalOperationResult(200, ['data' => $template], 'tenant.notification.template.saved', 'peanut.notification-sms.manage', ['template_key' => $templateKey,'revision' => (int) $template['revision']], 'notification-template', $templateKey);
         });
     }
 
-    public static function publish(Request $request): Response
+    public function publish(Request $request): Response
     {
-        return self::command($request, 'createNotification', '/api/v1/notifications', '/api/v1/notifications', static function ($authorized, $command, PDOConnection $connection) {
+        return $this->command($request, 'createNotification', '/api/v1/notifications', '/api/v1/notifications', function ($authorized, $command) {
             $p = self::payload($command->body, ['template_key','recipients','file_keys']);
             $context = TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'manage');
-            $result = NotificationRuntimeFactory::service($connection)->publish($context, self::string($p, 'template_key'), self::recipients($p), self::strings($p, 'file_keys'));
+            $result = $this->notifications->publish($context, self::string($p, 'template_key'), self::recipients($p), self::strings($p, 'file_keys'));
             $jobs = [];
-            $dispatcher = NotificationRuntimeFactory::dispatcher($connection);
             foreach ($result['outbox'] as $outbox) {
-                $jobs[] = $dispatcher->dispatch($context, $outbox->outboxKey)->jobKey;
+                $jobs[] = $this->dispatcher->dispatch($context, $outbox->outboxKey)->jobKey;
             }return new ExternalOperationResult(201, ['data' => ['messages' => array_map(static fn(NotificationMessage $m) => $m->toArray(), $result['messages']),'job_keys' => $jobs]], 'tenant.notification.published', 'peanut.notification-sms.manage', ['message_count' => count($result['messages']),'job_count' => count($jobs)]);
         });
     }
 
-    public static function dispatch(Request $request, string $outboxKey): Response
+    public function dispatch(Request $request, string $outboxKey): Response
     {
-        return self::command($request, 'dispatchNotificationOutbox', '/api/v1/notification-outbox/{outbox_key}/dispatch', '/api/v1/notification-outbox/' . rawurlencode($outboxKey) . '/dispatch', static function ($authorized, $command, PDOConnection $connection) use ($outboxKey) {
+        return $this->command($request, 'dispatchNotificationOutbox', '/api/v1/notification-outbox/{outbox_key}/dispatch', '/api/v1/notification-outbox/' . rawurlencode($outboxKey) . '/dispatch', function ($authorized, $command) use ($outboxKey) {
             self::noInput($command->body);
-            $job = NotificationRuntimeFactory::dispatcher($connection)->dispatch(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'manage'), $outboxKey);
+            $job = $this->dispatcher->dispatch(TenantModuleRuntime::authorizedContext($authorized, 'peanut.notification-sms', 'manage'), $outboxKey);
             return new ExternalOperationResult(202, ['data' => $job->toPublicArray()], 'tenant.notification.dispatch.queued', 'peanut.notification-sms.manage', ['task_type' => $job->taskType], 'task', $job->jobKey);
         });
     }
 
-    private static function command(Request $request, string $id, string $template, string $path, callable $handler, string $permission = 'peanut.notification-sms.manage'): Response
+    private function command(Request $request, string $id, string $template, string $path, callable $handler, string $permission = 'peanut.notification-sms.manage'): Response
     {
-        $connection = NotificationRuntimeFactory::connection();
-        $modules = RuntimeModuleRegistry::compile();
         $op = TenantModuleRuntime::operation($id, $id === 'putNotificationTemplate' ? 'PUT' : 'POST', $template, 'peanut.notification-sms', $permission, true);
         $external = TenantModuleRuntime::request($request, $op, $path);
-        $response = TenantModuleRuntime::host($connection, $modules)->command($op, $external, static function ($authorized, $command) use ($handler, $connection) {
+        $response = $this->runtime->host()->command($op, $external, static function ($authorized, $command) use ($handler) {
             try {
-                return $handler($authorized, $command, $connection);
+                return $handler($authorized, $command);
             } catch (NotificationException $e) {
                 throw self::problem($e);
             }
-        }, guard: TenantModuleRuntime::commandGuard('peanut.notification-sms'));
+        }, guard: $this->runtime->commandGuard('peanut.notification-sms'));
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
 

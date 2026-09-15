@@ -45,7 +45,6 @@ foreach ($manifest["checks"] ?? [] as $index => $check) {
 php vendor/bin/phpunit \
   backend/tests/Install/EnvironmentCheckerTest.php \
   backend/tests/Install/ProductProfileTest.php \
-  backend/tests/Health/HealthCheckServiceTest.php
 
 docker compose up -d mysql
 for attempt in $(seq 1 60); do

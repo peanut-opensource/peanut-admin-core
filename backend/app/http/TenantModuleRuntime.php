@@ -6,47 +6,32 @@ namespace PeanutAdmin\App\http;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use LogicException;
-use PDO;
 use PeanutAdmin\App\controller\api\v1\MemberAdminRuntime;
-use PeanutAdmin\DataPermission\Constraint\QueryConstraint;
 use PeanutAdmin\Kernel\Api\ApiException;
 use PeanutAdmin\Kernel\Api\RequestId;
 use PeanutAdmin\Kernel\Auth\TenantContext;
-use PeanutAdmin\Kernel\Authorization\DataPermissionAdapter;
-use PeanutAdmin\Kernel\Authorization\PdoTenantAuthorizationRepository;
 use PeanutAdmin\Kernel\Authorization\PermissionRequirement;
-use PeanutAdmin\Kernel\Authorization\RevisionPermissionCache;
-use PeanutAdmin\Kernel\Authorization\TenantAuthorizationEvaluator;
 use PeanutAdmin\Kernel\Context\AuthorizationDecision;
 use PeanutAdmin\Kernel\Context\AuthorizedOperationContext;
-use PeanutAdmin\Kernel\Host\AtomicOperationAdapter;
 use PeanutAdmin\Kernel\Host\AuthorizedExternalOperation;
 use PeanutAdmin\Kernel\Host\ExternalHostConfiguration;
 use PeanutAdmin\Kernel\Host\ExternalOperationDefinition;
 use PeanutAdmin\Kernel\Host\ExternalOperationHost;
 use PeanutAdmin\Kernel\Host\ExternalOperationRequest;
 use PeanutAdmin\Kernel\Host\ExternalOperationResponse;
-use PeanutAdmin\Kernel\Host\ModuleAvailabilityAdapter;
-use PeanutAdmin\Kernel\Host\PermissionAdapter;
-use PeanutAdmin\Kernel\Host\ProblemDetailsAdapter;
-use PeanutAdmin\Kernel\Host\TrustedContextAdapter;
-use PeanutAdmin\Kernel\Host\TypedTargetAdapter;
-use PeanutAdmin\Kernel\Http\PermissionMiddleware;
-use PeanutAdmin\Kernel\Module\CompiledModuleRegistry;
-use PeanutAdmin\Kernel\Module\ModuleGuard;
+use PeanutAdmin\Kernel\Module\ModuleAvailabilityService;
 use PeanutAdmin\Kernel\Module\ModuleHostLayout;
-use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
-use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
-use PeanutAdmin\Kernel\Platform\Authorization\PdoPlatformAuthorizationRepository;
-use PeanutAdmin\Kernel\Platform\Authorization\PlatformAuthorizationEvaluator;
-use think\db\PDOConnection;
+use PeanutAdmin\Kernel\Tenancy\TenantScope;
 use think\Request;
 use think\Response;
 
 final class TenantModuleRuntime
 {
+    public function __construct(
+        private readonly ExternalOperationHost $operationHost,
+        private readonly ModuleAvailabilityService $moduleAvailability,
+    ) {}
+
     public static function operation(
         string $operationId,
         string $method,
@@ -92,35 +77,9 @@ final class TenantModuleRuntime
         );
     }
 
-    public static function host(PDO|PDOConnection $database, CompiledModuleRegistry $modules): ExternalOperationHost
+    public function host(): ExternalOperationHost
     {
-        $pdo = $database instanceof PDOConnection ? $database->connect() : $database;
-        $transactions = $database instanceof PDOConnection
-            ? new ThinkPhpTransactionManager($database)
-            : new PdoTransactionManager($database);
-        $configuration = self::configuration();
-        $permissions = new PermissionMiddleware(
-            new TenantAuthorizationEvaluator(new PdoTenantAuthorizationRepository($pdo), new RevisionPermissionCache()),
-            new PlatformAuthorizationEvaluator(new PdoPlatformAuthorizationRepository($pdo), new RevisionPermissionCache()),
-        );
-        $noTargets = new DataPermissionAdapter(
-            static function (): QueryConstraint {
-                throw new LogicException('This operation does not accept query authorization.');
-            },
-            static function (): never {
-                throw new LogicException('This operation does not accept typed targets.');
-            },
-        );
-
-        return new ExternalOperationHost(
-            $configuration,
-            new TrustedContextAdapter($configuration),
-            new ModuleAvailabilityAdapter($modules, new ModuleGuard(new PdoModuleRuntimeRepository($pdo))),
-            new PermissionAdapter($permissions),
-            new TypedTargetAdapter($noTargets),
-            new AtomicOperationAdapter($pdo, $transactions),
-            new ProblemDetailsAdapter(),
-        );
+        return $this->operationHost;
     }
 
     public static function context(AuthorizedExternalOperation $authorized): TenantContext
@@ -183,21 +142,17 @@ final class TenantModuleRuntime
         return $revision;
     }
 
-    /** @return callable(AuthorizedExternalOperation, ExternalOperationRequest, PDO): void */
-    public static function commandGuard(string $moduleKey): callable
+    /** @return callable(AuthorizedExternalOperation, ExternalOperationRequest): void */
+    public function commandGuard(string $moduleKey): callable
     {
-        return static function (AuthorizedExternalOperation $authorized, ExternalOperationRequest $request, PDO $pdo) use ($moduleKey): void {
+        return function (AuthorizedExternalOperation $authorized, ExternalOperationRequest $request) use ($moduleKey): void {
             $context = self::context($authorized);
-            if (!$pdo->inTransaction()) {
-                throw new LogicException('Module command guard requires an active transaction.');
-            }
-            $deployment = $pdo->prepare('SELECT module_key FROM pa_module_installation WHERE module_key = :module_key FOR SHARE');
-            $deployment->execute(['module_key' => $moduleKey]);
-            $tenant = $pdo->prepare('SELECT tenant_id FROM pa_tenant_module WHERE tenant_id = :tenant_id AND module_key = :module_key FOR SHARE');
-            $tenant->execute(['tenant_id' => $context->tenantId, 'module_key' => $moduleKey]);
-            $guard = new ModuleGuard(new PdoModuleRuntimeRepository($pdo));
-            $guard->assertDeployment($moduleKey);
-            $guard->assertTenant($context->tenantId, $moduleKey, $request->comparisonTime);
+            $this->moduleAvailability->assertAvailable(
+                TenantScope::fromTrustedContext($context->tenantId, 'external-operation-command'),
+                $moduleKey,
+                $request->comparisonTime,
+                true,
+            );
         };
     }
 
@@ -211,7 +166,7 @@ final class TenantModuleRuntime
         return $integer;
     }
 
-    private static function configuration(): ExternalHostConfiguration
+    public static function configuration(): ExternalHostConfiguration
     {
         $root = dirname(__DIR__, 3);
         $moduleConfig = require $root . '/backend/config/modules.php';

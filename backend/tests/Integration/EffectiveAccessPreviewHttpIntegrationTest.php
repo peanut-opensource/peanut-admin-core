@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\Tests\Integration;
 
+use DateTimeImmutable;
 use PDO;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallProductProfileApplier;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\command\KernelBootstrapFactory;
-use PeanutAdmin\App\middleware\PlatformAuthRuntimeFactory;
-use PeanutAdmin\App\middleware\TenantAuthRuntimeFactory;
 use PeanutAdmin\Kernel\Auth\PlatformAuthentication;
+use PeanutAdmin\Kernel\Auth\PlatformAuthService;
 use PeanutAdmin\Kernel\Auth\TenantAuthentication;
-use PeanutAdmin\Testing\Authorization\PdoAuthorizationFixtureSeeder;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
+use PeanutAdmin\Kernel\Context\PlatformContext;
+use PeanutAdmin\Kernel\Platform\Application\PlatformTenantAdminService;
+use PeanutAdmin\Kernel\Platform\Application\TenantOwnerAdminService;
+use PeanutAdmin\Kernel\Tenancy\TenantStatus;
+use PeanutAdmin\Testing\Authorization\ThinkPhpAuthorizationFixtureSeeder;
 use PHPUnit\Framework\TestCase;
 use think\App;
 use think\Request;
@@ -76,9 +80,9 @@ final class EffectiveAccessPreviewHttpIntegrationTest extends TestCase
             $root . '/profiles/reference-admin.json',
             $root . '/schemas/product-profile.schema.json',
         );
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo);
         $installation = (new InstallWorkflow(
             $root,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
         ))->run(
             $profile,
             self::EMAIL,
@@ -94,34 +98,56 @@ final class EffectiveAccessPreviewHttpIntegrationTest extends TestCase
         $this->tenantId = (int) $installation['tenant']['tenant_id'];
         $this->memberId = (int) $installation['tenant']['owner_member_id'];
 
-        $bootstrap = KernelBootstrapFactory::create();
-        $other = $bootstrap->provisionTenantOwnerCandidate(
+        $app = new App($root . '/backend');
+        $app->initialize();
+        $actor = PlatformContext::fromTrustedAutomation(
+            (int) $installation['platform']['account_id'],
             (int) $installation['platform']['operator_id'],
+            'platform-web',
+            'req_effective_access_setup',
+            new DateTimeImmutable('2026-09-14T00:00:00Z'),
+        );
+        $tenantAdmin = $app->make(PlatformTenantAdminService::class);
+        $otherTenant = $tenantAdmin->createTenant(
+            $actor,
             'effective-access-other',
             'Other Tenant',
+            'Other Tenant',
+            'zh-CN',
+            'Asia/Shanghai',
+        );
+        $otherTenantId = (int) $otherTenant['id'];
+        $ownerAdmin = $app->make(TenantOwnerAdminService::class);
+        $other = $ownerAdmin->createCandidate(
+            $actor,
+            $otherTenantId,
             self::EMAIL,
-            null,
             'Other Tenant Owner',
-            'req_effective_access_other',
+            null,
         );
-        $bootstrap->activateTenantOwner(
-            (int) $installation['platform']['operator_id'],
-            $other->tenantId,
-            $other->memberId,
-            'req_effective_access_other_owner',
+        $otherMemberId = (int) $other['member']['id'];
+        $ownerAdmin->activateCandidate(
+            $actor,
+            $otherTenantId,
+            $otherMemberId,
+            (int) $other['member']['revision'],
+            'effective-access-other-owner-activation',
+            'Activate the integration fixture owner.',
         );
-        $bootstrap->activateTenant(
-            (int) $installation['platform']['operator_id'],
-            $other->tenantId,
-            'req_effective_access_other_tenant',
+        $tenantAdmin->transitionTenant(
+            $actor,
+            $otherTenantId,
+            (int) $otherTenant['revision'],
+            TenantStatus::Active,
+            'Activate the integration fixture tenant.',
         );
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo);
         (new InstallProductProfileApplier(
             $root,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
-        ))->apply($other->tenantId, $profile);
-        $this->otherTenantMemberId = $other->memberId;
+        ))->apply($otherTenantId, $profile);
+        $this->otherTenantMemberId = $otherMemberId;
 
-        $seeder = new PdoAuthorizationFixtureSeeder($this->pdo);
+        $seeder = new ThinkPhpAuthorizationFixtureSeeder();
         $roleId = $seeder->roleForMember($this->tenantId, $this->memberId);
         $seeder->grantPermissions($this->tenantId, $roleId, ['example.work-item.read']);
         $targets = $seeder->targetSet($this->tenantId, $this->memberId, 'example.project', ['1001']);
@@ -134,7 +160,7 @@ final class EffectiveAccessPreviewHttpIntegrationTest extends TestCase
             [['example.project' => $targets]],
         );
 
-        $tenantAuthentication = TenantAuthRuntimeFactory::create(pdo: $this->pdo)->login(
+        $tenantAuthentication = $app->make(TenantAuthService::class)->login(
             self::EMAIL,
             self::PASSWORD,
             'effective-access',
@@ -145,7 +171,7 @@ final class EffectiveAccessPreviewHttpIntegrationTest extends TestCase
         self::assertInstanceOf(TenantAuthentication::class, $tenantAuthentication);
         $this->tenantAccessToken = $tenantAuthentication->tokens->access->expose();
 
-        $platformAuthentication = PlatformAuthRuntimeFactory::create($this->pdo)->login(
+        $platformAuthentication = $app->make(PlatformAuthService::class)->login(
             self::EMAIL,
             self::PASSWORD,
             '127.0.0.1',

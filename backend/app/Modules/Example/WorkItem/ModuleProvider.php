@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\Modules\Example\WorkItem;
 
-use PDO;
 use PeanutAdmin\App\Modules\Example\Target\Contracts\TargetQuery;
 use PeanutAdmin\App\Modules\Example\WorkItem\Application\WorkItemCommandService;
 use PeanutAdmin\App\Modules\Example\WorkItem\Application\WorkItemPolicyPublisher;
@@ -13,7 +12,7 @@ use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemPolicyPublication
 use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemQuery;
 use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemRuntimeProvider;
 use PeanutAdmin\App\Modules\Example\WorkItem\Infrastructure\Authorization\WorkItemPolicyProvider;
-use PeanutAdmin\App\Modules\Example\WorkItem\Infrastructure\Persistence\PdoWorkItemQuery;
+use PeanutAdmin\App\Modules\Example\WorkItem\Infrastructure\Persistence\ThinkPhpWorkItemQuery;
 use PeanutAdmin\DataPermission\Constraint\ColumnReference;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
 use PeanutAdmin\DataPermission\Provider\ConditionProviderRegistry;
@@ -23,10 +22,9 @@ use PeanutAdmin\DataPermission\Provider\ProviderColumnMap;
 use PeanutAdmin\DataPermission\Provider\StandardResourcePolicyProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
-use PeanutAdmin\Kernel\Audit\AuditRepository;
+use PeanutAdmin\Kernel\Audit\AuditService;
 use PeanutAdmin\Kernel\Membership\Application\MemberAdminService;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
-use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, WorkItemRuntimeProvider
 {
@@ -40,47 +38,44 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return [WorkItemRuntimeProvider::class => self::class];
     }
 
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry): void
     {
         $provider = new WorkItemPolicyProvider(new StandardResourcePolicyProvider(
             new ProviderColumnMap(
-                new ColumnReference('work_item.tenant_id'),
-                new ColumnReference('work_item.owner_member_id'),
-                new ColumnReference('work_item.department_id'),
+                new ColumnReference('tenant_id'),
+                new ColumnReference('owner_member_id'),
+                new ColumnReference('department_id'),
                 [
-                    'example.project' => new ColumnReference('work_item.project_id'),
-                    'example.queue' => new ColumnReference('work_item.queue_id'),
+                    'example.project' => new ColumnReference('project_id'),
+                    'example.queue' => new ColumnReference('queue_id'),
                 ],
             ),
-            new ThinkPhpDepartmentHierarchyProvider($connection),
-            new ThinkPhpTargetSetMembershipProvider($connection),
+            new ThinkPhpDepartmentHierarchyProvider(),
+            new ThinkPhpTargetSetMembershipProvider(),
             new ConditionProviderRegistry(),
         ));
         $registry->registerResourceProvider(WorkItemPolicyProvider::class, $provider);
     }
 
     public function workItemQuery(
-        PDO $pdo,
         DataPermissionEngine $authorization,
         TargetQuery $targets,
     ): WorkItemQuery {
-        return new PdoWorkItemQuery($pdo, $authorization, $targets);
+        return new ThinkPhpWorkItemQuery($authorization, $targets);
     }
 
     public function workItemCommands(
-        PDO $pdo,
         DataPermissionEngine $authorization,
-        AuditRepository $audit,
+        AuditService $audit,
         MemberAdminService $members,
     ): WorkItemCommands {
-        return new WorkItemCommandService($pdo, $authorization, $audit, $members);
+        return new WorkItemCommandService($authorization, $audit, $members);
     }
 
     public function workItemPolicyPublication(
-        PDO $pdo,
         DataPermissionEngine $authorization,
-        AuditRepository $audit,
+        AuditService $audit,
     ): WorkItemPolicyPublication {
-        return new WorkItemPolicyPublisher($pdo, $authorization, $audit);
+        return new WorkItemPolicyPublisher($authorization, $audit);
     }
 }

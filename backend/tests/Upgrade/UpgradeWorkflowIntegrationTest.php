@@ -14,7 +14,7 @@ use PeanutAdmin\App\upgrade\RepositoryState;
 use PeanutAdmin\App\upgrade\TargetMigrationInventory;
 use PeanutAdmin\App\upgrade\UpgradePlan;
 use PeanutAdmin\App\upgrade\UpgradePreflight;
-use PeanutAdmin\Kernel\Menu\PdoMenuCatalogRepository;
+use PeanutAdmin\Kernel\Menu\ThinkPhpMenuCatalogRepository;
 use PeanutAdmin\Kernel\Module\ModuleException;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunClassInSeparateProcess;
@@ -74,9 +74,9 @@ final class UpgradeWorkflowIntegrationTest extends TestCase
     public function testUpgradeRunsKernelDataAndModulesInDependencyOrderAndIsIdempotent(): void
     {
         $root = self::$repositoryRoot;
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
         $workflow = new UpgradeWorkflow(
             $root,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
         );
 
         $first = $workflow->installEmptyDatabase();
@@ -111,7 +111,7 @@ SQL));
         self::assertSame(6, $this->scalar("SELECT COUNT(*) FROM pa_data_condition_definition WHERE status = 'active'"));
         self::assertSame(40, $this->scalar("SELECT COUNT(*) FROM pa_resource_operation_condition WHERE status = 'active'"));
         self::assertSame(27, $this->scalar("SELECT COUNT(*) FROM pa_menu_definition WHERE status = 'active'"));
-        $menus = new PdoMenuCatalogRepository($this->database);
+        $menus = new ThinkPhpMenuCatalogRepository();
         self::assertCount(19, $menus->activeDefinitions('tenant'));
         self::assertCount(8, $menus->activeDefinitions('platform'));
         self::assertSame([
@@ -143,9 +143,9 @@ SQL));
         $source = (new RepositoryInspector())->inventoryAtCommit($root, $sourceCommit);
 
         try {
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
             (new UpgradeWorkflow(
                 $root,
-                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
             ))->run(
                 $this->plan($root, $source, null, $sourceRevision),
             );
@@ -164,9 +164,9 @@ SQL));
 
     public function testAppliedMigrationChecksumDriftStopsBeforeFurtherChanges(): void
     {
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
         $workflow = new UpgradeWorkflow(
             self::$repositoryRoot,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
         );
         $workflow->installEmptyDatabase();
         $this->database->exec(
@@ -198,15 +198,14 @@ SQL));
             $old = $this->installOldRelease($oldRoot);
             $source = (new TargetMigrationInventory())->scan($oldRoot);
 
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
             $result = (new UpgradeWorkflow(
                 $root,
-                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
             ))->run(
                 $this->plan($root, $source, $oldRoot),
             );
             $repeat = (new UpgradeWorkflow(
                 $root,
-                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
             ))->assertCurrentReleaseNoop();
 
             self::assertSame(3, $old['applied_module_migrations']);
@@ -229,11 +228,11 @@ SQL));
         self::assertSame(1, (int) $lock->fetchColumn());
 
         try {
+            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo(
+                $this->connect('DB_PORT', self::DATABASE),
+            );
             (new UpgradeWorkflow(
                 self::$repositoryRoot,
-                \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo(
-                    $this->connect('DB_PORT', self::DATABASE),
-                ),
             ))->installEmptyDatabase();
         } catch (ModuleException $exception) {
             self::assertSame('MODULE_UPGRADE_LOCKED', $exception->errorCode);
@@ -253,9 +252,9 @@ SQL));
 
     public function testCurrentReleaseNoopRejectsDefinitionDigestDrift(): void
     {
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
         $workflow = new UpgradeWorkflow(
             self::$repositoryRoot,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
         );
         $workflow->installEmptyDatabase();
         $this->database->exec("UPDATE pa_setting_definition SET definition_digest = REPEAT('0', 64) LIMIT 1");
@@ -273,9 +272,9 @@ SQL));
 
     public function testCurrentReleaseNoopRejectsAnExtraModuleInstallation(): void
     {
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
         $workflow = new UpgradeWorkflow(
             self::$repositoryRoot,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
         );
         $workflow->installEmptyDatabase();
         $this->database->exec(<<<'SQL'
@@ -298,9 +297,9 @@ SQL);
 
     public function testCurrentReleaseNoopAllowsRetiredHistoryButRequiresCurrentDefinitionsActive(): void
     {
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database);
         $workflow = new UpgradeWorkflow(
             self::$repositoryRoot,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->database),
         );
         $workflow->installEmptyDatabase();
         $this->database->exec(<<<'SQL'

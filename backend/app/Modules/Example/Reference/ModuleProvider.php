@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\Modules\Example\Reference;
 
-use PDO;
 use PeanutAdmin\App\Modules\Example\Reference\Contracts\ReferenceQuery;
 use PeanutAdmin\App\Modules\Example\Reference\Contracts\ReferenceRuntimeProvider;
-use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Authorization\PdoReferenceScopeProvider;
+use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Authorization\ThinkPhpReferenceScopeProvider;
 use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Authorization\ReferencePolicyProvider;
-use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Persistence\PdoReferenceQuery;
+use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Persistence\ThinkPhpReferenceQuery;
 use PeanutAdmin\DataPermission\Constraint\ColumnReference;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
 use PeanutAdmin\DataPermission\Provider\ConditionProviderRegistry;
@@ -20,7 +19,6 @@ use PeanutAdmin\DataPermission\Provider\StandardResourcePolicyProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
-use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, ReferenceRuntimeProvider
 {
@@ -34,9 +32,8 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return [ReferenceRuntimeProvider::class => self::class];
     }
 
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry): void
     {
-        $pdo = $connection->connect();
         $provider = new ReferencePolicyProvider(new StandardResourcePolicyProvider(
             new ProviderColumnMap(
                 new ColumnReference('item.owner_tenant_id'),
@@ -44,17 +41,17 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
                 null,
                 [],
             ),
-            new ThinkPhpDepartmentHierarchyProvider($connection),
-            new ThinkPhpTargetSetMembershipProvider($connection),
+            new ThinkPhpDepartmentHierarchyProvider(),
+            new ThinkPhpTargetSetMembershipProvider(),
             new ConditionProviderRegistry(),
         ));
-        $scope = new PdoReferenceScopeProvider($pdo);
+        $scope = new ThinkPhpReferenceScopeProvider();
         $registry->registerResourceProvider(ReferencePolicyProvider::class, $provider);
         $registry->registerSharedMasterProvider('example.reference-item', $scope);
     }
 
-    public function referenceQuery(PDO $pdo, DataPermissionEngine $authorization): ReferenceQuery
+    public function referenceQuery(DataPermissionEngine $authorization): ReferenceQuery
     {
-        return new PdoReferenceQuery($pdo, $authorization);
+        return new ThinkPhpReferenceQuery($authorization);
     }
 }

@@ -4,24 +4,20 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\importexport;
 
-use PeanutAdmin\App\filemedia\LocalPrivateStorageProvider;
 use PeanutAdmin\FileMedia\Application\FileService;
-use PeanutAdmin\FileMedia\Application\UploadPolicy;
-use PeanutAdmin\FileMedia\Persistence\FileStore;
 use PeanutAdmin\ImportExport\Application\ImportExportException;
 use PeanutAdmin\ImportExport\File\FileMediaGateway;
 use PeanutAdmin\Kernel\Context\AuthorizedOperationContext;
-use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
-use think\db\PDOConnection;
 use Throwable;
 
 final readonly class ThinkPhpFileMediaGateway implements FileMediaGateway
 {
-    public function __construct(private PDOConnection $connection) {}
+    public function __construct(private FileService $files) {}
+
     public function openCsvInput(AuthorizedOperationContext $context, string $fileKey)
     {
         try {
-            return $this->service()->content($context->tenantContext, $fileKey);
+            return $this->files->content($context->tenantContext, $fileKey);
         } catch (Throwable) {
             throw ImportExportException::fileUnavailable();
         }
@@ -45,7 +41,7 @@ final readonly class ThinkPhpFileMediaGateway implements FileMediaGateway
                 }
             } finally {
                 fclose($output);
-            }return $this->service()->upload($context->tenantContext, $temporary, $filename)->fileKey;
+            }return $this->files->upload($context->tenantContext, $temporary, $filename)->fileKey;
         } catch (Throwable $e) {
             if ($e instanceof ImportExportException) {
                 throw $e;
@@ -53,10 +49,5 @@ final readonly class ThinkPhpFileMediaGateway implements FileMediaGateway
         } finally {
             @unlink($temporary);
         }
-    }
-    private function service(): FileService
-    {
-        $config = require dirname(__DIR__, 2) . '/config/file-media.php';
-        return new FileService(new FileStore($this->connection), new ThinkPhpTransactionManager($this->connection), new LocalPrivateStorageProvider($config['local_root'], $config['public_roots']), new UploadPolicy(['text/csv'], $config['max_bytes']));
     }
 }

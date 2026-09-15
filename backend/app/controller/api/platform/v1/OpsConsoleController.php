@@ -5,67 +5,77 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\controller\api\platform\v1;
 
 use PeanutAdmin\App\controller\api\v1\MemberAdminRuntime;
-use PeanutAdmin\App\ops\OpsRuntimeFactory;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
 use PeanutAdmin\Kernel\Context\PlatformContext;
 use PeanutAdmin\OpsConsole\Application\OpsConsoleException;
 use PeanutAdmin\OpsConsole\Logs\RuntimeLogQuery;
+use PeanutAdmin\OpsConsole\Logs\RuntimeLogService;
+use PeanutAdmin\OpsConsole\Maintenance\MaintenanceService;
+use PeanutAdmin\OpsConsole\Status\OpsStatusService;
+use PeanutAdmin\OpsConsole\Task\OpsTaskService;
 use think\Request;
 use think\Response;
 
 final class OpsConsoleController
 {
+    public function __construct(
+        private readonly OpsStatusService $statusService,
+        private readonly MaintenanceService $maintenanceService,
+        private readonly OpsTaskService $taskService,
+        private readonly RuntimeLogService $logService,
+    ) {}
+
     #[OpenApiHandlerContract] public function status(Request $r): Response
     {
-        return $this->run($r, fn($pdo, $c) => ['data' => OpsRuntimeFactory::status($pdo)->read($c)->toPublicArray()]);
+        return $this->run($r, fn($c) => ['data' => $this->statusService->read($c)->toPublicArray()]);
     }
     #[OpenApiHandlerContract] public function maintenance(Request $r): Response
     {
-        return $this->run($r, fn($pdo, $c) => ['data' => OpsRuntimeFactory::maintenance($pdo)->current($c)?->toPublicArray()]);
+        return $this->run($r, fn($c) => ['data' => $this->maintenanceService->current($c)?->toPublicArray()]);
     }
     #[OpenApiHandlerContract(successStatus: 201, headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function scheduleMaintenance(Request $r): Response
     {
-        return $this->run($r, function ($pdo, $c) use ($r) {
+        return $this->run($r, function ($c) use ($r) {
             $p = $this->body($r, ['reason_key','starts_at','ends_at']);
-            $w = OpsRuntimeFactory::maintenance($pdo)->schedule($c, $this->string($p, 'reason_key'), $this->string($p, 'starts_at'), $this->string($p, 'ends_at'), $this->revision($r, true), $this->idempotency($r));
+            $w = $this->maintenanceService->schedule($c, $this->string($p, 'reason_key'), $this->string($p, 'starts_at'), $this->string($p, 'ends_at'), $this->revision($r, true), $this->idempotency($r));
             return ['data' => $w->toPublicArray(),'status' => 201,'etag' => '"rev-' . $w->revision . '"'];
         });
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function closeMaintenance(Request $r, string $maintenanceKey): Response
     {
-        return $this->run($r, function ($pdo, $c) use ($r, $maintenanceKey) {
-            $w = OpsRuntimeFactory::maintenance($pdo)->close($c, $maintenanceKey, $this->revision($r), $this->idempotency($r));
+        return $this->run($r, function ($c) use ($r, $maintenanceKey) {
+            $w = $this->maintenanceService->close($c, $maintenanceKey, $this->revision($r), $this->idempotency($r));
             return ['data' => $w->toPublicArray(),'etag' => '"rev-' . $w->revision . '"'];
         });
     }
     #[OpenApiHandlerContract(successStatus: 202, headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function backup(Request $r): Response
     {
-        return $this->run($r, function ($pdo, $c) use ($r) {
+        return $this->run($r, function ($c) use ($r) {
             $p = $this->body($r, ['provider_key']);
-            $t = OpsRuntimeFactory::tasks($pdo)->submitBackup($c, $this->string($p, 'provider_key'), $this->idempotency($r));
+            $t = $this->taskService->submitBackup($c, $this->string($p, 'provider_key'), $this->idempotency($r));
             return ['data' => $t->toPublicArray(),'status' => 202,'etag' => '"rev-' . $t->revision . '"'];
         });
     }
     #[OpenApiHandlerContract(successStatus: 202, headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function restore(Request $r): Response
     {
-        return $this->run($r, function ($pdo, $c) use ($r) {
+        return $this->run($r, function ($c) use ($r) {
             $p = $this->body($r, ['provider_key','backup_reference_key','target_key']);
-            $t = OpsRuntimeFactory::tasks($pdo)->submitRestore($c, $this->string($p, 'provider_key'), $this->string($p, 'backup_reference_key'), $this->string($p, 'target_key'), $this->idempotency($r));
+            $t = $this->taskService->submitRestore($c, $this->string($p, 'provider_key'), $this->string($p, 'backup_reference_key'), $this->string($p, 'target_key'), $this->idempotency($r));
             return ['data' => $t->toPublicArray(),'status' => 202,'etag' => '"rev-' . $t->revision . '"'];
         });
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function task(Request $r, string $taskKey): Response
     {
-        return $this->run($r, function ($pdo, $c) use ($taskKey) {
-            $task = OpsRuntimeFactory::tasks($pdo)->task($c, $taskKey);
+        return $this->run($r, function ($c) use ($taskKey) {
+            $task = $this->taskService->task($c, $taskKey);
             return ['data' => $task->toPublicArray(),'etag' => '"rev-' . $task->revision . '"'];
         });
     }
     #[OpenApiHandlerContract] public function logs(Request $r): Response
     {
-        return $this->run($r, function ($pdo, $c) use ($r) {
-            $page = OpsRuntimeFactory::logs($pdo)->read($c, new RuntimeLogQuery((string) $r->get('source', 'platform.audit'), (string) $r->get('severity', 'info'), is_string($r->get('cursor')) ? $r->get('cursor') : null, (int) $r->get('page_size', 20)));
+        return $this->run($r, function ($c) use ($r) {
+            $page = $this->logService->read($c, new RuntimeLogQuery((string) $r->get('source', 'platform.audit'), (string) $r->get('severity', 'info'), is_string($r->get('cursor')) ? $r->get('cursor') : null, (int) $r->get('page_size', 20)));
             return ['data' => $page->toPublicArray()];
         });
     }
@@ -74,7 +84,7 @@ final class OpsConsoleController
     {
         return MemberAdminRuntime::run($r, function () use ($r, $operation) {
             try {
-                return $operation(MemberAdminRuntime::pdo(), $this->context($r));
+                return $operation($this->context($r));
             } catch (OpsConsoleException $e) {
                 throw new AdminAccessException($e->problemCode, $e->status, 'The operations request could not be completed.');
             }

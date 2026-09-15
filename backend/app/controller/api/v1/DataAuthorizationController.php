@@ -4,41 +4,31 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\controller\api\v1;
 
-use PeanutAdmin\App\authorization\DataPermissionRuntimeFactory;
 use PeanutAdmin\DataPermission\Application\DataPolicyAdminService;
 use PeanutAdmin\DataPermission\Application\EffectiveAccessPreviewService;
-use PeanutAdmin\DataPermission\Catalog\ResourceOperationStore;
-use PeanutAdmin\DataPermission\Policy\PolicyStore;
+use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
 use PeanutAdmin\DataPermission\Target\TargetCatalogQuery;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
 use PeanutAdmin\Kernel\Authorization\Application\Etag;
-use PeanutAdmin\Kernel\Authorization\PdoTenantAuthorizationRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
-use PeanutAdmin\Kernel\Persistence\ThinkPhp\ThinkPhpTransactionManager;
-use RuntimeException;
 use think\Request;
 use think\Response;
-use think\db\PDOConnection;
-use think\facade\Db;
 
 final class DataAuthorizationController
 {
+    public function __construct(
+        private readonly DataPermissionEngine $authorization,
+        private readonly DataPolicyAdminService $policies,
+        private readonly EffectiveAccessPreviewService $preview,
+    ) {}
+
     #[OpenApiHandlerContract]
     public function effectiveAccess(Request $request, string $memberId): Response
     {
         return MemberAdminRuntime::run($request, function () use ($request, $memberId): array {
             $validatedMemberId = self::memberId($memberId);
             $context = MemberAdminRuntime::context($request);
-            $connection = self::connection();
-            $pdo = $connection->connect();
-            $result = (new EffectiveAccessPreviewService(
-                new ThinkPhpTransactionManager($connection),
-                new PdoTenantAuthorizationRepository($pdo),
-                new ResourceOperationStore($connection),
-                new PolicyStore($connection),
-                new PdoAuditRepository($pdo),
-            ))->preview($context, $validatedMemberId, MemberAdminRuntime::page($request));
+            $result = $this->preview->preview($context, $validatedMemberId, MemberAdminRuntime::page($request));
 
             return ['data' => $result['data'], 'meta' => $result['meta']];
         });
@@ -65,9 +55,7 @@ final class DataAuthorizationController
                 );
             }
             $page = MemberAdminRuntime::page($request);
-            $connection = self::connection();
-            $runtime = DataPermissionRuntimeFactory::runtime($connection);
-            $result = DataPermissionRuntimeFactory::create($connection, null, $runtime)->searchAllowedTargets(
+            $result = $this->authorization->searchAllowedTargets(
                 $context,
                 $resourceKey,
                 $operation,
@@ -80,12 +68,6 @@ final class DataAuthorizationController
                     $mode,
                 ),
             );
-            $service = new DataPolicyAdminService(
-                $connection,
-                new ThinkPhpTransactionManager($connection),
-                $runtime->targetResolvers,
-            );
-
             return [
                 'data' => array_map(
                     static fn(array $item): array => [
@@ -101,7 +83,7 @@ final class DataAuthorizationController
                     'page_size' => $page->pageSize,
                     'total' => $result->total,
                     'total_pages' => (int) ceil($result->total / $page->pageSize),
-                    'target_cardinality' => $service->targetCardinality(
+                    'target_cardinality' => $this->policies->targetCardinality(
                         $context->tenantId,
                         $resourceKey,
                         $operation,
@@ -126,7 +108,7 @@ final class DataAuthorizationController
             $operation,
         ): array {
             $context = MemberAdminRuntime::context($request);
-            $policy = $this->service()->get(
+            $policy = $this->policies->get(
                 $context->tenantId,
                 (int) $roleId,
                 $resourceKey,
@@ -152,7 +134,7 @@ final class DataAuthorizationController
         ): array {
             $context = MemberAdminRuntime::context($request);
             $ifMatch = MemberAdminRuntime::header($request, 'if-match');
-            $policy = $this->service()->replace(
+            $policy = $this->policies->replace(
                 $context,
                 (int) $roleId,
                 $resourceKey,
@@ -163,27 +145,6 @@ final class DataAuthorizationController
 
             return ['data' => $policy, 'etag' => Etag::format((int) $policy['revision'])];
         });
-    }
-
-    private function service(): DataPolicyAdminService
-    {
-        $connection = self::connection();
-
-        return new DataPolicyAdminService(
-            $connection,
-            new ThinkPhpTransactionManager($connection),
-            DataPermissionRuntimeFactory::runtime($connection)->targetResolvers,
-        );
-    }
-
-    private static function connection(): PDOConnection
-    {
-        $connection = Db::connect();
-        if (!$connection instanceof PDOConnection) {
-            throw new RuntimeException('DATA_PERMISSION_DATABASE_CONNECTION_UNSUPPORTED');
-        }
-
-        return $connection;
     }
 
     private static function memberId(string $value): int

@@ -5,36 +5,37 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\importexport;
 
 use PeanutAdmin\App\http\TenantModuleRuntime;
-use PeanutAdmin\App\module\RuntimeModuleRegistry;
 use PeanutAdmin\ImportExport\Application\ImportExportException;
 use PeanutAdmin\ImportExport\Application\OperationRecord;
 use PeanutAdmin\Kernel\Api\ApiException;
 use PeanutAdmin\Kernel\Host\ExternalOperationResponse;
 use PeanutAdmin\Kernel\Host\ExternalOperationResult;
-use RuntimeException;
-use think\db\PDOConnection;
-use think\facade\Db;
 use think\Request;
 use think\Response;
 
 final class ImportExportHttpRuntime
 {
-    public static function index(Request $request): Response
+    public function __construct(
+        private readonly \PeanutAdmin\ImportExport\Application\ImportExportService $service,
+        private readonly TenantModuleRuntime $runtime,
+    ) {}
+
+    public function index(Request $request): Response
     {
-        return self::read($request, 'listImportExportOperations', '/api/v1/import-export/operations', '/api/v1/import-export/operations', static function (PDOConnection $connection, $context, array $query) {
+        return $this->read($request, 'listImportExportOperations', '/api/v1/import-export/operations', '/api/v1/import-export/operations', function ($context, array $query) {
             if (array_diff(array_keys($query), ['status','page','page_size']) !== []) {
                 throw ImportExportException::invalid();
-            }$result = ImportExportRuntimeFactory::service($connection)->list($context, is_string($query['status'] ?? null) ? $query['status'] : 'queued', TenantModuleRuntime::positiveInt($query['page'] ?? '1', 10000), TenantModuleRuntime::positiveInt($query['page_size'] ?? '20', 100));
+            }$result = $this->service->list($context, is_string($query['status'] ?? null) ? $query['status'] : 'queued', TenantModuleRuntime::positiveInt($query['page'] ?? '1', 10000), TenantModuleRuntime::positiveInt($query['page_size'] ?? '20', 100));
             return ['data' => ['items' => array_map(static fn(OperationRecord $r) => $r->toPublicArray(), $result['items'])],'page' => $result['page'],'page_size' => $result['page_size'],'total' => $result['total']];
         });
     }
-    public static function show(Request $request, string $key): Response
+    public function show(Request $request, string $key): Response
     {
-        return self::read($request, 'getImportExportOperation', '/api/v1/import-export/operations/{operation_key}', '/api/v1/import-export/operations/' . rawurlencode($key), static fn(PDOConnection $connection, $context, array $query) => $query === [] ? ['data' => ImportExportRuntimeFactory::service($connection)->detail($context, $key)->toPublicArray()] : throw ImportExportException::invalid());
+        return $this->read($request, 'getImportExportOperation', '/api/v1/import-export/operations/{operation_key}', '/api/v1/import-export/operations/' . rawurlencode($key), fn($context, array $query) => $query === [] ? ['data' => $this->service->detail($context, $key)->toPublicArray()] : throw ImportExportException::invalid());
     }
-    public static function submitImport(Request $request): Response
+    public function submitImport(Request $request): Response
     {
-        return self::command($request, 'submitImport', '/api/v1/import-export/imports', '/api/v1/import-export/imports', 'create', static function (PDOConnection $connection, $context, array $p, string $idempotency) {
+        return $this->command($request, 'submitImport', '/api/v1/import-export/imports', '/api/v1/import-export/imports', 'create', function ($context, array $p, string $idempotency) {
             self::keys($p, ['provider_key','file_key','mapping']);
             if (!is_array($p['mapping'])) {
                 throw ImportExportException::invalid();
@@ -42,36 +43,35 @@ final class ImportExportHttpRuntime
                 if (!is_string($k) || !is_string($v)) {
                     throw ImportExportException::invalid();
                 }
-            }return ImportExportRuntimeFactory::service($connection)->submitImport($context, self::string($p, 'provider_key'), self::string($p, 'file_key'), $p['mapping'], $idempotency);
+            }return $this->service->submitImport($context, self::string($p, 'provider_key'), self::string($p, 'file_key'), $p['mapping'], $idempotency);
         }, 201);
     }
-    public static function submitExport(Request $request): Response
+    public function submitExport(Request $request): Response
     {
-        return self::command($request, 'submitExport', '/api/v1/import-export/exports', '/api/v1/import-export/exports', 'create', static function (PDOConnection $connection, $context, array $p, string $idempotency) {
+        return $this->command($request, 'submitExport', '/api/v1/import-export/exports', '/api/v1/import-export/exports', 'create', function ($context, array $p, string $idempotency) {
             self::keys($p, ['provider_key']);
-            return ImportExportRuntimeFactory::service($connection)->submitExport($context, self::string($p, 'provider_key'), $idempotency);
+            return $this->service->submitExport($context, self::string($p, 'provider_key'), $idempotency);
         }, 201);
     }
-    public static function cancel(Request $request, string $key): Response
+    public function cancel(Request $request, string $key): Response
     {
-        return self::command($request, 'cancelImportExportOperation', '/api/v1/import-export/operations/{operation_key}/cancel', '/api/v1/import-export/operations/' . rawurlencode($key) . '/cancel', 'cancel', static function (PDOConnection $connection, $context, array $p, string $idempotency, int $revision) use ($key) {
+        return $this->command($request, 'cancelImportExportOperation', '/api/v1/import-export/operations/{operation_key}/cancel', '/api/v1/import-export/operations/' . rawurlencode($key) . '/cancel', 'cancel', function ($context, array $p, string $idempotency, int $revision) use ($key) {
             self::keys($p, []);
-            return ImportExportRuntimeFactory::service($connection)->cancel($context, $key, $revision);
+            return $this->service->cancel($context, $key, $revision);
         });
     }
 
-    private static function read(Request $request, string $id, string $template, string $path, callable $handler): Response
+    private function read(Request $request, string $id, string $template, string $path, callable $handler): Response
     {
-        $connection = self::connection();
         $op = TenantModuleRuntime::operation($id, 'GET', $template, 'peanut.import-export', 'peanut.import-export.read');
         $external = TenantModuleRuntime::request($request, $op, $path);
-        $response = TenantModuleRuntime::host($connection, RuntimeModuleRegistry::compile())->read($op, $external, static function ($authorized, $query) use ($connection, $handler) {
+        $response = $this->runtime->host()->read($op, $external, static function ($authorized, $query) use ($handler) {
             try {
                 self::keys($query->body['payload'] ?? null, []);
                 $raw = $query->body['query'] ?? null;
                 if (!is_array($raw)) {
                     throw ImportExportException::invalid();
-                }$body = $handler($connection, TenantModuleRuntime::authorizedContext($authorized, 'peanut.import-export', 'read'), $raw);
+                }$body = $handler(TenantModuleRuntime::authorizedContext($authorized, 'peanut.import-export', 'read'), $raw);
                 return new ExternalOperationResponse(200, $body);
             } catch (ImportExportException $e) {
                 throw self::problem($e);
@@ -79,33 +79,24 @@ final class ImportExportHttpRuntime
         });
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
-    private static function command(Request $request, string $id, string $template, string $path, string $operation, callable $handler, int $status = 200): Response
+    private function command(Request $request, string $id, string $template, string $path, string $operation, callable $handler, int $status = 200): Response
     {
-        $connection = self::connection();
         $op = TenantModuleRuntime::operation($id, 'POST', $template, 'peanut.import-export', 'peanut.import-export.' . $operation, true, true);
         $external = TenantModuleRuntime::request($request, $op, $path);
-        $response = TenantModuleRuntime::host($connection, RuntimeModuleRegistry::compile())->command($op, $external, static function ($authorized, $command) use ($connection, $handler, $operation, $status) {
+        $response = $this->runtime->host()->command($op, $external, static function ($authorized, $command) use ($handler, $operation, $status) {
             try {
                 $payload = $command->body['payload'] ?? null;
                 if (!is_array($payload) || ($command->body['query'] ?? null) !== [] || !is_string($command->idempotencyKey)) {
                     throw ImportExportException::invalid();
-                }$record = $handler($connection, TenantModuleRuntime::authorizedContext($authorized, 'peanut.import-export', $operation), $payload, $command->idempotencyKey, TenantModuleRuntime::expectedRevision($command, true) ?? 1);
+                }$record = $handler(TenantModuleRuntime::authorizedContext($authorized, 'peanut.import-export', $operation), $payload, $command->idempotencyKey, TenantModuleRuntime::expectedRevision($command, true) ?? 1);
                 return new ExternalOperationResult($status, ['data' => $record->toPublicArray()], 'tenant.import-export.changed', 'peanut.import-export.' . $operation, ['direction' => $record->direction,'revision' => $record->revision], 'import_export_operation', $record->operationKey);
             } catch (ImportExportException $e) {
                 throw self::problem($e);
             }
-        }, guard: TenantModuleRuntime::commandGuard('peanut.import-export'));
+        }, guard: $this->runtime->commandGuard('peanut.import-export'));
         return TenantModuleRuntime::response($response, $external->requestId->value);
     }
 
-    private static function connection(): PDOConnection
-    {
-        $connection = Db::connect();
-        if (!$connection instanceof PDOConnection) {
-            throw new RuntimeException('IMPORT_EXPORT_DATABASE_CONNECTION_UNSUPPORTED');
-        }
-        return $connection;
-    }
     /** @param list<string> $expected */
     private static function keys(mixed $p, array $expected): void
     {

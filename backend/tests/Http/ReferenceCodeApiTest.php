@@ -6,7 +6,7 @@ namespace PeanutAdmin\App\Tests\Http;
 
 use DateTimeImmutable;
 use PeanutAdmin\App\controller\api\v1\ReferenceCodeController;
-use PeanutAdmin\App\referencecode\ReferenceCodeRuntimeFactory;
+use PeanutAdmin\App\referencecode\ReferenceCodeHttpService;
 use PeanutAdmin\Kernel\Host\ExternalOperationDefinition;
 use PeanutAdmin\Kernel\Host\ExternalOperationResponse;
 use PeanutAdmin\ReferenceCodes\Application\EffectiveReferenceCode;
@@ -17,7 +17,7 @@ final class ReferenceCodeApiTest extends TestCase
 {
     public function testDefinesExactlySixTenantOperations(): void
     {
-        $operations = ReferenceCodeRuntimeFactory::operations();
+        $operations = ReferenceCodeHttpService::operations();
 
         self::assertSame([
             'listReferenceCodeSets',
@@ -37,7 +37,7 @@ final class ReferenceCodeApiTest extends TestCase
 
     public function testReadOperationsUseTheExactMethodsPathsAndPermission(): void
     {
-        $operations = ReferenceCodeRuntimeFactory::operations();
+        $operations = ReferenceCodeHttpService::operations();
 
         self::assertOperation(
             $operations['listReferenceCodeSets'],
@@ -64,7 +64,7 @@ final class ReferenceCodeApiTest extends TestCase
 
     public function testCommandOperationsUseTheExactMethodsPathsPermissionAndAtomicContract(): void
     {
-        $operations = ReferenceCodeRuntimeFactory::operations();
+        $operations = ReferenceCodeHttpService::operations();
 
         self::assertOperation(
             $operations['createReferenceCode'],
@@ -91,7 +91,7 @@ final class ReferenceCodeApiTest extends TestCase
 
     public function testCreateInputAcceptsOnlyTheExactRequiredFields(): void
     {
-        $input = ReferenceCodeRuntimeFactory::versionInput([
+        $input = ReferenceCodeHttpService::versionInput([
             'code' => 'sample-code',
             'label' => 'Sample label',
             'metadata' => ['flag' => true],
@@ -120,7 +120,7 @@ final class ReferenceCodeApiTest extends TestCase
             'effective_at' => '2026-07-20T00:00:00.000Z',
             'expires_at' => null,
         ];
-        self::assertArrayNotHasKey('code', ReferenceCodeRuntimeFactory::versionInput($valid, false));
+        self::assertArrayNotHasKey('code', ReferenceCodeHttpService::versionInput($valid, false));
 
         foreach ([
             $valid + ['unknown' => true],
@@ -130,7 +130,7 @@ final class ReferenceCodeApiTest extends TestCase
             $this->expectReferenceCodeError(
                 'REFERENCE_CODE_REQUEST_INVALID',
                 422,
-                static fn() => ReferenceCodeRuntimeFactory::versionInput($invalid, false),
+                static fn() => ReferenceCodeHttpService::versionInput($invalid, false),
             );
         }
     }
@@ -143,9 +143,9 @@ final class ReferenceCodeApiTest extends TestCase
             'includeRetired' => false,
             'page' => 1,
             'pageSize' => 50,
-        ], ReferenceCodeRuntimeFactory::listQuery([]));
+        ], ReferenceCodeHttpService::listQuery([]));
 
-        $query = ReferenceCodeRuntimeFactory::listQuery([
+        $query = ReferenceCodeHttpService::listQuery([
             'as_of' => '2026-07-20T08:09:10.123+08:00',
             'effective_status' => 'inactive',
             'include_retired' => 'true',
@@ -176,44 +176,44 @@ final class ReferenceCodeApiTest extends TestCase
                     ? 'REFERENCE_CODE_INTERVAL_INVALID'
                     : 'REFERENCE_CODE_REQUEST_INVALID',
                 422,
-                static fn() => ReferenceCodeRuntimeFactory::listQuery($query),
+                static fn() => ReferenceCodeHttpService::listQuery($query),
             );
         }
     }
 
     public function testDetailQueryAcceptsOnlyOptionalExactMillisecondAsOf(): void
     {
-        self::assertNull(ReferenceCodeRuntimeFactory::detailQuery([]));
+        self::assertNull(ReferenceCodeHttpService::detailQuery([]));
         self::assertSame(
             '2026-07-20T00:00:00.000+00:00',
-            ReferenceCodeRuntimeFactory::detailQuery(['as_of' => '2026-07-20T00:00:00Z'])?->format('Y-m-d\TH:i:s.vP'),
+            ReferenceCodeHttpService::detailQuery(['as_of' => '2026-07-20T00:00:00Z'])?->format('Y-m-d\TH:i:s.vP'),
         );
 
         foreach ([['other' => 'x'], ['as_of' => 'invalid'], ['as_of' => ['invalid']]] as $query) {
             $this->expectReferenceCodeError(
                 isset($query['other']) ? 'REFERENCE_CODE_REQUEST_INVALID' : 'REFERENCE_CODE_INTERVAL_INVALID',
                 422,
-                static fn() => ReferenceCodeRuntimeFactory::detailQuery($query),
+                static fn() => ReferenceCodeHttpService::detailQuery($query),
             );
         }
     }
 
     public function testDeleteRequiresAnEmptyBody(): void
     {
-        ReferenceCodeRuntimeFactory::assertEmptyBody([]);
+        ReferenceCodeHttpService::assertEmptyBody([]);
         self::addToAssertionCount(1);
 
         $this->expectReferenceCodeError(
             'REFERENCE_CODE_REQUEST_INVALID',
             422,
-            static fn() => ReferenceCodeRuntimeFactory::assertEmptyBody(['reason' => 'not-supported']),
+            static fn() => ReferenceCodeHttpService::assertEmptyBody(['reason' => 'not-supported']),
         );
     }
 
     public function testEntryShapeAndLocationContainNoInternalIdentifiers(): void
     {
         $entry = self::entry();
-        $item = ReferenceCodeRuntimeFactory::item($entry);
+        $item = ReferenceCodeHttpService::item($entry);
 
         self::assertSame([
             'module_key',
@@ -229,7 +229,7 @@ final class ReferenceCodeApiTest extends TestCase
         ], array_keys($item));
         self::assertSame(
             '/api/v1/reference-code-sets/example.owner/generic-codes/codes/sample-code',
-            ReferenceCodeRuntimeFactory::location($entry),
+            ReferenceCodeHttpService::location($entry),
         );
         self::assertStringNotContainsString('tenant', json_encode($item, JSON_THROW_ON_ERROR));
         self::assertStringNotContainsString('member', json_encode($item, JSON_THROW_ON_ERROR));
@@ -237,7 +237,7 @@ final class ReferenceCodeApiTest extends TestCase
 
     public function testHttpResponseSetsNoStoreRequestIdEtagLocationAndProblemContentType(): void
     {
-        $success = ReferenceCodeRuntimeFactory::httpResponse(new ExternalOperationResponse(201, [
+        $success = ReferenceCodeHttpService::httpResponse(new ExternalOperationResponse(201, [
             'data' => self::entry()->toArray(),
         ]), 'req_reference_http_0001');
         self::assertSame('application/json', $success->getHeader('Content-Type'));
@@ -251,7 +251,7 @@ final class ReferenceCodeApiTest extends TestCase
             $success->getHeader('Location'),
         );
 
-        $problem = ReferenceCodeRuntimeFactory::httpResponse(new ExternalOperationResponse(
+        $problem = ReferenceCodeHttpService::httpResponse(new ExternalOperationResponse(
             404,
             ['code' => 'REFERENCE_CODE_NOT_FOUND'],
             'application/problem+json',

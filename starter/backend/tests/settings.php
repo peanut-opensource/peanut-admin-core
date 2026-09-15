@@ -21,8 +21,8 @@ use PeanutAdmin\Settings\Cache\ArrayRevisionedSettingCache;
 use PeanutAdmin\Settings\Database\Schema as SettingsSchema;
 use PeanutAdmin\Settings\Definition\SettingDefinitionLoader;
 use PeanutAdmin\Settings\Definition\SettingDefinitionRegistry;
+use PeanutAdmin\Settings\Definition\SettingDefinitionSynchronizer;
 use PeanutAdmin\Settings\Package as SettingsPackage;
-use PeanutAdmin\Settings\Persistence\SettingStore;
 use PeanutAdmin\Settings\Secret\SecretProtector;
 use PeanutAdmin\Settings\Secret\SecretStorageContext;
 use Phinx\Config\Config;
@@ -161,6 +161,7 @@ try {
     if (!$connection instanceof \think\db\PDOConnection) {
         throw new RuntimeException('Starter Settings requires a ThinkPHP PDO connection.');
     }
+    \think\Container::getInstance()->instance(\think\DbManager::class, $manager);
     $pdo = $connection->connect();
     $assertSame(4, (int) $pdo->query('SELECT COUNT(*) FROM pa_settings_migration')->fetchColumn(), 'Settings migration order is incomplete.');
     foreach (SettingsSchema::tableNames() as $table) {
@@ -219,16 +220,16 @@ SQL);
             : [];
         $definitionRegistry->registerModule($moduleKey, $definitions);
     }
-    $repository = new SettingStore($connection);
+    $synchronizer = new SettingDefinitionSynchronizer();
     $now = new DateTimeImmutable('2026-07-20T00:00:00.000Z', new DateTimeZone('UTC'));
     $assertSame(
         ['inserted' => 1, 'updated' => 0, 'retired' => 0],
-        $repository->synchronize($definitionRegistry, $now),
+        $synchronizer->synchronize($definitionRegistry, $now),
         'Starter definition synchronization did not insert the fictional definition.',
     );
     $assertSame(
         ['inserted' => 0, 'updated' => 0, 'retired' => 0],
-        $repository->synchronize($definitionRegistry, $now),
+        $synchronizer->synchronize($definitionRegistry, $now),
         'Repeated starter definition synchronization must be idempotent.',
     );
 
@@ -249,7 +250,6 @@ SQL);
     };
     $definition = $definitionRegistry->require('example.greeting', 'display-style');
     $resolved = (new SettingResolver(
-        $repository,
         $protector,
         new ArrayRevisionedSettingCache(),
     ))->resolveDeployment($definition, $now);

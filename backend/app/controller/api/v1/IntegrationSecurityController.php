@@ -11,52 +11,54 @@ use think\Response;
 
 final class IntegrationSecurityController
 {
+    public function __construct(private readonly IntegrationSecurityHttpRuntime $runtime) {}
+
     #[OpenApiHandlerContract] public function machines(Request $r): Response
     {
-        return IntegrationSecurityHttpRuntime::machines($r);
+        return $this->runtime->machines($r);
     }
     #[OpenApiHandlerContract(successStatus: 201)] public function createMachine(Request $r): Response
     {
-        return IntegrationSecurityHttpRuntime::createMachine($r);
+        return $this->runtime->createMachine($r);
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function rotateMachine(Request $r, string $identityKey): Response
     {
-        return IntegrationSecurityHttpRuntime::rotateMachine($r, $identityKey);
+        return $this->runtime->rotateMachine($r, $identityKey);
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function revokeMachine(Request $r, string $identityKey): Response
     {
-        return IntegrationSecurityHttpRuntime::revokeMachine($r, $identityKey);
+        return $this->runtime->revokeMachine($r, $identityKey);
     }
     #[OpenApiHandlerContract] public function webhooks(Request $r): Response
     {
-        return IntegrationSecurityHttpRuntime::webhooks($r);
+        return $this->runtime->webhooks($r);
     }
     #[OpenApiHandlerContract(successStatus: 201)] public function createWebhook(Request $r): Response
     {
-        return IntegrationSecurityHttpRuntime::createWebhook($r);
+        return $this->runtime->createWebhook($r);
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function rotateWebhook(Request $r, string $endpointKey): Response
     {
-        return IntegrationSecurityHttpRuntime::rotateWebhook($r, $endpointKey);
+        return $this->runtime->rotateWebhook($r, $endpointKey);
     }
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)] public function disableWebhook(Request $r, string $endpointKey): Response
     {
-        return IntegrationSecurityHttpRuntime::disableWebhook($r, $endpointKey);
+        return $this->runtime->disableWebhook($r, $endpointKey);
     }
     #[OpenApiHandlerContract] public function deliveries(Request $r): Response
     {
-        return IntegrationSecurityHttpRuntime::deliveries($r);
+        return $this->runtime->deliveries($r);
     }
     #[OpenApiHandlerContract] public function attempts(Request $r, string $deliveryKey): Response
     {
-        return IntegrationSecurityHttpRuntime::attempts($r, $deliveryKey);
+        return $this->runtime->attempts($r, $deliveryKey);
     }
     #[OpenApiHandlerContract] public function sessions(Request $r): Response
     {
-        return IntegrationSecurityHttpRuntime::sessions($r);
+        return $this->runtime->sessions($r);
     }
     #[OpenApiHandlerContract] public function revokeSession(Request $r, string $sessionKey): Response
     {
-        return IntegrationSecurityHttpRuntime::revokeSession($r, $sessionKey);
+        return $this->runtime->revokeSession($r, $sessionKey);
     }
 }

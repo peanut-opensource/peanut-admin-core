@@ -12,12 +12,14 @@ use think\Response;
 
 final class UpgradeStatusController
 {
+    public function __construct(private readonly UpgradeStatusService $upgrades) {}
+
     #[OpenApiHandlerContract]
     public function show(Request $request): Response
     {
         return MemberAdminRuntime::run(
             $request,
-            static fn(): array => ['data' => UpgradeStatusService::fromEnvironment()->status()],
+            fn(): array => ['data' => $this->upgrades->status()],
         );
     }
 }

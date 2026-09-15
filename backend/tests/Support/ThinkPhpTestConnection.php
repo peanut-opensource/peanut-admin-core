@@ -6,7 +6,9 @@ namespace PeanutAdmin\App\Tests\Support;
 
 use PDO;
 use RuntimeException;
+use think\Container;
 use think\DbManager;
+use think\db\ConnectionInterface;
 use think\db\PDOConnection;
 use think\db\builder\Mysql as MysqlBuilder;
 use think\db\builder\Sqlite as SqliteBuilder;
@@ -19,11 +21,31 @@ final class ThinkPhpTestConnection
 
     public static function fromPdo(PDO $pdo): PDOConnection
     {
-        return match ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME)) {
+        $connection = match ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME)) {
             'mysql' => new SharedPdoMysqlConnection($pdo),
             'sqlite' => new SharedPdoSqliteConnection($pdo),
             default => throw new RuntimeException('Test database driver is unsupported.'),
         };
+        $manager = new SharedPdoDbManager($connection);
+        $connection->setDb($manager);
+        Container::getInstance()->instance(DbManager::class, $manager);
+
+        return $connection;
+    }
+}
+
+/** Registers the exact fixture connection as ThinkPHP's default database manager. */
+final class SharedPdoDbManager extends DbManager
+{
+    public function __construct(private readonly ConnectionInterface $connection)
+    {
+        parent::__construct();
+    }
+
+    /** @param array<array-key, mixed>|string|null $name */
+    protected function instance(string|array|null $name = null, bool $force = false): ConnectionInterface
+    {
+        return $this->connection;
     }
 }
 
@@ -36,9 +58,14 @@ final class SharedPdoMysqlConnection extends Mysql
             'builder' => MysqlBuilder::class,
             'prefix' => 'pa_',
         ]);
-        $this->setDb(new DbManager());
     }
 
+    /**
+     * @param mixed $dsn
+     * @param mixed $username
+     * @param mixed $password
+     * @param mixed $params
+     */
     protected function createPdo($dsn, $username, $password, $params): PDO
     {
         return $this->sharedPdo;
@@ -54,9 +81,14 @@ final class SharedPdoSqliteConnection extends Sqlite
             'builder' => SqliteBuilder::class,
             'prefix' => 'pa_',
         ]);
-        $this->setDb(new DbManager());
     }
 
+    /**
+     * @param mixed $dsn
+     * @param mixed $username
+     * @param mixed $password
+     * @param mixed $params
+     */
     protected function createPdo($dsn, $username, $password, $params): PDO
     {
         return $this->sharedPdo;

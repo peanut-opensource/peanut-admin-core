@@ -80,25 +80,30 @@ final class PerformanceQualificationContractTest extends TestCase
     public function testTypedTargetBenchmarkUsesTheRealResolverAndPaginatedQuery(): void
     {
         $runner = (string) file_get_contents($this->root . '/tests/performance/run.php');
-        self::assertStringContainsString('PdoTargetResolver', $runner);
-        self::assertStringContainsString('PdoWorkItemQuery', $runner);
+        self::assertStringContainsString('ThinkPhpTargetResolver', $runner);
+        self::assertStringContainsString('$app->make(WorkItemQuery::class)', $runner);
         self::assertStringContainsString("->list(\$initial->context, \$typedTargets, 1, 20)", $runner);
 
-        foreach ([
-            'backend/app/Modules/Example/Target/Infrastructure/Authorization/PdoTargetResolver.php',
-            'backend/app/Modules/Example/Reference/Infrastructure/Authorization/PdoReferenceScopeProvider.php',
-            'packages/php/data-permission/src/Constraint/PdoQueryConstraintCompiler.php',
-        ] as $path) {
-            $source = (string) file_get_contents($this->root . '/' . $path);
-            self::assertStringContainsString('JSON_TABLE', $source, $path);
-        }
+        $resolver = (string) file_get_contents(
+            $this->root . '/backend/app/Modules/Example/Target/Infrastructure/Authorization/ThinkPhpTargetResolver.php',
+        );
+        self::assertStringContainsString("::scope('tenant',", $resolver);
+        $sharedMaster = (string) file_get_contents(
+            $this->root . '/backend/app/Modules/Example/Reference/Infrastructure/Authorization/ThinkPhpReferenceScopeProvider.php',
+        );
+        self::assertStringContainsString('ReferenceItem::alias(', $sharedMaster);
+        self::assertStringNotContainsString('PDO', $resolver . $sharedMaster);
+        $applier = (string) file_get_contents(
+            $this->root . '/packages/php/data-permission/src/Constraint/ThinkPhpQueryConstraintApplier.php',
+        );
+        self::assertStringContainsString('JSON_TABLE', $applier);
         $query = (string) file_get_contents(
-            $this->root . '/backend/app/Modules/Example/WorkItem/Infrastructure/Persistence/PdoWorkItemQuery.php',
+            $this->root . '/backend/app/Modules/Example/WorkItem/Infrastructure/Persistence/ThinkPhpWorkItemQuery.php',
         );
         self::assertStringContainsString('queryConstraint', $query);
-        self::assertStringContainsString('PdoQueryConstraintCompiler', $query);
+        self::assertStringContainsString('ThinkPhpQueryConstraintApplier', $query);
         $catalog = (string) file_get_contents(
-            $this->root . '/backend/app/Modules/Example/Target/Infrastructure/Authorization/PdoTargetCatalogProvider.php',
+            $this->root . '/backend/app/Modules/Example/Target/Infrastructure/Authorization/ThinkPhpTargetCatalogProvider.php',
         );
         self::assertStringContainsString('EffectivePolicySet', $catalog);
         self::assertStringNotContainsString('allowedTargetIds', $catalog);

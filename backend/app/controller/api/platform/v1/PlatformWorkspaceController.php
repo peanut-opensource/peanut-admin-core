@@ -9,19 +9,23 @@ use PeanutAdmin\App\controller\api\v1\MemberAdminRuntime;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
 use PeanutAdmin\Kernel\Authorization\Application\Etag;
-use PeanutAdmin\Kernel\Authorization\RevisionPermissionCache;
 use PeanutAdmin\Kernel\Context\PlatformContext;
+use PeanutAdmin\Kernel\Menu\MenuCatalogRepository;
 use PeanutAdmin\Kernel\Menu\MenuDefinition;
 use PeanutAdmin\Kernel\Menu\MenuRegistry;
-use PeanutAdmin\Kernel\Menu\PdoMenuCatalogRepository;
 use PeanutAdmin\Kernel\Platform\Application\PlatformWorkspaceQueryService;
-use PeanutAdmin\Kernel\Platform\Authorization\PdoPlatformAuthorizationRepository;
 use PeanutAdmin\Kernel\Platform\Authorization\PlatformAuthorizationEvaluator;
 use think\Request;
 use think\Response;
 
 final class PlatformWorkspaceController
 {
+    public function __construct(
+        private readonly PlatformWorkspaceQueryService $workspace,
+        private readonly MenuCatalogRepository $menus,
+        private readonly PlatformAuthorizationEvaluator $authorization,
+    ) {}
+
     #[OpenApiHandlerContract]
     public function tenants(Request $request): Response
     {
@@ -126,20 +130,14 @@ final class PlatformWorkspaceController
     {
         return MemberAdminRuntime::run($request, function () use ($request): array {
             $context = $this->context($request);
-            $pdo = MemberAdminRuntime::pdo();
-            $repository = new PdoMenuCatalogRepository($pdo);
-            $deployment = array_fill_keys($repository->activeDeploymentModules(), true);
-            $permissions = new PlatformAuthorizationEvaluator(
-                new PdoPlatformAuthorizationRepository($pdo),
-                new RevisionPermissionCache(),
-            );
+            $deployment = array_fill_keys($this->menus->activeDeploymentModules(), true);
             $available = static fn(string $module): bool => in_array($module, ['core', 'platform'], true)
                 || isset($deployment[$module]);
-            $visible = (new MenuRegistry($repository->activeDefinitions('platform')))->visible(
+            $visible = (new MenuRegistry($this->menus->activeDefinitions('platform')))->visible(
                 $context->clientKey,
                 $available,
                 $available,
-                static fn(string $permission): bool => $permissions->allows($context, $permission),
+                fn(string $permission): bool => $this->authorization->allows($context, $permission),
             );
 
             return ['data' => $this->tree($visible)];
@@ -151,23 +149,17 @@ final class PlatformWorkspaceController
     {
         return MemberAdminRuntime::run($request, function () use ($request): array {
             $context = $this->context($request);
-            $pdo = MemberAdminRuntime::pdo();
-            $repository = new PdoMenuCatalogRepository($pdo);
-            $deployment = array_fill_keys($repository->activeDeploymentModules(), true);
-            $permissions = new PlatformAuthorizationEvaluator(
-                new PdoPlatformAuthorizationRepository($pdo),
-                new RevisionPermissionCache(),
-            );
+            $deployment = array_fill_keys($this->menus->activeDeploymentModules(), true);
             $available = static fn(string $module): bool => in_array($module, ['core', 'platform'], true)
                 || isset($deployment[$module]);
 
             return ['data' => MenuDiagnosticRuntime::explain(
-                $repository->activeDefinitions('platform'),
+                $this->menus->activeDefinitions('platform'),
                 'platform',
                 $context->clientKey,
                 $available,
                 $available,
-                static fn(string $permission): bool => $permissions->allows($context, $permission),
+                fn(string $permission): bool => $this->authorization->allows($context, $permission),
             )];
         });
     }
@@ -185,7 +177,7 @@ final class PlatformWorkspaceController
 
     private function service(): PlatformWorkspaceQueryService
     {
-        return new PlatformWorkspaceQueryService(MemberAdminRuntime::pdo());
+        return $this->workspace;
     }
 
     /**

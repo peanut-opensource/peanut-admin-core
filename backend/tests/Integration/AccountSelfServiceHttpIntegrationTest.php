@@ -8,8 +8,8 @@ use PDO;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
 use PeanutAdmin\App\controller\api\v1\AccountController;
-use PeanutAdmin\App\middleware\TenantAuthRuntimeFactory;
 use PeanutAdmin\Kernel\Auth\TenantAuthentication;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use think\App;
@@ -65,9 +65,9 @@ final class AccountSelfServiceHttpIntegrationTest extends TestCase
         putenv('AUTH_IDENTIFIER_HMAC_KEY=account-http-integration-hmac-key-2026');
 
         $root = dirname(__DIR__, 3);
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo);
         (new InstallWorkflow(
             $root,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
         ))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
@@ -83,7 +83,9 @@ final class AccountSelfServiceHttpIntegrationTest extends TestCase
                 'owner_name' => 'Account Owner',
             ],
         );
-        $authentication = TenantAuthRuntimeFactory::create(pdo: $this->pdo)->login(
+        $app = new App($root . '/backend');
+        $app->initialize();
+        $authentication = $app->make(TenantAuthService::class)->login(
             self::EMAIL,
             self::PASSWORD,
             'account-http',
@@ -266,9 +268,9 @@ SQL));
             'Cookie metadata must be prepared before the transactional password mutation starts.',
         );
         self::assertStringNotContainsString(
-            'TenantAuthRuntimeFactory::',
+            'ConnectionInterface',
             $source,
-            'Password changes must not construct the database and password-hashing authentication Runtime.',
+            'Password changes must not accept or construct database infrastructure.',
         );
     }
 

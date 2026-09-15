@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallProductProfileApplier;
-use PeanutAdmin\Kernel\Identity\PasswordHasher;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoIdentityRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoMembershipRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoPlatformRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTenantRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
 use PeanutAdmin\Kernel\Platform\Bootstrap\BootstrapService;
+use think\App;
+use think\db\PDOConnection;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
@@ -31,15 +26,13 @@ $pdo = new PDO(
 );
 
 $operatorId = (int) $pdo->query('SELECT id FROM pa_platform_operator ORDER BY id LIMIT 1')->fetchColumn();
-$bootstrap = new BootstrapService(
-    new PdoTransactionManager($pdo),
-    new PdoIdentityRepository($pdo),
-    new PdoTenantRepository($pdo),
-    new PdoMembershipRepository($pdo),
-    new PdoPlatformRepository($pdo),
-    new PdoAuditRepository($pdo),
-    new PasswordHasher(),
-);
+$app = new App($root . '/backend');
+$app->initialize();
+$connection = $app->db->connect();
+if (!$connection instanceof PDOConnection) {
+    throw new RuntimeException('Recovery fixture requires a ThinkPHP PDO connection.');
+}
+$bootstrap = new BootstrapService();
 $beta = $bootstrap->provisionTenantOwnerCandidate(
     $operatorId,
     'beta',
@@ -61,7 +54,7 @@ $profile = InstallProductProfile::load(
     $root . '/profiles/reference-admin.json',
     $root . '/schemas/product-profile.schema.json',
 );
-(new InstallProductProfileApplier($root, $pdo))->apply($beta->tenantId, $profile);
+(new InstallProductProfileApplier($root))->apply($beta->tenantId, $profile);
 
 $alphaId = (int) $pdo->query("SELECT id FROM pa_tenant WHERE code = 'alpha'")->fetchColumn();
 $now = gmdate('Y-m-d H:i:s.000');

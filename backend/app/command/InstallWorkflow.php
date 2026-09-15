@@ -4,28 +4,13 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\command;
 
-use PDO;
-use PeanutAdmin\Kernel\Identity\PasswordHasher;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoIdentityRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoMembershipRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoPlatformRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTenantRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
 use PeanutAdmin\Kernel\Platform\Bootstrap\BootstrapService;
 use RuntimeException;
-use think\db\PDOConnection;
+use think\facade\Db;
 
 final readonly class InstallWorkflow
 {
-    private PDO $pdo;
-
-    public function __construct(
-        private string $root,
-        private PDOConnection $connection,
-    ) {
-        $this->pdo = $connection->connect();
-    }
+    public function __construct(private string $root) {}
 
     /**
      * @param array{code: string, name: string, owner_email: string, owner_name: string, owner_password?: string}|null $tenant
@@ -40,17 +25,13 @@ final readonly class InstallWorkflow
         bool $allowExisting = false,
     ): array {
         (new InstallEnvironmentChecker($this->root))->assertReady();
-        $upgradeWorkflow = new UpgradeWorkflow($this->root, $this->connection);
+        $upgradeWorkflow = new UpgradeWorkflow($this->root);
         $existingSchema = $this->tableExists('pa_platform_operator');
         $upgrade = $allowExisting && $existingSchema
             ? $upgradeWorkflow->assertCurrentReleaseNoop()
             : $upgradeWorkflow->installEmptyDatabase();
 
-        $operatorStatement = $this->pdo->query('SELECT COUNT(*) FROM pa_platform_operator');
-        if ($operatorStatement === false) {
-            throw new RuntimeException('INSTALL_STATE_UNAVAILABLE: platform bootstrap state could not be read.');
-        }
-        $operatorCount = (int) $operatorStatement->fetchColumn();
+        $operatorCount = Db::name('platform_operator')->count();
         if ($existingSchema && $operatorCount === 0) {
             throw new RuntimeException('INSTALL_INCOMPLETE: existing schema has no platform owner.');
         }
@@ -109,7 +90,7 @@ final readonly class InstallWorkflow
                 $candidate->tenantId,
                 'install-tenant-activate-' . bin2hex(random_bytes(12)),
             );
-            $appliedProfile = (new InstallProductProfileApplier($this->root, $this->connection))
+            $appliedProfile = (new InstallProductProfileApplier($this->root))
                 ->apply($candidate->tenantId, $profile);
             $tenantResult = [
                 'tenant_id' => $candidate->tenantId,
@@ -129,25 +110,14 @@ final readonly class InstallWorkflow
 
     private function tableExists(string $table): bool
     {
-        $statement = $this->pdo->prepare(<<<'SQL'
-SELECT COUNT(*) FROM information_schema.tables
-WHERE table_schema = DATABASE() AND table_name = :table_name
-SQL);
-        $statement->execute(['table_name' => $table]);
-
-        return (int) $statement->fetchColumn() === 1;
+        return Db::table('information_schema.tables')
+            ->whereRaw('table_schema = DATABASE()')
+            ->where('table_name', $table)
+            ->count() === 1;
     }
 
     private function bootstrapService(): BootstrapService
     {
-        return new BootstrapService(
-            new PdoTransactionManager($this->pdo),
-            new PdoIdentityRepository($this->pdo),
-            new PdoTenantRepository($this->pdo),
-            new PdoMembershipRepository($this->pdo),
-            new PdoPlatformRepository($this->pdo),
-            new PdoAuditRepository($this->pdo),
-            new PasswordHasher(),
-        );
+        return new BootstrapService();
     }
 }

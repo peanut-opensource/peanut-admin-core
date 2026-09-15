@@ -4,32 +4,35 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\ops;
 
-use PDO;
 use PeanutAdmin\App\command\HealthCheckService;
 use PeanutAdmin\App\upgrade\RepositoryInspector;
 use PeanutAdmin\App\upgrade\UpgradeStatusService;
 use PeanutAdmin\Kernel\Context\PlatformContext;
 use PeanutAdmin\OpsConsole\Status\OpsStatusSnapshot;
 use PeanutAdmin\OpsConsole\Status\RuntimeStatusProvider;
+use think\facade\Db;
 
 final readonly class HostRuntimeStatusProvider implements RuntimeStatusProvider
 {
-    public function __construct(private PDO $pdo, private string $root) {}
+    public function __construct(
+        private string $root,
+        private HealthCheckService $health,
+        private UpgradeStatusService $upgrades,
+    ) {}
+
     public function snapshot(PlatformContext $context): OpsStatusSnapshot
     {
-        $health = HealthCheckService::fromEnvironment()->check();
+        $health = $this->health->check();
         $checks = [];
         foreach ($health->checks as $key => $check) {
             $checks[] = ['key' => $key,'status' => $check['status'],'critical' => $check['critical'],'latency_ms' => $check['latency_ms']];
         }
         $repository = (new RepositoryInspector())->inspect($this->root);
-        $statement = $this->pdo->query("SELECT module_key,migration_key,checksum,status FROM pa_module_migration ORDER BY module_key,migration_key");
-        if ($statement === false) {
-            throw new \RuntimeException('Unable to read migration status.');
-        }$migrations = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $migrations = Db::name('module_migration')->order('module_key')->order('migration_key')
+            ->field('module_key,migration_key,checksum,status')->select()->toArray();
         $applied = count(array_filter($migrations, static fn(array $r): bool => $r['status'] === 'applied'));
         $digest = hash('sha256', json_encode($migrations, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
-        $upgrade = UpgradeStatusService::fromEnvironment()->status();
+        $upgrade = $this->upgrades->status();
         $target = is_array($upgrade['target'] ?? null) ? $upgrade['target'] : [];
         $preflight = is_array($upgrade['preflight'] ?? null) ? $upgrade['preflight'] : [];
         $backup = is_array($upgrade['backup'] ?? null) ? $upgrade['backup'] : [];

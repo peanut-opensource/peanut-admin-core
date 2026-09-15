@@ -16,6 +16,8 @@ use think\Response;
 
 final class PlatformAccessController
 {
+    public function __construct(private readonly PlatformAccessAdminService $platformAccess) {}
+
     #[OpenApiHandlerContract(
         successStatus: 201,
         headers: OpenApiHandlerContract::CREATED_HEADERS,
@@ -26,12 +28,10 @@ final class PlatformAccessController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $operator = $this->service()->createOperator(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (string) ($body['email'] ?? ''),
                 (string) ($body['display_name'] ?? ''),
                 isset($body['initial_password']) ? (string) $body['initial_password'] : null,
-                $context->requestId,
             );
 
             return [
@@ -50,13 +50,11 @@ final class PlatformAccessController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $operator = $this->service()->updateOperator(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $operatorId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 (string) ($body['display_name'] ?? ''),
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return ['data' => $operator, 'etag' => Etag::format((int) $operator['security_revision'])];
@@ -71,13 +69,11 @@ final class PlatformAccessController
             $body = MemberAdminRuntime::body($request);
             $rawRoleIds = is_array($body['role_ids'] ?? null) ? $body['role_ids'] : [];
             $operator = $this->service()->replaceOperatorRoles(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $operatorId,
                 array_values(array_map(static fn(mixed $id): int => (int) $id, $rawRoleIds)),
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return ['data' => $operator, 'etag' => Etag::format((int) $operator['security_revision'])];
@@ -112,12 +108,10 @@ final class PlatformAccessController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $role = $this->service()->createRole(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (string) ($body['key'] ?? ''),
                 (string) ($body['name'] ?? ''),
                 isset($body['description']) ? (string) $body['description'] : null,
-                $context->requestId,
             );
 
             return [
@@ -136,14 +130,12 @@ final class PlatformAccessController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $role = $this->service()->updateRole(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $roleId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 (string) ($body['name'] ?? ''),
                 isset($body['description']) ? (string) $body['description'] : null,
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return ['data' => $role, 'etag' => Etag::format((int) $role['revision'])];
@@ -157,12 +149,10 @@ final class PlatformAccessController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $role = $this->service()->archiveRole(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $roleId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return ['data' => $role, 'etag' => Etag::format((int) $role['revision'])];
@@ -177,13 +167,11 @@ final class PlatformAccessController
             $body = MemberAdminRuntime::body($request);
             $rawKeys = is_array($body['permission_keys'] ?? null) ? $body['permission_keys'] : [];
             $role = $this->service()->replaceRolePermissions(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $roleId,
                 array_values(array_map(static fn(mixed $key): string => (string) $key, $rawKeys)),
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return ['data' => $role, 'etag' => Etag::format((int) $role['revision'])];
@@ -199,13 +187,11 @@ final class PlatformAccessController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $operator = $this->service()->transitionOperator(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $operatorId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 $status,
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return ['data' => $operator, 'etag' => Etag::format((int) $operator['security_revision'])];
@@ -225,6 +211,6 @@ final class PlatformAccessController
 
     private function service(): PlatformAccessAdminService
     {
-        return new PlatformAccessAdminService(MemberAdminRuntime::pdo());
+        return $this->platformAccess;
     }
 }

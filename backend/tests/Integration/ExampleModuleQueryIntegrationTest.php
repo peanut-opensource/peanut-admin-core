@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\Tests\Integration;
 
 use PDO;
-use PeanutAdmin\App\authorization\DataPermissionRuntimeFactory;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\middleware\TenantAuthRuntimeFactory;
-use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Authorization\PdoReferenceScopeProvider;
-use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Persistence\PdoReferenceQuery;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\PdoTargetResolver;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Persistence\PdoTargetQuery;
-use PeanutAdmin\App\Modules\Example\WorkItem\Infrastructure\Persistence\PdoWorkItemQuery;
+use PeanutAdmin\App\Modules\Example\Reference\Contracts\ReferenceQuery;
+use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Authorization\ThinkPhpReferenceScopeProvider;
+use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ThinkPhpTargetResolver;
+use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemQuery;
 use PeanutAdmin\DataPermission\Context\AuthorizationContext;
+use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
+use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\DataPermission\Target\TargetCatalogQuery;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetSet;
 use PeanutAdmin\Kernel\Auth\TenantAuthentication;
-use PeanutAdmin\Testing\Authorization\PdoAuthorizationFixtureSeeder;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
+use PeanutAdmin\Testing\Authorization\ThinkPhpAuthorizationFixtureSeeder;
 use PHPUnit\Framework\TestCase;
+use think\App;
 
 final class ExampleModuleQueryIntegrationTest extends TestCase
 {
@@ -86,9 +87,9 @@ final class ExampleModuleQueryIntegrationTest extends TestCase
             $root . '/schemas/product-profile.schema.json',
         );
         $password = 'Example-Query-P0-Only-2026!';
+        \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo);
         $installation = (new InstallWorkflow(
             $root,
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
         ))->run(
             $profile,
             'query-owner@example.test',
@@ -108,7 +109,7 @@ final class ExampleModuleQueryIntegrationTest extends TestCase
         if ($projectIds === []) {
             throw new \RuntimeException('The example query fixture did not create Projects.');
         }
-        $authorizationFixture = new PdoAuthorizationFixtureSeeder($this->pdo);
+        $authorizationFixture = new ThinkPhpAuthorizationFixtureSeeder();
         $roleId = $authorizationFixture->roleForMember($tenantId, $memberId);
         $authorizationFixture->grantPermissions($tenantId, $roleId, [
             'example.reference.read',
@@ -137,7 +138,9 @@ final class ExampleModuleQueryIntegrationTest extends TestCase
             [['example.project' => $projectSetId]],
         );
 
-        $authentication = TenantAuthRuntimeFactory::create(pdo: $this->pdo)->login(
+        $app = new App($root . '/backend');
+        $app->initialize();
+        $authentication = $app->make(TenantAuthService::class)->login(
             'query-owner@example.test',
             $password,
             'query-test',
@@ -147,17 +150,16 @@ final class ExampleModuleQueryIntegrationTest extends TestCase
         );
         self::assertInstanceOf(TenantAuthentication::class, $authentication);
         $targetSet = new TypedResourceTargetSet('example.project', $projectIds);
-        $resolved = (new PdoTargetResolver($this->pdo))->resolveAndValidate(
+        $runtime = $app->make(DataPermissionRuntimeRegistry::class);
+        $resolved = $runtime->targetResolvers->get(ThinkPhpTargetResolver::class)->resolveAndValidate(
             $authentication->context,
             $targetSet,
         );
         self::assertCount(501, $resolved->targets->sets[0]->targetIds);
 
-        $authorization = DataPermissionRuntimeFactory::create(
-            \PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection::fromPdo($this->pdo),
-        );
+        $authorization = $app->make(DataPermissionEngine::class);
         $targets = new TypedResourceTargetCollection([$targetSet]);
-        $page = (new PdoWorkItemQuery($this->pdo, $authorization, new PdoTargetQuery($this->pdo)))->list(
+        $page = $app->make(WorkItemQuery::class)->list(
             $authentication->context,
             $targets,
             2,
@@ -169,7 +171,7 @@ final class ExampleModuleQueryIntegrationTest extends TestCase
         self::assertCount(50, $page->items);
 
         $authorizationContext = new AuthorizationContext($authentication->context, null);
-        $scope = new PdoReferenceScopeProvider($this->pdo);
+        $scope = new ThinkPhpReferenceScopeProvider();
         self::assertSame(
             [(string) $referenceId],
             $scope->allowedIds(
@@ -178,7 +180,7 @@ final class ExampleModuleQueryIntegrationTest extends TestCase
                 'view',
             ),
         );
-        self::assertCount(1, (new PdoReferenceQuery($this->pdo, $authorization))->candidates(
+        self::assertCount(1, $app->make(ReferenceQuery::class)->candidates(
             $authentication->context,
             new TypedResourceTargetCollection([$targetSet]),
             'view',

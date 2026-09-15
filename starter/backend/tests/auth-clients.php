@@ -5,19 +5,18 @@ declare(strict_types=1);
 use Composer\InstalledVersions;
 use Phinx\Config\Config;
 use Phinx\Migration\Manager;
-use PeanutAdmin\InternalStarter\Auth\TenantAuthRuntimeFactory;
 use PeanutAdmin\Kernel\Auth\AuthException;
+use PeanutAdmin\Kernel\Auth\Persistence\ThinkPhpTenantAuthRepository;
+use PeanutAdmin\Kernel\Auth\SystemClock;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
+use PeanutAdmin\Kernel\Auth\TenantClientRegistry;
+use PeanutAdmin\Kernel\Auth\TokenIssuer;
 use PeanutAdmin\Kernel\Http\TenantAuthEndpoint;
 use PeanutAdmin\Kernel\Identity\PasswordHasher;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoAuditRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoIdentityRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoMembershipRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoPlatformRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTenantRepository;
-use PeanutAdmin\Kernel\Persistence\Pdo\PdoTransactionManager;
 use PeanutAdmin\Kernel\Platform\Bootstrap\BootstrapService;
 use PeanutAdmin\Kernel\Package as KernelPackage;
 use PeanutAdmin\DataPermission\Package as DataPermissionPackage;
+use think\App;
 use think\console\Input;
 use think\migration\NullOutput;
 
@@ -76,17 +75,14 @@ try {
     $migrate($kernelRoot . '/database/migrations', 'pa_kernel_migration');
     $migrate($dataPermissionRoot . '/database/migrations', 'pa_data_permission_migration');
     $pdo = new PDO($dsn . ";dbname={$databaseName}", 'root', $rootCredential, $options);
-    $transactions = new PdoTransactionManager($pdo);
+    putenv('DB_HOST=127.0.0.1');
+    putenv('DB_PORT=' . $port);
+    putenv('DB_DATABASE=' . $databaseName);
+    putenv('DB_USERNAME=root');
+    putenv('DB_PASSWORD=' . $rootCredential);
+    (new App($root . '/backend'))->initialize();
     $passwords = new PasswordHasher();
-    $bootstrap = new BootstrapService(
-        $transactions,
-        new PdoIdentityRepository($pdo),
-        new PdoTenantRepository($pdo),
-        new PdoMembershipRepository($pdo),
-        new PdoPlatformRepository($pdo),
-        new PdoAuditRepository($pdo),
-        $passwords,
-    );
+    $bootstrap = new BootstrapService(passwords: $passwords);
     $email = 'owner@example.test';
     $plainPassword = 'starter-password-value-2026';
     $platform = $bootstrap->bootstrapPlatformOwner(
@@ -116,14 +112,37 @@ try {
         'starter-tenant-activate',
     );
 
-    $factory = new TenantAuthRuntimeFactory(
-        $pdo,
+    $authConfig = require $root . '/backend/config/auth.php';
+    $clientDefinitions = $authConfig['tenant_clients'] ?? null;
+    if (!is_array($clientDefinitions) || !array_is_list($clientDefinitions)) {
+        throw new RuntimeException('Starter Tenant Client configuration is invalid.');
+    }
+    $clientKeys = [];
+    foreach ($clientDefinitions as $definition) {
+        $clientKey = is_string($definition) ? $definition : ($definition['key'] ?? null);
+        if (!is_string($clientKey) || $clientKey === '') {
+            throw new RuntimeException('Starter Tenant Client configuration is invalid.');
+        }
+        $clientKeys[] = $clientKey;
+    }
+    $expectedClientKeys = ['operations-web', 'reporting-web'];
+    $sortedClientKeys = $clientKeys;
+    sort($sortedClientKeys, SORT_STRING);
+    if ($sortedClientKeys !== $expectedClientKeys) {
+        throw new RuntimeException('Starter Tenant Client configuration does not match the generated fixture.');
+    }
+    $clients = new TenantClientRegistry($clientKeys);
+    $service = static fn(string $clientKey): TenantAuthService => new TenantAuthService(
+        new ThinkPhpTenantAuthRepository(),
         $passwords,
-        $root,
+        new SystemClock(),
+        new TokenIssuer(),
         'starter-identifier-hmac-secret-at-least-32-bytes',
+        $clients,
+        $clientKey,
     );
-    $operations = new TenantAuthEndpoint($factory->create('operations-web'));
-    $reporting = new TenantAuthEndpoint($factory->create('reporting-web'));
+    $operations = new TenantAuthEndpoint($service('operations-web'));
+    $reporting = new TenantAuthEndpoint($service('reporting-web'));
     $login = static function (TenantAuthEndpoint $endpoint, string $requestId) use (
         $email,
         $plainPassword,

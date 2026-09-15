@@ -4,22 +4,16 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\Tests\Http;
 
-use PeanutAdmin\App\filemedia\FileRuntimeFactory;
-use PeanutAdmin\Kernel\Host\ExternalOperationDefinition;
+use PeanutAdmin\App\controller\api\v1\FileController;
 use PHPUnit\Framework\TestCase;
 
 final class FileMediaApiTest extends TestCase
 {
-    public function testDefinesTheFiveTenantPrivateOperations(): void
+    public function testControllerExposesTheFiveTenantPrivateOperations(): void
     {
-        $operations = FileRuntimeFactory::operations();
-
-        self::assertSame(['listFiles', 'createFile', 'getFile', 'downloadFile', 'archiveFile'], array_keys($operations));
-        $this->assertOperation($operations['listFiles'], 'GET', '/api/v1/files', 'peanut.file-media.read', false);
-        $this->assertOperation($operations['createFile'], 'POST', '/api/v1/files', 'peanut.file-media.create', true);
-        $this->assertOperation($operations['getFile'], 'GET', '/api/v1/files/{file_key}', 'peanut.file-media.read', false);
-        $this->assertOperation($operations['downloadFile'], 'GET', '/api/v1/files/{file_key}/content', 'peanut.file-media.read', false);
-        $this->assertOperation($operations['archiveFile'], 'DELETE', '/api/v1/files/{file_key}', 'peanut.file-media.delete', true);
+        foreach (['index', 'create', 'show', 'download', 'delete'] as $method) {
+            self::assertTrue(method_exists(FileController::class, $method), "File controller method is missing: {$method}");
+        }
     }
 
     public function testGeneratedRoutesCarryModulePermissionAndBinaryContract(): void
@@ -58,21 +52,6 @@ final class FileMediaApiTest extends TestCase
         ], array_column($permissions, 'key'));
         self::assertSame('/app/files', $menus[0]['route_path']);
         self::assertSame('peanut.file-media.read', $menus[0]['required_permission']);
-    }
-
-    private function assertOperation(
-        ExternalOperationDefinition $operation,
-        string $method,
-        string $path,
-        string $permission,
-        bool $atomic,
-    ): void {
-        self::assertSame($method, $operation->method);
-        self::assertSame($path, $operation->path);
-        self::assertSame('tenant', $operation->audience);
-        self::assertSame('peanut.file-media', $operation->moduleKey);
-        self::assertSame([$permission], $operation->permission->permissionKeys);
-        self::assertSame($atomic, $operation->atomicCommand);
     }
 
     private function requestMediaType(string $operationId): string

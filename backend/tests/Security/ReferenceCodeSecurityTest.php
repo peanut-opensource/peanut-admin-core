@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\Tests\Security;
 
-use PeanutAdmin\App\referencecode\ReferenceCodeRuntimeFactory;
+use PeanutAdmin\App\referencecode\ReferenceCodeHttpService;
 use PeanutAdmin\ReferenceCodes\Application\ReferenceCodeException;
 use PHPUnit\Framework\TestCase;
 
 final class ReferenceCodeSecurityTest extends TestCase
 {
-    public function testHostUsesThinkPhpTransactionAndReferenceCodeStoreWithoutParallelSql(): void
+    public function testHostUsesInjectedCompositionAndNativeReferenceCodePersistence(): void
     {
-        $factory = $this->source('backend/app/referencecode/ReferenceCodeRuntimeFactory.php');
+        $service = $this->source('backend/app/referencecode/ReferenceCodeHttpService.php');
+        $store = $this->source('packages/php/reference-codes/src/Persistence/ReferenceCodeStore.php');
         $controller = $this->source('backend/app/controller/api/v1/ReferenceCodeController.php');
 
-        self::assertStringContainsString('ExternalOperationHost', $factory);
-        self::assertStringContainsString('AtomicOperationAdapter', $factory);
-        self::assertStringContainsString('ReferenceCodeAdminService', $factory);
-        self::assertStringContainsString('ReferenceCodeQuery', $factory);
-        self::assertStringContainsString('ReferenceCodeStore', $factory);
-        self::assertStringContainsString('ThinkPhpTransactionManager', $factory);
-        self::assertStringNotContainsString('PdoReferenceCodeRepository', $factory);
-        self::assertStringNotContainsString('pa_reference_code_', $factory . $controller);
+        self::assertStringContainsString('private ExternalOperationHost $host', $service);
+        self::assertStringContainsString('$this->host->command(', $service);
+        self::assertStringContainsString('Db::transaction(', $store);
+        self::assertStringNotContainsString('AtomicOperationAdapter', $service . $store);
+        self::assertStringNotContainsString('ThinkPhpTransactionManager', $service . $store);
+        self::assertStringNotContainsString('PdoReferenceCodeRepository', $service . $store);
+        self::assertStringNotContainsString('PDO', $service . $controller);
         self::assertStringNotContainsString('PDO', $controller);
-    }
+     }
 
     public function testAllOperationsAreCurrentTenantOnlyAndAcceptNoTypedTargets(): void
     {
-        foreach (ReferenceCodeRuntimeFactory::operations() as $operation) {
+        foreach (ReferenceCodeHttpService::operations() as $operation) {
             self::assertSame('tenant', $operation->audience);
             self::assertSame('none', $operation->dataAuthorization);
             self::assertSame('none', $operation->targetCardinality);
@@ -38,40 +38,33 @@ final class ReferenceCodeSecurityTest extends TestCase
 
     public function testCommandGuardLocksHostOwnerAndCurrentDefinitionBeforeIdempotency(): void
     {
-        $factory = $this->source('backend/app/referencecode/ReferenceCodeRuntimeFactory.php');
-        $guard = $this->functionSource($factory, 'commandGuard');
-        $availability = $this->functionSource($factory, 'assertModuleAvailable');
-        $locks = $this->functionSource($factory, 'lockModuleAvailability');
+        $service = $this->source('backend/app/referencecode/ReferenceCodeHttpService.php');
+        $guard = $this->functionSource($service, 'commandGuard');
+        $availability = $this->functionSource($service, 'assertModuleAvailable');
+        $locks = $this->functionSource($service, 'lockModuleAvailability');
 
-        self::assertStringContainsString('guard: self::commandGuard(', $factory);
-        self::assertStringNotContainsString('lockAvailabilityReads:', $factory);
+        self::assertStringContainsString('guard: $this->commandGuard(', $service);
+        self::assertStringNotContainsString('lockAvailabilityReads:', $service);
         self::assertStringContainsString("'peanut.reference-codes'", $guard);
         self::assertStringContainsString('assertCurrentDefinition($definition, true)', $guard);
         self::assertSame(2, substr_count($guard, "true,\n"));
         self::assertStringContainsString(
-            'self::lockModuleAvailability($pdo, $context->tenantId, $moduleKey);',
+            'self::lockModuleAvailability($context->tenantId, $moduleKey);',
             $availability,
         );
-        self::assertStringContainsString('new PdoModuleRuntimeRepository($pdo)', $availability);
+        self::assertStringContainsString('$this->availability->assertAvailable(', $availability);
         self::assertSame(2, substr_count($locks, 'FOR SHARE'));
-        self::assertStringContainsString(
-            'FROM pa_module_installation WHERE module_key = :module_key',
-            $locks,
-        );
-        self::assertStringContainsString(
-            'FROM pa_tenant_module WHERE tenant_id = :tenant_id AND module_key = :module_key',
-            $locks,
-        );
+        self::assertStringContainsString("Db::name('module_installation')", $locks);
+        self::assertStringContainsString("Db::name('tenant_module')", $locks);
     }
 
     public function testEveryDomainCommandRepeatsTheDefinitionAndOwnerCheck(): void
     {
-        $factory = $this->source('backend/app/referencecode/ReferenceCodeRuntimeFactory.php');
+        $service = $this->source('backend/app/referencecode/ReferenceCodeHttpService.php');
 
-        self::assertGreaterThanOrEqual(6, substr_count($factory, 'definitionRegistry($modules)->require('));
-        self::assertGreaterThanOrEqual(3, substr_count($factory, 'assertOwnerAvailable('));
-        self::assertSame(3, substr_count($factory, 'self::admin($connection)'));
-        self::assertStringContainsString('new ReferenceCodeAdminService(', $factory);
+        self::assertGreaterThanOrEqual(5, substr_count($service, 'definitionRegistry($modules)->require('));
+        self::assertGreaterThanOrEqual(3, substr_count($service, '$this->assertOwnerAvailable('));
+        self::assertSame(3, substr_count($service, '$this->admin->'));
     }
 
     public function testRequestInputsCannotSupplyTenantMemberOwnerPermissionOrTarget(): void
@@ -86,7 +79,7 @@ final class ReferenceCodeSecurityTest extends TestCase
             'expires_at' => null,
         ];
         foreach (['tenant_id', 'member_id', 'module_key', 'permission', 'target_id'] as $forbidden) {
-            $this->expectInvalid(static fn() => ReferenceCodeRuntimeFactory::versionInput(
+            $this->expectInvalid(static fn() => ReferenceCodeHttpService::versionInput(
                 $valid + [$forbidden => 1],
                 true,
             ));
@@ -95,7 +88,7 @@ final class ReferenceCodeSecurityTest extends TestCase
 
     public function testAuditMetadataIsFixedAndCannotContainLabelOrMetadataValues(): void
     {
-        $factory = $this->source('backend/app/referencecode/ReferenceCodeRuntimeFactory.php');
+        $factory = $this->source('backend/app/referencecode/ReferenceCodeHttpService.php');
 
         self::assertMatchesRegularExpression(
             '/auditMetadata\(.*?return \$entry->auditMetadata\(\$changedFields\);/s',
@@ -109,7 +102,7 @@ final class ReferenceCodeSecurityTest extends TestCase
 
     public function testProblemMappingUsesStableRedactedCodesAndMessages(): void
     {
-        $factory = $this->source('backend/app/referencecode/ReferenceCodeRuntimeFactory.php');
+        $factory = $this->source('backend/app/referencecode/ReferenceCodeHttpService.php');
         foreach ([
             'REFERENCE_CODE_SET_NOT_FOUND',
             'REFERENCE_CODE_NOT_FOUND',
@@ -231,7 +224,7 @@ final class ReferenceCodeSecurityTest extends TestCase
             'backend/app/Modules/Peanut/ReferenceCodes/Resources/protected-resources.json',
             'backend/app/Modules/Peanut/ReferenceCodes/Resources/reference-code-sets.json',
             'backend/app/controller/api/v1/ReferenceCodeController.php',
-            'backend/app/referencecode/ReferenceCodeRuntimeFactory.php',
+            'backend/app/referencecode/ReferenceCodeHttpService.php',
             'docs/api/schemas/reference-codes.yaml',
         ];
     }

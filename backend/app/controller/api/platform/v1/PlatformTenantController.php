@@ -7,14 +7,10 @@ namespace PeanutAdmin\App\controller\api\platform\v1;
 use DateTimeImmutable;
 use Exception;
 use PeanutAdmin\App\controller\api\v1\MemberAdminRuntime;
-use PeanutAdmin\App\module\OpisTenantModuleConfigValidator;
-use PeanutAdmin\App\module\RuntimeModuleRegistry;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Kernel\Authorization\Application\AdminAccessException;
 use PeanutAdmin\Kernel\Authorization\Application\Etag;
 use PeanutAdmin\Kernel\Context\PlatformContext;
-use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
-use PeanutAdmin\Kernel\Module\TenantModuleManager;
 use PeanutAdmin\Kernel\Platform\Application\PlatformTenantAdminService;
 use PeanutAdmin\Kernel\Tenancy\TenantStatus;
 use think\Request;
@@ -22,6 +18,8 @@ use think\Response;
 
 final class PlatformTenantController
 {
+    public function __construct(private readonly PlatformTenantAdminService $tenants) {}
+
     #[OpenApiHandlerContract(
         successStatus: 201,
         headers: OpenApiHandlerContract::CREATED_HEADERS,
@@ -32,14 +30,12 @@ final class PlatformTenantController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $tenant = $this->service()->createTenant(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (string) ($body['code'] ?? ''),
                 (string) ($body['name'] ?? ''),
                 (string) ($body['display_name'] ?? ''),
                 (string) ($body['locale'] ?? 'zh-CN'),
                 (string) ($body['timezone'] ?? 'Asia/Shanghai'),
-                $context->requestId,
             );
 
             return [
@@ -58,8 +54,7 @@ final class PlatformTenantController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $tenant = $this->service()->updateTenant(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $tenantId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 (string) ($body['name'] ?? ''),
@@ -67,7 +62,6 @@ final class PlatformTenantController
                 (string) ($body['locale'] ?? ''),
                 (string) ($body['timezone'] ?? ''),
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return ['data' => $tenant, 'etag' => Etag::format((int) $tenant['revision'])];
@@ -115,8 +109,7 @@ final class PlatformTenantController
                 );
             }
             $module = $this->service()->enableModule(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $tenantId,
                 $moduleKey,
                 $config,
@@ -124,7 +117,6 @@ final class PlatformTenantController
                 $this->dateTime($body['effective_at'] ?? null, 'effective_at'),
                 $this->dateTime($body['expires_at'] ?? null, 'expires_at'),
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return [
@@ -141,12 +133,10 @@ final class PlatformTenantController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $module = $this->service()->disableModule(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $tenantId,
                 $moduleKey,
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return [
@@ -162,13 +152,11 @@ final class PlatformTenantController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $tenant = $this->service()->transitionTenant(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $tenantId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 $status,
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
 
             return ['data' => $tenant, 'etag' => Etag::format((int) $tenant['revision'])];
@@ -188,16 +176,7 @@ final class PlatformTenantController
 
     private function service(): PlatformTenantAdminService
     {
-        $pdo = MemberAdminRuntime::pdo();
-
-        return new PlatformTenantAdminService(
-            $pdo,
-            new TenantModuleManager(
-                RuntimeModuleRegistry::compile(),
-                new PdoModuleRuntimeRepository($pdo),
-                new OpisTenantModuleConfigValidator(),
-            ),
-        );
+        return $this->tenants;
     }
 
     private function dateTime(mixed $value, string $field): ?DateTimeImmutable

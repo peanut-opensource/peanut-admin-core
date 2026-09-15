@@ -20,7 +20,6 @@ use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\Kernel\Module\ModuleProvider;
-use think\db\PDOConnection;
 
 abstract class TenantWideModuleProvider implements
     ModuleProvider,
@@ -36,7 +35,7 @@ abstract class TenantWideModuleProvider implements
         return [];
     }
 
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry): void
     {
         $registry->registerResourceProvider(static::class, $this);
     }

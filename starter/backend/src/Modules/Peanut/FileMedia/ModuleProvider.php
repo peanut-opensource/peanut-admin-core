@@ -20,7 +20,6 @@ use PeanutAdmin\DataPermission\Runtime\DataPermissionModuleProvider;
 use PeanutAdmin\DataPermission\Runtime\DataPermissionRuntimeRegistry;
 use PeanutAdmin\DataPermission\Target\TypedResourceTargetCollection;
 use PeanutAdmin\Kernel\Module\ModuleProvider as ModuleProviderContract;
-use think\db\PDOConnection;
 
 final class ModuleProvider implements ModuleProviderContract, DataPermissionModuleProvider, ResourceQueryPolicyProvider, ResourceTargetPolicyProvider, ResourceCreatePolicyProvider
 {
@@ -34,7 +33,7 @@ final class ModuleProvider implements ModuleProviderContract, DataPermissionModu
         return [];
     }
 
-    public function registerDataPermission(DataPermissionRuntimeRegistry $registry, PDOConnection $connection): void
+    public function registerDataPermission(DataPermissionRuntimeRegistry $registry): void
     {
         $registry->registerResourceProvider(self::class, $this);
     }

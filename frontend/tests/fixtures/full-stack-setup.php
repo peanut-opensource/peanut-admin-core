@@ -5,9 +5,14 @@ declare(strict_types=1);
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallProductProfileApplier;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\command\KernelBootstrapFactory;
+use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
 use PeanutAdmin\Kernel\Authorization\CorePermissionCatalog;
-use PeanutAdmin\Testing\Authorization\PdoAuthorizationFixtureSeeder;
+use PeanutAdmin\Kernel\Context\PlatformContext;
+use PeanutAdmin\Kernel\Platform\Application\PlatformTenantAdminService;
+use PeanutAdmin\Kernel\Platform\Application\TenantOwnerAdminService;
+use PeanutAdmin\Kernel\Tenancy\TenantStatus;
+use PeanutAdmin\Testing\Authorization\ThinkPhpAuthorizationFixtureSeeder;
+use think\App;
 
 $root = dirname(__DIR__, 3);
 $requiredPort = static function (string $name): int {
@@ -76,7 +81,8 @@ $profile = InstallProductProfile::load(
     $root . '/schemas/product-profile.schema.json',
 );
 $email = 'browser-owner@example.test';
-$installation = (new InstallWorkflow($root, $pdo))->run(
+$connection = ThinkPhpTestConnection::fromPdo($pdo);
+$installation = (new InstallWorkflow($root))->run(
     $profile,
     $email,
     $browserPassword,
@@ -94,24 +100,50 @@ $platformRoleId = (int) $installation['platform']['role_id'];
 $alphaTenantId = (int) $installation['tenant']['tenant_id'];
 $alphaMemberId = (int) $installation['tenant']['owner_member_id'];
 
-$bootstrap = KernelBootstrapFactory::create();
-$beta = $bootstrap->provisionTenantOwnerCandidate(
+$app = new App($root . '/backend');
+$app->initialize();
+$actor = PlatformContext::fromTrustedAutomation(
+    (int) $installation['platform']['account_id'],
     $operatorId,
+    'operations-web',
+    'browser-fixture-beta',
+    new DateTimeImmutable('now', new DateTimeZone('UTC')),
+);
+$tenantAdmin = $app->make(PlatformTenantAdminService::class);
+$betaTenant = $tenantAdmin->createTenant(
+    $actor,
     'beta',
     'Beta Team',
+    'Beta Team',
+    'zh-cn',
+    'Asia/Shanghai',
+);
+$betaTenantId = (int) $betaTenant['id'];
+$ownerAdmin = $app->make(TenantOwnerAdminService::class);
+$beta = $ownerAdmin->createCandidate(
+    $actor,
+    $betaTenantId,
     $email,
-    null,
     'Browser Tenant Owner',
-    'browser-beta-provision',
+    null,
 );
-$bootstrap->activateTenantOwner(
-    $operatorId,
-    $beta->tenantId,
-    $beta->memberId,
+$betaMemberId = (int) $beta['member']['id'];
+$ownerAdmin->activateCandidate(
+    $actor,
+    $betaTenantId,
+    $betaMemberId,
+    (int) $beta['member']['revision'],
     'browser-beta-owner-activate',
+    'Activate the browser fixture owner.',
 );
-$bootstrap->activateTenant($operatorId, $beta->tenantId, 'browser-beta-activate');
-(new InstallProductProfileApplier($root, $pdo))->apply($beta->tenantId, $profile);
+$tenantAdmin->transitionTenant(
+    $actor,
+    $betaTenantId,
+    (int) $betaTenant['revision'],
+    TenantStatus::Active,
+    'Activate the browser fixture tenant.',
+);
+(new InstallProductProfileApplier($root))->apply($betaTenantId, $profile);
 
 $platformGrant = $pdo->prepare(<<<'SQL'
 INSERT IGNORE INTO pa_platform_role_permission (platform_role_id, permission_id, granted_at)
@@ -123,7 +155,7 @@ foreach (CorePermissionCatalog::PLATFORM as $permissionKey) {
     $platformGrant->execute(['role_id' => $platformRoleId, 'permission_key' => $permissionKey]);
 }
 
-$seeder = new PdoAuthorizationFixtureSeeder($pdo);
+$seeder = new ThinkPhpAuthorizationFixtureSeeder();
 $tenantPermissions = [
     ...CorePermissionCatalog::TENANT,
     'example.target.read',
@@ -141,7 +173,7 @@ $tenantPermissions = [
 ];
 foreach ([
     [$alphaTenantId, $alphaMemberId],
-    [$beta->tenantId, $beta->memberId],
+    [$betaTenantId, $betaMemberId],
 ] as [$tenantId, $memberId]) {
     $roleId = $seeder->roleForMember($tenantId, $memberId);
     $seeder->grantPermissions($tenantId, $roleId, $tenantPermissions);
@@ -152,7 +184,7 @@ INSERT INTO pa_example_project (id, tenant_id, code, name, status, created_at, u
     (1001, {$alphaTenantId}, 'A', 'Project A', 'active', UTC_TIMESTAMP(3), UTC_TIMESTAMP(3)),
     (1002, {$alphaTenantId}, 'B', 'Project B', 'active', UTC_TIMESTAMP(3), UTC_TIMESTAMP(3)),
     (1003, {$alphaTenantId}, 'C', 'Project C', 'active', UTC_TIMESTAMP(3), UTC_TIMESTAMP(3)),
-    (2001, {$beta->tenantId}, 'A', 'Project A', 'active', UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
+    (2001, {$betaTenantId}, 'A', 'Project A', 'active', UTC_TIMESTAMP(3), UTC_TIMESTAMP(3));
 INSERT INTO pa_example_reference_item
     (id, owner_type, owner_tenant_id, code, name, status, created_at, updated_at) VALUES
     (1001, 'deployment', NULL, 'public-ref', 'Public Reference', 'active', UTC_TIMESTAMP(3), UTC_TIMESTAMP(3)),

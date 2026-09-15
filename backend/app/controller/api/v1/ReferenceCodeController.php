@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\controller\api\v1;
 
-use PeanutAdmin\App\referencecode\ReferenceCodeRuntimeFactory;
+use PeanutAdmin\App\referencecode\ReferenceCodeHttpService;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use think\Request;
 use think\Response;
 
 final class ReferenceCodeController
 {
+    public function __construct(private readonly ReferenceCodeHttpService $service) {}
+
     #[OpenApiHandlerContract]
     public function listReferenceCodeSets(Request $request): Response
     {
-        return ReferenceCodeRuntimeFactory::listSets($request);
+        return $this->service->listSets($request);
     }
 
     #[OpenApiHandlerContract]
     public function listReferenceCodes(Request $request, string $moduleKey, string $setKey): Response
     {
-        return ReferenceCodeRuntimeFactory::listCodes($request, $moduleKey, $setKey);
+        return $this->service->listCodes($request, $moduleKey, $setKey);
     }
 
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)]
@@ -30,7 +32,7 @@ final class ReferenceCodeController
         string $setKey,
         string $code,
     ): Response {
-        return ReferenceCodeRuntimeFactory::getCode($request, $moduleKey, $setKey, $code);
+        return $this->service->getCode($request, $moduleKey, $setKey, $code);
     }
 
     #[OpenApiHandlerContract(
@@ -39,7 +41,7 @@ final class ReferenceCodeController
     )]
     public function createReferenceCode(Request $request, string $moduleKey, string $setKey): Response
     {
-        return ReferenceCodeRuntimeFactory::createCode($request, $moduleKey, $setKey);
+        return $this->service->createCode($request, $moduleKey, $setKey);
     }
 
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)]
@@ -49,7 +51,7 @@ final class ReferenceCodeController
         string $setKey,
         string $code,
     ): Response {
-        return ReferenceCodeRuntimeFactory::replaceCode($request, $moduleKey, $setKey, $code);
+        return $this->service->replaceCode($request, $moduleKey, $setKey, $code);
     }
 
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::VERSIONED_HEADERS)]
@@ -59,6 +61,6 @@ final class ReferenceCodeController
         string $setKey,
         string $code,
     ): Response {
-        return ReferenceCodeRuntimeFactory::retireCode($request, $moduleKey, $setKey, $code);
+        return $this->service->retireCode($request, $moduleKey, $setKey, $code);
     }
 }

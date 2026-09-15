@@ -6,11 +6,14 @@ namespace PeanutAdmin\App\middleware;
 
 use Closure;
 use PeanutAdmin\Kernel\Auth\AuthException;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
 use think\Request;
 use think\Response;
 
 final class TenantGuard
 {
+    public function __construct(private readonly TenantAuthService $auth) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         $authorization = $request->header('authorization');
@@ -18,7 +21,7 @@ final class TenantGuard
             throw new AuthException('AUTH_TOKEN_INVALID', 401);
         }
 
-        $context = TenantAuthRuntimeFactory::create()->context(
+        $context = $this->auth->context(
             substr($authorization, 7),
             RequestIdMiddleware::current($request),
         );

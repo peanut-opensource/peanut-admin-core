@@ -5,25 +5,42 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\Tests\Integration;
 
 use DateTimeImmutable;
+use LogicException;
 use PDO;
 use PDOException;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\database\ThinkPhpConnectionFactory;
 use PeanutAdmin\App\module\RuntimeModuleRegistry;
-use PeanutAdmin\App\referencecode\ReferenceCodeRuntimeFactory;
+use PeanutAdmin\App\referencecode\ReferenceCodeHttpService;
+use PeanutAdmin\Kernel\Audit\AuditService;
 use PeanutAdmin\Kernel\Auth\TenantContext;
 use PeanutAdmin\Kernel\Auth\ValidatedTenantSession;
+use PeanutAdmin\Kernel\Authorization\DataPermissionAdapter;
 use PeanutAdmin\Kernel\Authorization\ModuleAuthorizationCatalogSynchronizer;
-use PeanutAdmin\Kernel\Authorization\Persistence\PdoAuthorizationCatalogRepository;
+use PeanutAdmin\Kernel\Authorization\Persistence\ThinkPhpAuthorizationCatalogRepository;
+use PeanutAdmin\Kernel\Authorization\TenantAuthorizationEvaluator;
+use PeanutAdmin\Kernel\Host\ExternalOperationHost;
+use PeanutAdmin\Kernel\Host\ModuleAvailabilityAdapter;
+use PeanutAdmin\Kernel\Host\PermissionAdapter;
+use PeanutAdmin\Kernel\Host\ProblemDetailsAdapter;
+use PeanutAdmin\Kernel\Host\TrustedContextAdapter;
+use PeanutAdmin\Kernel\Host\TypedTargetAdapter;
+use PeanutAdmin\Kernel\Http\PermissionMiddleware;
+use PeanutAdmin\Kernel\Idempotency\IdempotencyService;
 use PeanutAdmin\Kernel\Module\CompiledModuleRegistry;
 use PeanutAdmin\Kernel\Module\ManifestDocument;
 use PeanutAdmin\Kernel\Module\ManifestLoader;
-use PeanutAdmin\Kernel\Module\Persistence\PdoModuleRuntimeRepository;
+use PeanutAdmin\Kernel\Module\ModuleAvailabilityService;
+use PeanutAdmin\Kernel\Module\Persistence\ThinkPhpModuleRuntimeRepository;
+use PeanutAdmin\Kernel\Platform\Authorization\PlatformAuthorizationEvaluator;
+use PeanutAdmin\ReferenceCodes\Application\ReferenceCodeAdminService;
+use PeanutAdmin\ReferenceCodes\Application\ReferenceCodeQuery;
 use PeanutAdmin\ReferenceCodes\Database\Schema as ReferenceCodeSchema;
+use PeanutAdmin\ReferenceCodes\Persistence\ReferenceCodeStore;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use RuntimeException;
+use think\App;
 use think\db\PDOConnection;
 use think\Request;
 use think\Response;
@@ -36,11 +53,11 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
 
     private PDO $admin;
     private PDO $pdo;
-    private PDOConnection $connection;
     private int $tenantId;
     private int $memberId;
     private int $accountId;
     private CompiledModuleRegistry $modules;
+    private ReferenceCodeHttpService $service;
     private string $fixtureRoot;
 
     /** @var array<string, string|false> */
@@ -91,12 +108,17 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
         putenv('AUTH_IDENTIFIER_HMAC_KEY=reference-code-host-integration-key');
 
         $root = dirname(__DIR__, 3);
-        $this->connection = ThinkPhpConnectionFactory::fromEnvironment($root);
+        $app = new App($root);
+        $app->initialize();
+        $connection = $app->db->connect();
+        if (!$connection instanceof PDOConnection) {
+            throw new RuntimeException('Reference-code integration requires the registered PDOConnection driver.');
+        }
         $installationRoot = getenv('PEANUT_B04_INSTALL_ROOT');
         $installationRoot = is_string($installationRoot) && $installationRoot !== ''
             ? $installationRoot
             : $root;
-        $installation = (new InstallWorkflow($installationRoot, $this->connection))->run(
+        $installation = (new InstallWorkflow($installationRoot))->run(
             InstallProductProfile::load(
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',
@@ -118,10 +140,42 @@ final class ReferenceCodeModuleIntegrationTest extends TestCase
             [$this->tenantId, $this->memberId],
         );
         $this->modules = $this->syntheticModules(RuntimeModuleRegistry::compile($root));
-        $this->installHostFixture();
-        ReferenceCodeRuntimeFactory::synchronizeDefinitions(
-            $this->connection,
+        $configuration = ReferenceCodeHttpService::hostConfiguration();
+        $availability = $app->make(ModuleAvailabilityService::class);
+        $permissions = new PermissionMiddleware(
+            $app->make(TenantAuthorizationEvaluator::class),
+            $app->make(PlatformAuthorizationEvaluator::class),
+        );
+        $unusedDataAuthorization = new DataPermissionAdapter(
+            static function (): never {
+                throw new LogicException('Reference-code operations do not accept data-query authorization.');
+            },
+            static function (): never {
+                throw new LogicException('Reference-code operations do not accept typed targets.');
+            },
+        );
+        $host = new ExternalOperationHost(
+            $configuration,
+            new TrustedContextAdapter($configuration),
+            new ModuleAvailabilityAdapter($this->modules, $availability),
+            new PermissionAdapter($permissions),
+            new TypedTargetAdapter($unusedDataAuthorization),
+            $app->make(IdempotencyService::class),
+            $app->make(AuditService::class),
+            new ProblemDetailsAdapter(),
+        );
+        $store = $app->make(ReferenceCodeStore::class);
+        $this->service = new ReferenceCodeHttpService(
+            new ReferenceCodeAdminService($store),
+            new ReferenceCodeQuery($store),
+            $store,
             $this->modules,
+            $host,
+            $availability,
+        );
+        $this->installHostFixture();
+        $store->synchronize(
+            ReferenceCodeHttpService::definitionRegistry($this->modules),
             new DateTimeImmutable('2026-07-20T00:00:00.000Z'),
         );
         $this->grantPermissions();
@@ -153,8 +207,8 @@ WHERE tenant_id = :tenant_id AND module_key = :module_key FOR SHARE
 SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes'])['key']);
         $this->pdo->beginTransaction();
         try {
-            $lock = new ReflectionMethod(ReferenceCodeRuntimeFactory::class, 'lockModuleAvailability');
-            $lock->invoke(null, $this->pdo, $this->tenantId, 'peanut.reference-codes');
+            $lock = new ReflectionMethod(ReferenceCodeHttpService::class, 'lockModuleAvailability');
+            $lock->invoke(null, $this->tenantId, 'peanut.reference-codes');
             $this->assertModuleUpdateBlocked(<<<'SQL'
 UPDATE pa_module_installation SET updated_at = UTC_TIMESTAMP(3)
 WHERE module_key = :module_key
@@ -183,7 +237,7 @@ SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes'])
     public function testReplaceAppendsOneVersionWithStrongPreconditionAndRedactedAudit(): void
     {
         $this->create('replace-code', 'reference-replace-seed-0001', 'req_reference_replace_seed_0001');
-        $response = ReferenceCodeRuntimeFactory::replaceCode(
+        $response = $this->service->replaceCode(
             $this->request('PUT', $this->detailPath('replace-code'), 'req_reference_replace_0001', [
                 'label' => 'Replacement label',
                 'metadata' => ['private-value' => 'must-not-be-audited'],
@@ -198,8 +252,6 @@ SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes'])
             self::OWNER_MODULE,
             self::OWNER_SET,
             'replace-code',
-            $this->connection,
-            $this->modules,
         );
 
         self::assertSame(200, $response->getCode());
@@ -219,7 +271,7 @@ SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes'])
     public function testRetireIsTerminalAndCreatesOneInactiveVersion(): void
     {
         $this->create('retire-code', 'reference-retire-seed-0001', 'req_reference_retire_seed_0001');
-        $response = ReferenceCodeRuntimeFactory::retireCode(
+        $response = $this->service->retireCode(
             $this->request('DELETE', $this->detailPath('retire-code'), 'req_reference_retire_0001', [], [
                 'if-match' => '"rev-1"',
                 'idempotency-key' => 'reference-retire-0001',
@@ -227,8 +279,6 @@ SQL, ['tenant_id' => $this->tenantId, 'module_key' => 'peanut.reference-codes'])
             self::OWNER_MODULE,
             self::OWNER_SET,
             'retire-code',
-            $this->connection,
-            $this->modules,
         );
 
         self::assertSame(200, $response->getCode());
@@ -318,12 +368,12 @@ SQL);
     {
         $this->create('read-code', 'reference-read-seed-0001', 'req_reference_read_seed_0001');
         $auditCount = $this->tableCount('pa_tenant_audit_event');
-        $sets = ReferenceCodeRuntimeFactory::listSets($this->request(
+        $sets = $this->service->listSets($this->request(
             'GET',
             '/api/v1/reference-code-sets',
             'req_reference_sets_0001',
-        ), $this->connection, $this->modules);
-        $list = ReferenceCodeRuntimeFactory::listCodes(
+        ));
+        $list = $this->service->listCodes(
             $this->request('GET', $this->collectionPath(), 'req_reference_list_0001', query: [
                 'as_of' => '2099-07-20T00:00:00.000Z',
                 'effective_status' => 'all',
@@ -333,18 +383,14 @@ SQL);
             ]),
             self::OWNER_MODULE,
             self::OWNER_SET,
-            $this->connection,
-            $this->modules,
         );
-        $detail = ReferenceCodeRuntimeFactory::getCode(
+        $detail = $this->service->getCode(
             $this->request('GET', $this->detailPath('read-code'), 'req_reference_detail_0001', query: [
                 'as_of' => '2099-07-20T00:00:00.000Z',
             ]),
             self::OWNER_MODULE,
             self::OWNER_SET,
             'read-code',
-            $this->connection,
-            $this->modules,
         );
 
         self::assertSame(200, $sets->getCode());
@@ -382,7 +428,7 @@ SQL);
 
     private function create(string $code, string $key, string $requestId): Response
     {
-        return ReferenceCodeRuntimeFactory::createCode(
+        return $this->service->createCode(
             $this->request('POST', $this->collectionPath(), $requestId, [
                 'code' => $code,
                 'label' => 'Synthetic label',
@@ -397,8 +443,6 @@ SQL);
             ]),
             self::OWNER_MODULE,
             self::OWNER_SET,
-            $this->connection,
-            $this->modules,
         );
     }
 
@@ -495,13 +539,13 @@ SQL);
             'updated_at' => $now,
         ]);
         (new ModuleAuthorizationCatalogSynchronizer(
-            new PdoAuthorizationCatalogRepository($this->pdo),
+            new ThinkPhpAuthorizationCatalogRepository(),
         ))->synchronize($this->modules);
         if ((int) $this->scalar(<<<'SQL'
 SELECT COUNT(*) FROM pa_tenant_module
 WHERE tenant_id = ? AND module_key = 'peanut.reference-codes'
 SQL, [$this->tenantId]) === 0) {
-            (new PdoModuleRuntimeRepository($this->pdo))->enable(
+            (new ThinkPhpModuleRuntimeRepository())->enable(
                 $this->tenantId,
                 'peanut.reference-codes',
                 [],

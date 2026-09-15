@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\controller\api\v1;
 
 use InvalidArgumentException;
-use PDO;
 use PeanutAdmin\DataPermission\Exception\DataAuthorizationException;
 use PeanutAdmin\Kernel\Audit\AuditOutcome;
 use PeanutAdmin\Kernel\Audit\GovernanceAuditFilter;
@@ -21,25 +20,6 @@ use Throwable;
 final class MemberAdminRuntime
 {
     private function __construct() {}
-
-    public static function pdo(): PDO
-    {
-        return new PDO(
-            sprintf(
-                'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
-                getenv('DB_HOST') ?: '127.0.0.1',
-                (int) (getenv('DB_PORT') ?: 3306),
-                getenv('DB_DATABASE') ?: 'peanut_admin',
-            ),
-            getenv('DB_USERNAME') ?: 'peanut_admin',
-            getenv('DB_PASSWORD') ?: 'peanut_admin_dev',
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ],
-        );
-    }
 
     public static function context(Request $request): TenantContext
     {

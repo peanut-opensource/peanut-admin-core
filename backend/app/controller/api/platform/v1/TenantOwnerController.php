@@ -15,6 +15,8 @@ use think\Response;
 
 final class TenantOwnerController
 {
+    public function __construct(private readonly TenantOwnerAdminService $tenantOwners) {}
+
     #[OpenApiHandlerContract(
         successStatus: 201,
         headers: OpenApiHandlerContract::CREATED_HEADERS,
@@ -25,13 +27,11 @@ final class TenantOwnerController
             $context = $this->context($request);
             $body = MemberAdminRuntime::body($request);
             $result = $this->service()->createCandidate(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $tenantId,
                 (string) ($body['email'] ?? ''),
                 (string) ($body['display_name'] ?? ''),
                 isset($body['initial_password']) ? (string) $body['initial_password'] : null,
-                $context->requestId,
             );
             $member = $result['member'];
 
@@ -53,14 +53,12 @@ final class TenantOwnerController
             $body = MemberAdminRuntime::body($request);
             $idempotencyKey = $request->header('idempotency-key');
             $result = $this->service()->activateCandidate(
-                $context->operatorId,
-                $context->accountId,
+                $context,
                 (int) $tenantId,
                 (int) $memberId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
                 is_string($idempotencyKey) ? $idempotencyKey : '',
                 (string) ($body['change_reason'] ?? ''),
-                $context->requestId,
             );
             $member = $result['member'];
 
@@ -81,6 +79,6 @@ final class TenantOwnerController
 
     private function service(): TenantOwnerAdminService
     {
-        return new TenantOwnerAdminService(MemberAdminRuntime::pdo());
+        return $this->tenantOwners;
     }
 }

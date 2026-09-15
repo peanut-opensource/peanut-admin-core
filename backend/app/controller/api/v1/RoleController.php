@@ -12,6 +12,8 @@ use think\Response;
 
 final class RoleController
 {
+    public function __construct(private readonly RoleAdminService $roles) {}
+
     #[OpenApiHandlerContract]
     public function index(Request $request): Response
     {
@@ -53,13 +55,10 @@ final class RoleController
             $context = MemberAdminRuntime::context($request);
             $body = MemberAdminRuntime::body($request);
             $role = $this->service()->create(
-                $context->tenantId,
+                $context,
                 (string) ($body['key'] ?? ''),
                 (string) ($body['name'] ?? ''),
                 isset($body['description']) ? (string) $body['description'] : null,
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return [
@@ -78,14 +77,11 @@ final class RoleController
             $context = MemberAdminRuntime::context($request);
             $body = MemberAdminRuntime::body($request);
             $role = $this->service()->update(
-                $context->tenantId,
+                $context,
                 (int) $roleId,
                 (string) ($body['name'] ?? ''),
                 isset($body['description']) ? (string) $body['description'] : null,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $role, 'etag' => Etag::format((int) $role['revision'])];
@@ -100,13 +96,10 @@ final class RoleController
             $body = MemberAdminRuntime::body($request);
             $rawKeys = is_array($body['permission_keys'] ?? null) ? $body['permission_keys'] : [];
             $role = $this->service()->replacePermissions(
-                $context->tenantId,
+                $context,
                 (int) $roleId,
                 array_values(array_map(static fn(mixed $key): string => (string) $key, $rawKeys)),
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $role, 'etag' => Etag::format((int) $role['revision'])];
@@ -119,12 +112,9 @@ final class RoleController
         return MemberAdminRuntime::run($request, function () use ($request, $roleId): array {
             $context = MemberAdminRuntime::context($request);
             $role = $this->service()->archive(
-                $context->tenantId,
+                $context,
                 (int) $roleId,
                 Etag::parse(MemberAdminRuntime::header($request, 'if-match')),
-                $context->memberId,
-                $context->accountId,
-                $context->requestId,
             );
 
             return ['data' => $role, 'etag' => Etag::format((int) $role['revision'])];
@@ -133,6 +123,6 @@ final class RoleController
 
     private function service(): RoleAdminService
     {
-        return new RoleAdminService(MemberAdminRuntime::pdo());
+        return $this->roles;
     }
 }

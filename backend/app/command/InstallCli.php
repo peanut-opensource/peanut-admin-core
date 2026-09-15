@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PeanutAdmin\App\command;
 
-use PeanutAdmin\App\database\ThinkPhpConnectionFactory;
 use Throwable;
+use think\App;
 
 final class InstallCli
 {
@@ -39,7 +39,8 @@ final class InstallCli
                 }
             }
 
-            $result = (new InstallWorkflow($root, ThinkPhpConnectionFactory::fromEnvironment($root)))->run(
+            (new App($root))->initialize();
+            $result = (new InstallWorkflow($root))->run(
                 $profile,
                 $options['email'] ?? '',
                 $password,

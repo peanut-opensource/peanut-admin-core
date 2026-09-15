@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace PeanutAdmin\App\controller\api\platform\v1;
 
 use PeanutAdmin\App\controller\api\AuthHttpRuntime;
-use PeanutAdmin\App\controller\api\v1\MemberAdminRuntime;
-use PeanutAdmin\App\controller\api\WorkspaceContextRuntime;
-use PeanutAdmin\App\middleware\PlatformAuthRuntimeFactory;
+use PeanutAdmin\App\controller\api\WorkspaceContextService;
 use PeanutAdmin\Kernel\Api\ApiException;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Kernel\Auth\PlatformAuthentication;
@@ -18,6 +16,11 @@ use think\Response;
 
 final class PlatformAuthController
 {
+    public function __construct(
+        private readonly PlatformAuthService $auth,
+        private readonly WorkspaceContextService $workspaceContext,
+    ) {}
+
     #[OpenApiHandlerContract(headers: OpenApiHandlerContract::AUTHENTICATED_HEADERS)]
     public function login(Request $request): Response
     {
@@ -62,7 +65,7 @@ final class PlatformAuthController
         );
 
         return AuthHttpRuntime::response(200, [
-            'data' => WorkspaceContextRuntime::platform(MemberAdminRuntime::pdo(), $context),
+            'data' => $this->workspaceContext->platform($context),
             'meta' => ['request_id' => $requestId],
         ]);
     }
@@ -93,6 +96,6 @@ final class PlatformAuthController
 
     private function service(): PlatformAuthService
     {
-        return PlatformAuthRuntimeFactory::create();
+        return $this->auth;
     }
 }
