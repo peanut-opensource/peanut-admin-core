@@ -92,7 +92,7 @@ final class UpgradeCli
 
     private static function workflow(string $root): UpgradeWorkflow
     {
-        (new App($root))->initialize();
+        (new App($root . '/backend'))->initialize();
         return new UpgradeWorkflow($root);
     }
 

@@ -39,7 +39,7 @@ final class InstallCli
                 }
             }
 
-            (new App($root))->initialize();
+            (new App($root . '/backend'))->initialize();
             $result = (new InstallWorkflow($root))->run(
                 $profile,
                 $options['email'] ?? '',
