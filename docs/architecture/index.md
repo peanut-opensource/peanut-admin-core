@@ -94,6 +94,11 @@ Tenant and Platform Workspace query projections now read Tenant, credential,
 role, permission, Module and audit state through native Models and return the
 same normalized array DTOs; a dedicated PlatformRole Model completes that read
 boundary.
+Account self-service now mutates profiles, credentials, sessions, login
+challenges and security events through those owning Models while retaining the
+native transaction and MySQL advisory lock for password-attempt serialization.
+Audit event creation likewise uses its dedicated audit Models and a native raw
+time expression without routing table access through the Db facade.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

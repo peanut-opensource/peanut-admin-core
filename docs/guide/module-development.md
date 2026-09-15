@@ -165,6 +165,9 @@ context rather than query Tenant tables.
 Workspace controllers consume Kernel query services whose native Model
 projections normalize public identifiers; Modules must expose their own query
 contracts rather than join private Workspace tables.
+Account self-service and audit writes are Kernel-owned Model boundaries.
+Modules must call the public identity/audit capabilities rather than mutate
+credentials, sessions, security events or audit tables directly.
 
 ## 7. Compose An Atomic Command
 

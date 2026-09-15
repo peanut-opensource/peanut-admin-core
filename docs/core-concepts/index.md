@@ -68,6 +68,10 @@ binding checks.
 Tenant and Platform Workspace projections use those same native Models plus
 the dedicated principal, role, permission, Module and audit Models, and still
 normalize identifiers and revisions at the API boundary.
+Account self-service uses the owning identity, session and security Models for
+profile and password mutations while preserving its transaction, cross-audience
+revocation and password-attempt advisory lock. Audit creation also stays on its
+dedicated Models.
 
 ## Tenant And Business Targets
 
