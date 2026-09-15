@@ -75,6 +75,9 @@ dedicated Models.
 Department administration likewise uses the owning organization, Tenant and
 member Models without weakening hierarchy locks, cycle/depth validation,
 revision checks, authorization invalidation or audit atomicity.
+Tenant role administration similarly uses the owning RBAC, Module and Tenant
+Models while retaining assignability rules, locked revision checks and the
+shared authorization/audit transaction.
 
 ## Tenant And Business Targets
 

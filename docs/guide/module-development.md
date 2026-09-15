@@ -171,6 +171,9 @@ credentials, sessions, security events or audit tables directly.
 Department hierarchy is also a Kernel-owned Model boundary. Modules must use
 the organization capability instead of joining or mutating department/member
 tables, and must not bypass its hierarchy and authorization revision rules.
+Role and permission administration remains a Kernel RBAC capability backed by
+native Models. Modules declare permission catalogs and consume authorization;
+they must not directly replace role grants or bypass active-Module eligibility.
 
 ## 7. Compose An Atomic Command
 

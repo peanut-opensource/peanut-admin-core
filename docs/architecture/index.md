@@ -102,6 +102,9 @@ time expression without routing table access through the Db facade.
 Department administration now uses the native Department, Tenant and member
 Models while retaining its tree-depth/cycle checks, row locks, revision
 compare-and-swap, authorization invalidation and audit transaction.
+Tenant role administration and permission replacement use the owning Role,
+Permission, RolePermission, Module and Tenant Models while preserving active
+Module eligibility, locked revision checks and atomic audit/invalidation.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.
