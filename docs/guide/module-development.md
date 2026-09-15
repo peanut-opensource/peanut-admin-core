@@ -147,6 +147,9 @@ Runtime contracts below have not yet migrated.
 The shared Tenant and Platform authorization evaluators are already on their
 native ThinkPHP Model implementations; Modules continue to consume their
 business repositories and must not query Kernel RBAC tables directly.
+Authentication sessions, challenges, tokens and security events are likewise
+owned by the Kernel authentication contracts and native Models; Modules must
+not read or mutate those private tables.
 Menu synchronization and active-Module projection similarly go through the
 shared Menu Catalog contract; Modules must not write Kernel menu tables.
 Deployment installation and Tenant enable/disable go through the Module Runtime

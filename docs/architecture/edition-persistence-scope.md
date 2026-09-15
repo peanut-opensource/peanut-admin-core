@@ -48,6 +48,10 @@ repository contracts while their production implementations read principals,
 roles, Modules and permissions through native ThinkPHP Models. Explicit Tenant
 predicates and the existing authorization revision hashes remain unchanged;
 database and both-Edition qualification are still pending.
+Tenant and Platform authentication also keep their distinct audience contracts
+while credential, challenge, session/token and security-event persistence uses
+native Models. Locking, conditional state changes and atomic security revision
+increments remain part of those state machines.
 The shared Menu Catalog also uses native Menu, Permission and Module Models for
 both deployment and Tenant projections; its explicit Tenant condition and
 cross-Host business contract remain intact.

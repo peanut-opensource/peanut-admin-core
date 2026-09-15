@@ -72,6 +72,9 @@ and permission state entirely through their existing ThinkPHP Models and ORM
 query expressions. Their cross-capability repositories remain business
 contracts; these source changes do not claim the pending database or
 both-Edition qualification.
+Tenant and Platform authentication retain their separate repository contracts
+and state machines, while credential lockout, challenge, session/token rotation
+and security-event persistence now use native Models and ORM query expressions.
 The Kernel Menu Catalog likewise keeps its Host/Workspace/Upgrade business
 contract while synchronization, retirement and active Module projection now
 use the existing Menu, Permission and Module Models instead of the Db facade.

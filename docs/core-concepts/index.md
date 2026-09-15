@@ -48,6 +48,10 @@ repositories because authorization evaluation is consumed across Kernel,
 DataPermission and Host composition, while their production implementations
 now use only the existing ThinkPHP principal/RBAC/Module Models. Dynamic
 isolation and both-Edition qualification have not been rerun for those changes.
+Tenant and Platform authentication remain separate audiences with separate
+session repositories; their credential lockout, challenge, token rotation and
+security-event state now persists through native Models without collapsing the
+two business contracts.
 The Menu Catalog follows the same boundary: Host, Workspace and Upgrade callers
 retain one business contract, and its implementation uses the existing Menu,
 Permission and Module Models without a Db facade.
