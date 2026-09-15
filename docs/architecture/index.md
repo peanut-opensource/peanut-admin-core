@@ -84,6 +84,9 @@ use the existing Menu, Permission and Module Models instead of the Db facade.
 Module Runtime availability and Tenant enable/disable use the same native
 Tenant and Module Models while preserving row locks, atomic revision increments
 and the separate deployment/Tenant mutation contracts.
+System and Standalone-default Tenant resolution also use the native Tenant
+Model; entry-host binding already uses its dedicated Model and retains strict
+cardinality and fail-closed validation.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

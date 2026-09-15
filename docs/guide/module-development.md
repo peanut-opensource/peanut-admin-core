@@ -157,6 +157,9 @@ shared Menu Catalog contract; Modules must not write Kernel menu tables.
 Deployment installation and Tenant enable/disable go through the Module Runtime
 contracts, whose native Model implementation preserves locking and revision
 increments; Modules must not write lifecycle tables directly.
+System/default Tenant selection and entry-host binding are Kernel resolution
+boundaries backed by native Models; Modules must consume the resolved trusted
+context rather than query Tenant tables.
 
 ## 7. Compose An Atomic Command
 

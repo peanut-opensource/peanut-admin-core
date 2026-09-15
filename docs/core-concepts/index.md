@@ -60,6 +60,9 @@ Permission and Module Models without a Db facade.
 Module Runtime availability and Tenant mutation now use those same native
 Tenant and Module Models; deployment status, Tenant enablement, row locks and
 revision increments remain separate fail-closed authorities.
+System/default Tenant resolution and entry-host binding now share the native
+Tenant/Binding Model boundary while preserving strict active-state and unique
+binding checks.
 
 ## Tenant And Business Targets
 

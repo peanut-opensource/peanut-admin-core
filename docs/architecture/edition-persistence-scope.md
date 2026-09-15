@@ -61,6 +61,9 @@ cross-Host business contract remain intact.
 Module Runtime mutation likewise retains explicit Tenant ownership and
 database-atomic revision increments while using the native Tenant and Module
 Models for both physical Edition layouts.
+System/default Tenant resolution uses the same native Tenant Model in both
+layouts, while entry-host binding preserves its explicit Tenant identity and
+fail-closed cardinality checks.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
