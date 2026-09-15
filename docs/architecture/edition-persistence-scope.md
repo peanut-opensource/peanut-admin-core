@@ -74,6 +74,9 @@ Account profile and password changes now use the owning account, credential,
 session, challenge and security-event Models in both layouts. Their shared
 transaction, cross-audience session revocation and database advisory lock remain
 unchanged, and audit creation uses the dedicated Tenant/Platform audit Models.
+Department tree reads and mutations use the same native Department, Tenant and
+member Models in both layouts while preserving explicit Tenant predicates,
+locked hierarchy validation and atomic revision invalidation.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and

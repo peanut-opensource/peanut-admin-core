@@ -99,6 +99,9 @@ challenges and security events through those owning Models while retaining the
 native transaction and MySQL advisory lock for password-attempt serialization.
 Audit event creation likewise uses its dedicated audit Models and a native raw
 time expression without routing table access through the Db facade.
+Department administration now uses the native Department, Tenant and member
+Models while retaining its tree-depth/cycle checks, row locks, revision
+compare-and-swap, authorization invalidation and audit transaction.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

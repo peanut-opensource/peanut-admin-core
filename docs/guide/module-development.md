@@ -168,6 +168,9 @@ contracts rather than join private Workspace tables.
 Account self-service and audit writes are Kernel-owned Model boundaries.
 Modules must call the public identity/audit capabilities rather than mutate
 credentials, sessions, security events or audit tables directly.
+Department hierarchy is also a Kernel-owned Model boundary. Modules must use
+the organization capability instead of joining or mutating department/member
+tables, and must not bypass its hierarchy and authorization revision rules.
 
 ## 7. Compose An Atomic Command
 

@@ -72,6 +72,9 @@ Account self-service uses the owning identity, session and security Models for
 profile and password mutations while preserving its transaction, cross-audience
 revocation and password-attempt advisory lock. Audit creation also stays on its
 dedicated Models.
+Department administration likewise uses the owning organization, Tenant and
+member Models without weakening hierarchy locks, cycle/depth validation,
+revision checks, authorization invalidation or audit atomicity.
 
 ## Tenant And Business Targets
 
