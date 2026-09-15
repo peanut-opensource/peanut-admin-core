@@ -43,6 +43,12 @@ contracts; PDO identity is no longer part of those adapter APIs. Dynamic
 compensation, concurrency, rollback and both-Edition qualification remain
 required.
 
+Kernel Tenant Authorization also keeps its cross-capability repository contract
+while its one production implementation reads Tenant, member, role, Module and
+permission state through native ThinkPHP Models. Explicit Tenant predicates and
+the existing authorization revision hash remain unchanged; database and
+both-Edition qualification are still pending.
+
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
 Import/Export, and [`P1-ED01-R01`](../status/p1-ed01-r01-settings-persistence-scope-contract.md) for

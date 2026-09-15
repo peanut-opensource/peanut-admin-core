@@ -43,6 +43,11 @@ stores, Runtime dependencies are constructor-injected, and Workflow adapters
 carry business values rather than PDO identity. Their compensation, concurrency
 and cross-domain transaction evidence is still pending the registered database
 Gate.
+Kernel Tenant Authorization likewise retains its business repository because
+authorization evaluation is consumed across Kernel, DataPermission and Host
+composition, while its production implementation now uses only the existing
+ThinkPHP Tenant/member/RBAC/Module Models. Dynamic isolation and both-Edition
+qualification have not been rerun for that source change.
 
 ## Tenant And Business Targets
 

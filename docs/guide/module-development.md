@@ -144,6 +144,9 @@ ThinkPHP composition root supplies configuration, provider selection, SDK
 instances and execution context. The [accepted Runtime direction](../architecture/index.md#accepted-thinkphp-8-runtime-direction)
 projects the canonical cross-repository decision. The remaining PDO-backed
 Runtime contracts below have not yet migrated.
+The shared Tenant authorization evaluator is already on its native ThinkPHP
+Model implementation; Modules continue to consume its business repository and
+must not query Kernel RBAC tables directly.
 
 ## 7. Compose An Atomic Command
 
