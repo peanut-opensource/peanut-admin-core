@@ -85,7 +85,7 @@ final class OpenApiArtifactTest extends TestCase
         self::assertDoesNotMatchRegularExpression('/(?:\| unknown|unknown \|)/', $types);
     }
 
-    public function testAdministrationCommandsUseTheR02AtomicHostWithoutGenericIdempotencyMiddleware(): void
+    public function testSettingsCommandsUseTheGenericIdempotencyMiddleware(): void
     {
         $routes = require dirname(__DIR__, 3) . '/backend/route/openapi-generated.php';
 
@@ -94,6 +94,17 @@ final class OpenApiArtifactTest extends TestCase
             'DELETE /api/platform/v1/settings/{module_key}/{setting_key}',
             'PUT /api/v1/settings/{module_key}/{setting_key}',
             'DELETE /api/v1/settings/{module_key}/{setting_key}',
+        ] as $route) {
+            self::assertArrayHasKey($route, $routes);
+            self::assertTrue($routes[$route][6], $route);
+        }
+    }
+
+    public function testReferenceCodeCommandsUseTheAtomicHostWithoutGenericIdempotencyMiddleware(): void
+    {
+        $routes = require dirname(__DIR__, 3) . '/backend/route/openapi-generated.php';
+
+        foreach ([
             'POST /api/v1/reference-code-sets/{module_key}/{set_key}/codes',
             'PUT /api/v1/reference-code-sets/{module_key}/{set_key}/codes/{code}',
             'DELETE /api/v1/reference-code-sets/{module_key}/{set_key}/codes/{code}',
