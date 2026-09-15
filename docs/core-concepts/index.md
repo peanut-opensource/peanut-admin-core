@@ -81,6 +81,9 @@ shared authorization/audit transaction.
 Tenant member administration uses the existing identity, membership,
 organization, RBAC and Tenant Models while preserving account reuse, final
 active-owner protection and atomic security/authorization revisions and audit.
+Platform Tenant governance uses the owning Tenant, operator, built-in Role and
+TenantModule Models while preserving lifecycle revisions, owner activation
+requirements, Module manager validation and Platform/Tenant audit visibility.
 
 ## Tenant And Business Targets
 

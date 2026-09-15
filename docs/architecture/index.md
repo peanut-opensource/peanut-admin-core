@@ -108,6 +108,9 @@ Module eligibility, locked revision checks and atomic audit/invalidation.
 Tenant member administration now uses the owning Account, Credential, member,
 department, role and Tenant Models while retaining account reuse, final-owner
 protection, locked status/revision transitions and atomic audit/invalidation.
+Platform Tenant lifecycle administration now uses Tenant, built-in Role,
+operator and TenantModule Models while retaining revision compare-and-swap,
+owner-before-activation, Module manager and dual-audience audit boundaries.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

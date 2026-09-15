@@ -177,6 +177,9 @@ they must not directly replace role grants or bypass active-Module eligibility.
 Member lifecycle and role assignment are likewise Kernel capabilities backed by
 native Models. Modules must not directly create accounts/members, replace member
 roles or bypass final-owner and security/authorization revision protections.
+Platform Tenant lifecycle and Tenant Module governance are Kernel capabilities
+backed by native Models and the Module manager. Modules must not mutate Tenant
+status, built-in owner roles or Tenant Module lifecycle rows directly.
 
 ## 7. Compose An Atomic Command
 
