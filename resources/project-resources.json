@@ -2669,6 +2669,29 @@
         "consumers": ["Evidence-bound old-release Upgrade workflow and Module boundary focused validation"]
       },
       {
+        "stable_resource_id": "peanut-admin-core-311-historical-schema-identity-development-mysql-port",
+        "purpose": "loopback MySQL listener for the Core 3.1.1 historical module Schema identity recovery",
+        "environments": ["development"],
+        "owner": "Peanut Admin Core 3.1.1 historical module Schema identity recovery owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 33458,
+        "database": "peanut_admin_ops_upgrade_test",
+        "schema": "current Core Upgrade workflow integration fixtures",
+        "namespace": "peanut-admin-core-311-historical-schema-identity-dev/mysql",
+        "service_type": "MySQL 8.4.10 listener",
+        "version": "8.4.10",
+        "credential_ref": "compose.yaml synthetic development fixture environment; no secret value is stored in the registry",
+        "data_source": "peanut-admin-core-compose-311-historical-schema-identity-development",
+        "freshness_requirement": "the listener is unbound before the lease owner starts the Compose mysql service",
+        "health_check": "a credential-backed PDO query reports MySQL 8.4.10 through 127.0.0.1:33458",
+        "fallback": "none",
+        "lifecycle": "one approved Development-mode focused validation",
+        "cleanup_responsibility": "the recovery owner proves port 33458 is unbound after Compose cleanup",
+        "consumers": ["Historical module Schema identity and namespace ownership focused validation"]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-alpha13-compose-backend-port",
         "purpose": "fixed backend port projected by compose config during Alpha.13 qualification; the aggregate gate does not start this profile",
         "environments": [

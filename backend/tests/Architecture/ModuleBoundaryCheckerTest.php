@@ -175,6 +175,41 @@ PHP);
         });
     }
 
+    public function testHistoricalPascalNamespaceResolvesToItsCurrentModuleOwner(): void
+    {
+        self::expectNotToPerformAssertions();
+        $root = $this->moduleRoot('historical-work-item');
+        file_put_contents($root . '/Migration.php', <<<'PHP'
+<?php
+use PeanutAdmin\App\Modules\Example\WorkItem\Database\Schema;
+PHP);
+        $manifest = ManifestDocument::fromArray($root, ['key' => 'example.work-item']);
+
+        $this->checker(new CompiledModuleRegistry([$manifest], [], [], [], 'revision'))->check();
+    }
+
+    public function testHistoricalNamespaceCollisionFailsBeforeScanningModules(): void
+    {
+        $hyphenated = ManifestDocument::fromArray(
+            $this->moduleRoot('collision-hyphenated'),
+            ['key' => 'example.foo-bar'],
+        );
+        $compact = ManifestDocument::fromArray(
+            $this->moduleRoot('collision-compact'),
+            ['key' => 'example.foobar'],
+        );
+
+        $this->expectModuleCode('MODULE_REGISTRY_CONFLICT', function () use ($hyphenated, $compact): void {
+            $this->checker(new CompiledModuleRegistry(
+                [$hyphenated, $compact],
+                [],
+                [],
+                [],
+                'revision',
+            ))->check();
+        });
+    }
+
     /**
      * @param list<string> $dependencies
      * @param list<string> $exports

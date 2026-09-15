@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PeanutAdmin\App\modules\example\work_item\database;
+namespace PeanutAdmin\App\Modules\Example\WorkItem\Database;
 
 final class Schema
 {
