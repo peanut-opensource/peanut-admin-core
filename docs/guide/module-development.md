@@ -147,6 +147,8 @@ Runtime contracts below have not yet migrated.
 The shared Tenant and Platform authorization evaluators are already on their
 native ThinkPHP Model implementations; Modules continue to consume their
 business repositories and must not query Kernel RBAC tables directly.
+Authorization revision invalidation is also a shared Kernel contract backed by
+the owning Models; Modules must not increment those private columns directly.
 Authentication sessions, challenges, tokens and security events are likewise
 owned by the Kernel authentication contracts and native Models; Modules must
 not read or mutate those private tables.

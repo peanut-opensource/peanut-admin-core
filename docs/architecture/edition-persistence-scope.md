@@ -48,6 +48,9 @@ repository contracts while their production implementations read principals,
 roles, Modules and permissions through native ThinkPHP Models. Explicit Tenant
 predicates and the existing authorization revision hashes remain unchanged;
 database and both-Edition qualification are still pending.
+The shared authorization revision repository routes each Tenant, member, role
+and Module increment through its owning Model while retaining explicit Tenant
+identity and a database-atomic increment.
 Tenant and Platform authentication also keep their distinct audience contracts
 while credential, challenge, session/token and security-event persistence uses
 native Models. Locking, conditional state changes and atomic security revision

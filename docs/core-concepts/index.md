@@ -48,6 +48,8 @@ repositories because authorization evaluation is consumed across Kernel,
 DataPermission and Host composition, while their production implementations
 now use only the existing ThinkPHP principal/RBAC/Module Models. Dynamic
 isolation and both-Edition qualification have not been rerun for those changes.
+Authorization revision bumps similarly route through the owning Tenant, member,
+role and Module Models and remain database-atomic.
 Tenant and Platform authentication remain separate audiences with separate
 session repositories; their credential lockout, challenge, token rotation and
 security-event state now persists through native Models without collapsing the

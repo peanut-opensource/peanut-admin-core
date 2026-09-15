@@ -72,6 +72,9 @@ and permission state entirely through their existing ThinkPHP Models and ORM
 query expressions. Their cross-capability repositories remain business
 contracts; these source changes do not claim the pending database or
 both-Edition qualification.
+Shared Tenant/member/role/Module authorization revision bumps also use their
+owning Models and database-atomic expressions rather than a dynamic table-name
+Db query.
 Tenant and Platform authentication retain their separate repository contracts
 and state machines, while credential lockout, challenge, session/token rotation
 and security-event persistence now use native Models and ORM query expressions.
