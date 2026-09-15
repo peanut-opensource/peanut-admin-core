@@ -50,11 +50,32 @@ This repository owns reusable, product-neutral contracts and packages; work only
   adoption.
 - If a contracted check fails, repair the findings once and rerun only that
   group once; a second failure blocks its dependent delivery.
-- After each completed and minimally checked change, fast-forward `dev` and then
-  `main` to the same commit. If either protected branch has independent history,
-  first merge that history into the validated integration commit without
-  rewriting shared history. Formal release and explicit review retain their
-  applicable Gates.
+- Git delivery follows Application execution rules §5.1: keep the primary
+  checkout on dev; use local feat branches in temporary worktrees. Integrate
+  into the primary checkout's actual dev, push it and verify primary HEAD =
+  local dev = online remote dev together with the changed files. Updating a
+  temporary clone's dev is not delivery. Enable versioned `.githooks` using
+  `core.hooksPath=.githooks` after checking existing hooks. They reject commits
+  on main/non-dev primary checkouts and dev pushes from stale or dirty primary
+  checkouts. Do not use local main as a working branch; remote main is release-only.
+  Push a feature branch only for explicitly needed remote collaboration, backup
+  or review; do not use `git push --all` or `git push --mirror`.
+- Ordinary development does not authorize advancing `main`, tagging, publishing
+  or deployment. At an explicit release milestone, freeze the intended commit,
+  complete applicable qualification and human approval, then merge `dev` into
+  `main` through a PR and tag the final release commit for authorized publication.
+  Require PRs for `main` and prohibit direct pushes, force pushes and deletion.
+  Preserve existing history; do not roll back `main`.
+- Before a new development batch, read the latest delivery rules. Preserve
+  other tasks' pinned policy, control state and immutable evidence for their
+  owner's atomic handoff before removing their source worktree. Reconcile valid
+  unfinished changes first; archive superseded candidates, rejected designs,
+  stash and raw evidence recoverably. Clean task branches/worktrees with no
+  active owner after recording their disposition. Keep only dev locally and
+  dev/main remotely; report any exact unresolved exception.
+- Replace obsolete rule text in place and keep entry points and knowledge notes
+  aligned with the current policy. Use Git history or separate backups for
+  historical reference; do not leave superseded instructions in active rules.
 - Preserve protected Git history; release, tag, or publication needs its
   accepted decision and qualification binding.
 - Do not replace manifests, KernelSchema, OpenAPI, dependency decisions,
