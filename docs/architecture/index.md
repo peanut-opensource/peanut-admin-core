@@ -67,10 +67,10 @@ cross-domain contracts and execute inside the injected command transaction.
 Their MySQL rollback, compensation, concurrency and cross-domain suites still
 require the registered exclusive database resource and are not qualified by
 the non-database checks.
-Kernel Tenant Authorization now evaluates Tenant, member, role, Module and
-permission state entirely through its existing ThinkPHP Models and ORM query
-expressions. Its cross-capability `TenantAuthorizationRepository` remains the
-business contract; this source change does not claim the pending database or
+Kernel Tenant and Platform Authorization now evaluate principal, role, Module
+and permission state entirely through their existing ThinkPHP Models and ORM
+query expressions. Their cross-capability repositories remain business
+contracts; these source changes do not claim the pending database or
 both-Edition qualification.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
