@@ -824,9 +824,9 @@
         "freshness_requirement": "the Compose project, MySQL volume, listener, output path and peanut_admin_p1_b03_host_test database are absent before the run",
         "health_check": "Docker reports the peanut-admin-core-311-settings-host-fidelity-dev mysql service healthy and a credential-backed PDO connection to 127.0.0.1:33455 reports MySQL 8.4.10",
         "fallback": "none",
-        "lifecycle": "one approved Development-mode focused validation",
+        "lifecycle": "three approved Development-mode focused validations: real HTTP test-host fidelity, atomic availability guard, then definition shared-lock recovery",
         "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-settings-host-fidelity-dev with its volume and orphans, port 33455 listener, output path and synthetic database, then proves they are absent",
-        "consumers": ["backend/tests/Integration/SettingsModuleIntegrationTest.php"]
+        "consumers": ["backend/tests/Integration/SettingsModuleIntegrationTest.php", "backend/app/setting/SettingsCommandGuard.php"]
       },
       {
         "stable_resource_id": "peanut-admin-core-mysql84-alpha12-qualification",
@@ -1536,9 +1536,9 @@
         "freshness_requirement": "the Compose project, MySQL volume, listener, output path and peanut_admin_p1_b03_host_test database are absent before the run",
         "health_check": "Docker reports the peanut-admin-core-311-settings-host-fidelity-dev mysql service healthy and a credential-backed PDO connection to 127.0.0.1:33455 reports MySQL 8.4.10",
         "fallback": "none",
-        "lifecycle": "one approved Development-mode focused validation",
+        "lifecycle": "three approved Development-mode focused validations: real HTTP test-host fidelity, atomic availability guard, then definition shared-lock recovery",
         "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-settings-host-fidelity-dev with its volume and orphans, port 33455 listener, output path and synthetic database, then proves they are absent",
-        "consumers": ["Settings HTTP host fidelity focused validation"]
+        "consumers": ["Settings HTTP host fidelity and atomic availability guard focused validations"]
       },
       {
         "stable_resource_id": "peanut-admin-core-compose-alpha12-qualification",
@@ -2078,9 +2078,9 @@
         "freshness_requirement": "the exact path is absent before the focused run and contains no prior evidence",
         "health_check": "the recovery owner verifies the path is writable after claim and absent after evidence reduction",
         "fallback": "none",
-        "lifecycle": "one approved Development-mode focused validation",
+        "lifecycle": "three approved Development-mode focused validations: real HTTP test-host fidelity, atomic availability guard, then definition shared-lock recovery",
         "cleanup_responsibility": "the recovery owner removes only /private/tmp/peanut-admin-core-311-settings-host-fidelity-dev after preserving the focused receipt",
-        "consumers": ["Settings HTTP host fidelity focused validation"]
+        "consumers": ["Settings HTTP host fidelity and atomic availability guard focused validation receipts"]
       },
       {
         "stable_resource_id": "peanut-admin-core-alpha12-qualification-output",
@@ -2555,9 +2555,9 @@
         "freshness_requirement": "the listener is unbound before the lease owner starts the Compose mysql service",
         "health_check": "a credential-backed PDO query reports MySQL 8.4.10 through 127.0.0.1:33455",
         "fallback": "none",
-        "lifecycle": "one approved Development-mode focused validation",
+        "lifecycle": "three approved Development-mode focused validations: real HTTP test-host fidelity, atomic availability guard, then definition shared-lock recovery",
         "cleanup_responsibility": "the recovery owner proves port 33455 is unbound after Compose cleanup",
-        "consumers": ["Settings HTTP host fidelity focused validation"]
+        "consumers": ["Settings HTTP host fidelity and atomic availability guard focused validations"]
       },
       {
         "stable_resource_id": "peanut-admin-core-alpha13-compose-backend-port",

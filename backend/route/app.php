@@ -9,9 +9,16 @@ use PeanutAdmin\App\middleware\ModuleGuard;
 use PeanutAdmin\App\middleware\PermissionGuard;
 use PeanutAdmin\App\middleware\PlatformGuard;
 use PeanutAdmin\App\middleware\TenantGuard;
+use PeanutAdmin\App\setting\SettingsCommandGuard;
 use think\facade\Route;
 
 $routes = require __DIR__ . '/openapi-generated.php';
+$settingsCommandOperations = [
+    'replaceTenantSetting',
+    'unsetTenantSetting',
+    'replaceDeploymentSetting',
+    'unsetDeploymentSetting',
+];
 
 Route::get('api/v1/health$', [TenantHealthController::class, 'show'])->name('tenantHealth');
 Route::get('api/platform/v1/health$', [PlatformHealthController::class, 'show'])->name('platformHealth');
@@ -25,6 +32,9 @@ foreach ($routes as $route => $binding) {
 
     if ($requiresAuth) {
         $rule->middleware($audience === 'tenant' ? TenantGuard::class : PlatformGuard::class);
+    }
+    if (in_array($operationId, $settingsCommandOperations, true)) {
+        $rule->middleware(SettingsCommandGuard::class);
     }
     if ($moduleKey !== null) {
         if (!$requiresAuth || $audience !== 'tenant') {
