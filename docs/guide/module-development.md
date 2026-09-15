@@ -180,6 +180,9 @@ roles or bypass final-owner and security/authorization revision protections.
 Platform Tenant lifecycle and Tenant Module governance are Kernel capabilities
 backed by native Models and the Module manager. Modules must not mutate Tenant
 status, built-in owner roles or Tenant Module lifecycle rows directly.
+Tenant owner candidate provisioning is also a Kernel platform capability backed
+by native Models; Modules must not create owner memberships or bypass candidate
+uniqueness, activation revision and idempotency/audit rules.
 
 ## 7. Compose An Atomic Command
 

@@ -86,6 +86,9 @@ preserving explicit Tenant ownership and final-active-owner protection.
 Platform Tenant create/update/lifecycle and Module governance read and mutate
 the owning Models in both layouts; activation still requires an active owner,
 and revision, Module manager and dual-audience audit boundaries remain intact.
+Tenant owner candidate creation and activation use native identity, membership,
+RBAC, Tenant, operator and audit Models in both layouts while preserving
+provisioning locks, revision checks and the activation idempotency lookup.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and

@@ -84,6 +84,9 @@ active-owner protection and atomic security/authorization revisions and audit.
 Platform Tenant governance uses the owning Tenant, operator, built-in Role and
 TenantModule Models while preserving lifecycle revisions, owner activation
 requirements, Module manager validation and Platform/Tenant audit visibility.
+Tenant owner candidate provisioning uses the same native identity, membership,
+RBAC, Tenant, operator and audit Models while retaining candidate uniqueness,
+locked activation revisions and idempotency evidence lookup.
 
 ## Tenant And Business Targets
 
