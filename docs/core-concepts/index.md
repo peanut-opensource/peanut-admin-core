@@ -87,6 +87,9 @@ requirements, Module manager validation and Platform/Tenant audit visibility.
 Tenant owner candidate provisioning uses the same native identity, membership,
 RBAC, Tenant, operator and audit Models while retaining candidate uniqueness,
 locked activation revisions and idempotency evidence lookup.
+Platform access administration uses the existing identity, operator/RBAC,
+permission and session Models while retaining serialized control-plane changes,
+final-control-admin protection, revision checks and audit atomicity.
 
 ## Tenant And Business Targets
 
