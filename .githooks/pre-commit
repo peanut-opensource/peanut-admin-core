@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+common=$(git rev-parse --path-format=absolute --git-common-dir)
+primary=$(dirname "$common")
+checkout=$(git rev-parse --show-toplevel)
+branch=$(git symbolic-ref --quiet --short HEAD || true)
+if [ "$branch" = main ] || { [ "$checkout" = "$primary" ] && [ "$branch" != dev ]; }; then
+    echo "commit blocked: keep the primary checkout on dev; use feat/* only in temporary worktrees. main is release-only." >&2
+    exit 1
+fi

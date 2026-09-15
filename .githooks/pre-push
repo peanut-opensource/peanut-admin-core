@@ -1,0 +1,18 @@
+#!/bin/sh
+# A dev push must deliver the primary checkout as well as the Git reference.
+set -eu
+common=$(git rev-parse --path-format=absolute --git-common-dir)
+primary=$(dirname "$common")
+while read -r local_ref local_oid remote_ref remote_oid; do
+    [ "$remote_ref" = refs/heads/dev ] || continue
+    branch=$(git -C "$primary" symbolic-ref --quiet --short HEAD || true)
+    head=$(git -C "$primary" rev-parse HEAD)
+    if [ "$branch" != dev ] || [ "$head" != "$local_oid" ]; then
+        echo "dev delivery blocked: merge into the primary checkout on dev first: $primary" >&2
+        exit 1
+    fi
+    if ! git -C "$primary" diff --quiet || ! git -C "$primary" diff --cached --quiet; then
+        echo "dev delivery blocked: preserve and reconcile uncommitted primary-checkout changes first." >&2
+        exit 1
+    fi
+done

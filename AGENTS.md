@@ -50,9 +50,14 @@ This repository owns reusable, product-neutral contracts and packages; work only
   adoption.
 - If a contracted check fails, repair the findings once and rerun only that
   group once; a second failure blocks its dependent delivery.
-- Git delivery follows Application execution rules §5.1, as reaffirmed by the
-  user's 2026-09-15 decision: use local `feat/<description>` branches, merge
-  completed and minimally checked work into local `dev`, then push only `dev`.
+- Git delivery follows Application execution rules §5.1: keep the primary
+  checkout on dev; use local feat branches in temporary worktrees. Integrate
+  into the primary checkout's actual dev, push it and verify primary HEAD =
+  local dev = online remote dev together with the changed files. Updating a
+  temporary clone's dev is not delivery. Enable versioned `.githooks` using
+  `core.hooksPath=.githooks` after checking existing hooks. They reject commits
+  on main/non-dev primary checkouts and dev pushes from stale or dirty primary
+  checkouts. Do not use local main as a working branch; remote main is release-only.
   Push a feature branch only for explicitly needed remote collaboration, backup
   or review; do not use `git push --all` or `git push --mirror`.
 - Ordinary development does not authorize advancing `main`, tagging, publishing
@@ -63,8 +68,11 @@ This repository owns reusable, product-neutral contracts and packages; work only
   Preserve existing history; do not roll back `main`.
 - Before a new development batch, read the latest delivery rules. Preserve
   other tasks' pinned policy, control state and immutable evidence for their
-  owner's normal handoff. Clean only merged task branches/worktrees with no
-  active owner; do not remove unfinished work or retained qualification inputs.
+  owner's atomic handoff before removing their source worktree. Reconcile valid
+  unfinished changes first; archive superseded candidates, rejected designs,
+  stash and raw evidence recoverably. Clean task branches/worktrees with no
+  active owner after recording their disposition. Keep only dev locally and
+  dev/main remotely; report any exact unresolved exception.
 - Replace obsolete rule text in place and keep entry points and knowledge notes
   aligned with the current policy. Use Git history or separate backups for
   historical reference; do not leave superseded instructions in active rules.

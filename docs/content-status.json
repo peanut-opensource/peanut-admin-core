@@ -200,12 +200,12 @@
         "kind": "git-file",
         "uri": "repo://peanut-admin",
         "locator": "AGENT_EXECUTION_RULES.md",
-        "revision": "85f15ebb38bb46433456c3170e810702dc1b895e",
-        "sha256": "2af5d9de11ec205998bff2514f81be0495a958870f78e55d758cdcbf77375a59"
+        "revision": "f131d4b3cb5cc3d5427c429f46c449385a240ef7",
+        "sha256": "560ee2aa711fcf65bf55647dd63542465773f29b1d207b4a90cda0d917b2d29f"
       },
       "source_span": {
         "start_line": 88,
-        "end_line": 95,
+        "end_line": 106,
         "heading": "5.1 本地批处理、资源租约与远程推送门禁"
       },
       "owner": "core-maintainers",
