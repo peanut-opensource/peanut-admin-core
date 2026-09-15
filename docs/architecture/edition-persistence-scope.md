@@ -110,6 +110,10 @@ TaskJob and ImportExport likewise use owning Tenant Models for all package
 tables while preserving optional Tenant-column shape, explicit logical Tenant
 validation, leases, idempotency, row locks and database-time Raw expressions.
 Their registered dynamic and both-Edition qualification remains pending.
+Notification/SMS owns Models for its template, message, attachment, outbox,
+rate-bucket and event tables, while actor and recipient checks use the
+Kernel-owned TenantMember Model. Explicit Tenant predicates, optimistic
+revisions, rate locks and recipient snapshots remain part of the contract.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and

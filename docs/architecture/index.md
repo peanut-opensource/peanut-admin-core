@@ -80,6 +80,11 @@ and row-error tables through explicit Tenant Models. Their Edition-aware
 physical schemas, Tenant predicates, row locks, lease/idempotency rules and
 database-time expressions remain unchanged; single-row Model results are
 normalized before domain mapping.
+Notification/SMS likewise owns Models for templates, inbox messages,
+attachments, outbox delivery state, rate buckets and notification events.
+Kernel TenantMember remains the authority for actor and recipient membership;
+message/outbox revision checks, rate-window locks and recipient snapshot checks
+are unchanged.
 Their MySQL rollback, compensation, concurrency and cross-domain suites still
 require the registered exclusive database resource and are not qualified by
 the non-database checks.

@@ -48,6 +48,10 @@ TaskJob and ImportExport own explicit Tenant Models for their job, attempt,
 event, operation and row-error tables. The stores retain Edition-aware physical
 shape checks, explicit logical Tenant validation, locking, leases, idempotency
 and database-time expressions; dynamic and both-Edition evidence is pending.
+Notification/SMS also uses owning Models for templates, messages, attachments,
+outbox delivery, rate buckets and events, plus the Kernel TenantMember Model
+for actor/recipient validation. Optimistic revisions, recipient snapshots and
+locked rate windows remain unchanged and dynamically unqualified.
 Kernel Tenant and Platform Authorization likewise retain their business
 repositories because authorization evaluation is consumed across Kernel,
 DataPermission and Host composition, while their production implementations

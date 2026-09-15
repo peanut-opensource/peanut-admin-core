@@ -237,6 +237,11 @@ shape through `TenantColumnScope`, and keep lease, idempotency, row-lock and
 database-time expressions inside the shared transaction. A generic table-name
 Db query is not a substitute for the owning Model.
 
+Notification modules must similarly use their owning Models for templates,
+messages, attachments, delivery outbox, rate buckets and events. Actor and
+recipient membership is read through Kernel's TenantMember Model; do not copy
+that shared table into a notification-owned representation.
+
 The host must store only a safe, redacted terminal response. It must not store
 credentials, secrets, SQL, stack traces, raw authorization input, or hidden
 target existence. An expected denial may record a redacted `denied` audit and
