@@ -105,6 +105,9 @@ compare-and-swap, authorization invalidation and audit transaction.
 Tenant role administration and permission replacement use the owning Role,
 Permission, RolePermission, Module and Tenant Models while preserving active
 Module eligibility, locked revision checks and atomic audit/invalidation.
+Tenant member administration now uses the owning Account, Credential, member,
+department, role and Tenant Models while retaining account reuse, final-owner
+protection, locked status/revision transitions and atomic audit/invalidation.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

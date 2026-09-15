@@ -78,6 +78,9 @@ revision checks, authorization invalidation or audit atomicity.
 Tenant role administration similarly uses the owning RBAC, Module and Tenant
 Models while retaining assignability rules, locked revision checks and the
 shared authorization/audit transaction.
+Tenant member administration uses the existing identity, membership,
+organization, RBAC and Tenant Models while preserving account reuse, final
+active-owner protection and atomic security/authorization revisions and audit.
 
 ## Tenant And Business Targets
 

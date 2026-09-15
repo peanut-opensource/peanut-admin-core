@@ -174,6 +174,9 @@ tables, and must not bypass its hierarchy and authorization revision rules.
 Role and permission administration remains a Kernel RBAC capability backed by
 native Models. Modules declare permission catalogs and consume authorization;
 they must not directly replace role grants or bypass active-Module eligibility.
+Member lifecycle and role assignment are likewise Kernel capabilities backed by
+native Models. Modules must not directly create accounts/members, replace member
+roles or bypass final-owner and security/authorization revision protections.
 
 ## 7. Compose An Atomic Command
 

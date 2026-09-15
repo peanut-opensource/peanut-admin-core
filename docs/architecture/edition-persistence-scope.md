@@ -80,6 +80,9 @@ locked hierarchy validation and atomic revision invalidation.
 Tenant role CRUD and permission replacement use native RBAC, Module and Tenant
 Models in both layouts; explicit Tenant ownership, active-Module eligibility,
 locked revision compare-and-swap and audit/invalidation remain unchanged.
+Tenant member creation, rejoin, profile/status changes and role replacement use
+native identity, membership, organization and RBAC Models in both layouts while
+preserving explicit Tenant ownership and final-active-owner protection.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
