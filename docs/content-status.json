@@ -200,8 +200,8 @@
         "kind": "git-file",
         "uri": "repo://peanut-admin",
         "locator": "AGENT_EXECUTION_RULES.md",
-        "revision": "19af5ff1981aff8ee8a8458db099193cf51bf3ce",
-        "sha256": "d8c4eedd77677a46773e9cff2aac1eeb64d82dd1ee56a51ca43b417f0ad634bd"
+        "revision": "85f15ebb38bb46433456c3170e810702dc1b895e",
+        "sha256": "2af5d9de11ec205998bff2514f81be0495a958870f78e55d758cdcbf77375a59"
       },
       "source_span": {
         "start_line": 88,

@@ -60,12 +60,14 @@ This repository owns reusable, product-neutral contracts and packages; work only
   complete applicable qualification and human approval, then merge `dev` into
   `main` through a PR and tag the final release commit for authorized publication.
   Require PRs for `main` and prohibit direct pushes, force pushes and deletion.
-  This supersedes the earlier same-day instruction to advance both branches
-  after every change. Preserve existing history; do not roll back `main`.
+  Preserve existing history; do not roll back `main`.
 - Before a new development batch, read the latest delivery rules. Preserve
   other tasks' pinned policy, control state and immutable evidence for their
   owner's normal handoff. Clean only merged task branches/worktrees with no
   active owner; do not remove unfinished work or retained qualification inputs.
+- Replace obsolete rule text in place and keep entry points and knowledge notes
+  aligned with the current policy. Use Git history or separate backups for
+  historical reference; do not leave superseded instructions in active rules.
 - Preserve protected Git history; release, tag, or publication needs its
   accepted decision and qualification binding.
 - Do not replace manifests, KernelSchema, OpenAPI, dependency decisions,
