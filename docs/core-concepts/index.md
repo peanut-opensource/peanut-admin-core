@@ -93,6 +93,11 @@ final-control-admin protection, revision checks and audit atomicity.
 Fresh-install Bootstrap uses the same Platform/Tenant role and assignment
 Models while retaining its native transactions, owner activation sequence and
 one explicit MySQL advisory lock for the first Platform owner.
+The shared permission/resource/operation/target/condition catalog Models belong
+to Kernel Authorization. DataPermission consumes them alongside its own
+Tenant-owned policy Models, so package direction matches table ownership.
+Native transactions, MySQL advisory locks and Edition `information_schema`
+validation are the intentional non-Model framework boundaries that remain.
 
 ## Tenant And Business Targets
 

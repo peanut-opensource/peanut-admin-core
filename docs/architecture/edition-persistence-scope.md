@@ -95,6 +95,10 @@ control-plane lock, final-control-admin invariant and session revocation.
 Fresh-install Platform owner and initial Tenant owner Bootstrap also use native
 role/assignment Models in both layouts; their transaction ordering and single
 MySQL advisory bootstrap lock remain unchanged.
+Kernel owns the shared authorization catalog Models; DataPermission consumes
+those Models for policy evaluation rather than owning duplicate catalog table
+representations. Edition-shape validation intentionally retains its
+`information_schema` Query/Raw check, which has no business Model equivalent.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and

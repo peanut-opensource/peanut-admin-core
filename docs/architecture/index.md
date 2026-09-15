@@ -120,6 +120,13 @@ control-plane lock, final-control-admin invariant, revision CAS and audit.
 Fresh-install Bootstrap now uses the same native Platform/Tenant role and
 assignment Models throughout; its ThinkPHP transaction and the single
 driver-specific MySQL advisory lock remain explicit bootstrap primitives.
+Authorization catalog synchronization now uses Kernel-owned Permission,
+resource, operation, target-type and condition Models. The seven shared catalog
+Models moved out of DataPermission, which remains a downstream consumer rather
+than an owner of Kernel catalog tables.
+The remaining Kernel Db facade uses are native transaction entrypoints,
+driver-level advisory locks, and `information_schema` Edition-shape validation;
+none is ordinary business-table persistence.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

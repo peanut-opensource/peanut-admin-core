@@ -189,6 +189,9 @@ permissions, sessions or final-control-admin invariant directly.
 Fresh-install Bootstrap also owns initial Platform/Tenant roles and assignments
 through native Models. Modules must not call or reproduce this one-time owner
 bootstrap path.
+Kernel Authorization owns the shared permission/resource/operation/target and
+condition catalog Models. DataPermission and external Modules consume catalog
+capabilities; they must not define another Model owner for those Kernel tables.
 
 ## 7. Compose An Atomic Command
 
