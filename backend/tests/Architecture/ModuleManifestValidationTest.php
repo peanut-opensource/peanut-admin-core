@@ -24,7 +24,7 @@ final class ModuleManifestValidationTest extends TestCase
             'version' => '1.0.0',
             'kernel_constraint' => '^1.0',
             'license' => 'Apache-2.0',
-            'backend' => ['provider' => 'PeanutAdmin\\App\\Modules\\Example\\Target\\ModuleProvider'],
+            'backend' => ['provider' => 'PeanutAdmin\\App\\modules\\example\\target\\ModuleProvider'],
             'frontend' => (object) [],
             'database' => ['owned_tables' => []],
             'contracts' => ['exports' => [], 'events' => []],
@@ -48,7 +48,7 @@ final class ModuleManifestValidationTest extends TestCase
             dirname(__DIR__, 3) . '/packages/php/kernel/resources/schemas/module-manifest.schema.json',
         );
         $manifest = json_decode(
-            (string) file_get_contents(dirname(__DIR__, 2) . '/app/Modules/Example/WorkItem/module.json'),
+            (string) file_get_contents(dirname(__DIR__, 2) . '/app/modules/example/work_item/module.json'),
             false,
             512,
             JSON_THROW_ON_ERROR,
@@ -125,7 +125,7 @@ final class ModuleManifestValidationTest extends TestCase
             'kernel_constraint' => '^1.0',
             'license' => 'Apache-2.0',
             'backend' => [
-                'provider' => 'PeanutAdmin\\App\\Modules\\Example\\Target\\ModuleProvider',
+                'provider' => 'PeanutAdmin\\App\\modules\\example\\target\\ModuleProvider',
                 'setting_definitions' => 'Resources/setting-definitions.json',
             ],
             'frontend' => (object) [],
@@ -151,7 +151,7 @@ final class ModuleManifestValidationTest extends TestCase
             'kernel_constraint' => '^1.0',
             'license' => 'Apache-2.0',
             'backend' => [
-                'provider' => 'PeanutAdmin\\App\\Modules\\Example\\Target\\ModuleProvider',
+                'provider' => 'PeanutAdmin\\App\\modules\\example\\target\\ModuleProvider',
                 'reference_code_sets' => 'Resources/reference-code-sets.json',
             ],
             'frontend' => (object) [],

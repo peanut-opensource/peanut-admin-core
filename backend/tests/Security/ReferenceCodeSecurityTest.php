@@ -123,9 +123,9 @@ final class ReferenceCodeSecurityTest extends TestCase
 
     public function testModuleOwnsOnlyInfrastructureTablesAndNoCommittedValues(): void
     {
-        $module = json_decode($this->source('backend/app/Modules/Peanut/ReferenceCodes/module.json'), true, 32, JSON_THROW_ON_ERROR);
+        $module = json_decode($this->source('backend/app/modules/peanut/reference_codes/module.json'), true, 32, JSON_THROW_ON_ERROR);
         $definitions = json_decode(
-            $this->source('backend/app/Modules/Peanut/ReferenceCodes/Resources/reference-code-sets.json'),
+            $this->source('backend/app/modules/peanut/reference_codes/resources/reference-code-sets.json'),
             true,
             32,
             JSON_THROW_ON_ERROR,
@@ -143,7 +143,7 @@ final class ReferenceCodeSecurityTest extends TestCase
     public function testProtectedResourceIsTenantOwnedAndEveryOperationIsTargetFree(): void
     {
         $resources = json_decode(
-            $this->source('backend/app/Modules/Peanut/ReferenceCodes/Resources/protected-resources.json'),
+            $this->source('backend/app/modules/peanut/reference_codes/resources/protected-resources.json'),
             true,
             32,
             JSON_THROW_ON_ERROR,
@@ -153,7 +153,7 @@ final class ReferenceCodeSecurityTest extends TestCase
         self::assertSame('peanut.reference-code', $resources[0]['key']);
         self::assertSame('tenant_owned', $resources[0]['ownership']);
         self::assertSame(
-            'PeanutAdmin\\App\\Modules\\Peanut\\ReferenceCodes\\ModuleProvider',
+            'PeanutAdmin\\App\\modules\\peanut\\reference_codes\\ModuleProvider',
             $resources[0]['provider'],
         );
         self::assertArrayNotHasKey('scope_provider', $resources[0]);
@@ -214,15 +214,15 @@ final class ReferenceCodeSecurityTest extends TestCase
     private function hostFiles(): array
     {
         return [
-            'backend/app/Modules/Peanut/ReferenceCodes/module.json',
-            'backend/app/Modules/Peanut/ReferenceCodes/ModuleProvider.php',
-            'backend/app/Modules/Peanut/ReferenceCodes/Database/Migrations/20260719040101_create_reference_code_sets.php',
-            'backend/app/Modules/Peanut/ReferenceCodes/Database/Migrations/20260719040102_create_reference_code_entries.php',
-            'backend/app/Modules/Peanut/ReferenceCodes/Database/Migrations/20260719040103_create_reference_code_entry_versions.php',
-            'backend/app/Modules/Peanut/ReferenceCodes/Resources/menus.json',
-            'backend/app/Modules/Peanut/ReferenceCodes/Resources/permissions.json',
-            'backend/app/Modules/Peanut/ReferenceCodes/Resources/protected-resources.json',
-            'backend/app/Modules/Peanut/ReferenceCodes/Resources/reference-code-sets.json',
+            'backend/app/modules/peanut/reference_codes/module.json',
+            'backend/app/modules/peanut/reference_codes/ModuleProvider.php',
+            'backend/app/modules/peanut/reference_codes/database/migrations/20260719040101_create_reference_code_sets.php',
+            'backend/app/modules/peanut/reference_codes/database/migrations/20260719040102_create_reference_code_entries.php',
+            'backend/app/modules/peanut/reference_codes/database/migrations/20260719040103_create_reference_code_entry_versions.php',
+            'backend/app/modules/peanut/reference_codes/resources/menus.json',
+            'backend/app/modules/peanut/reference_codes/resources/permissions.json',
+            'backend/app/modules/peanut/reference_codes/resources/protected-resources.json',
+            'backend/app/modules/peanut/reference_codes/resources/reference-code-sets.json',
             'backend/app/controller/api/v1/ReferenceCodeController.php',
             'backend/app/referencecode/ReferenceCodeHttpService.php',
             'docs/api/schemas/reference-codes.yaml',

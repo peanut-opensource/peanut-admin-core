@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\Modules\Example\Reference\Infrastructure\Authorization\ThinkPhpReferenceScopeProvider;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ThinkPhpTargetResolver;
-use PeanutAdmin\App\Modules\Example\WorkItem\Contracts\WorkItemQuery;
-use PeanutAdmin\App\Modules\Example\WorkItem\Model\WorkItem;
+use PeanutAdmin\App\modules\example\reference\infrastructure\authorization\ThinkPhpReferenceScopeProvider;
+use PeanutAdmin\App\modules\example\target\infrastructure\authorization\ThinkPhpTargetResolver;
+use PeanutAdmin\App\modules\example\work_item\contracts\WorkItemQuery;
+use PeanutAdmin\App\modules\example\work_item\model\WorkItem;
 use PeanutAdmin\DataPermission\Context\AuthorizationContext;
 use PeanutAdmin\DataPermission\Constraint\ThinkPhpQueryConstraintApplier;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;

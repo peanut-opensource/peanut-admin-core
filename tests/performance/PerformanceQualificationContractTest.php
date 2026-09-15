@@ -85,11 +85,11 @@ final class PerformanceQualificationContractTest extends TestCase
         self::assertStringContainsString("->list(\$initial->context, \$typedTargets, 1, 20)", $runner);
 
         $resolver = (string) file_get_contents(
-            $this->root . '/backend/app/Modules/Example/Target/Infrastructure/Authorization/ThinkPhpTargetResolver.php',
+            $this->root . '/backend/app/modules/example/target/infrastructure/authorization/ThinkPhpTargetResolver.php',
         );
         self::assertStringContainsString("::scope('tenant',", $resolver);
         $sharedMaster = (string) file_get_contents(
-            $this->root . '/backend/app/Modules/Example/Reference/Infrastructure/Authorization/ThinkPhpReferenceScopeProvider.php',
+            $this->root . '/backend/app/modules/example/reference/infrastructure/authorization/ThinkPhpReferenceScopeProvider.php',
         );
         self::assertStringContainsString('ReferenceItem::alias(', $sharedMaster);
         self::assertStringNotContainsString('PDO', $resolver . $sharedMaster);
@@ -98,12 +98,12 @@ final class PerformanceQualificationContractTest extends TestCase
         );
         self::assertStringContainsString('JSON_TABLE', $applier);
         $query = (string) file_get_contents(
-            $this->root . '/backend/app/Modules/Example/WorkItem/Infrastructure/Persistence/ThinkPhpWorkItemQuery.php',
+            $this->root . '/backend/app/modules/example/work_item/infrastructure/persistence/ThinkPhpWorkItemQuery.php',
         );
         self::assertStringContainsString('queryConstraint', $query);
         self::assertStringContainsString('ThinkPhpQueryConstraintApplier', $query);
         $catalog = (string) file_get_contents(
-            $this->root . '/backend/app/Modules/Example/Target/Infrastructure/Authorization/ThinkPhpTargetCatalogProvider.php',
+            $this->root . '/backend/app/modules/example/target/infrastructure/authorization/ThinkPhpTargetCatalogProvider.php',
         );
         self::assertStringContainsString('EffectivePolicySet', $catalog);
         self::assertStringNotContainsString('allowedTargetIds', $catalog);

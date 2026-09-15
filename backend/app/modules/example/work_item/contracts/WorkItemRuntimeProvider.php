@@ -7,7 +7,7 @@ namespace PeanutAdmin\App\modules\example\work_item\contracts;
 use PeanutAdmin\App\modules\example\target\contracts\TargetQuery;
 use PeanutAdmin\DataPermission\Engine\DataPermissionEngine;
 use PeanutAdmin\Kernel\Audit\AuditService;
-use PeanutAdmin\Kernel\Membership\services\MemberAdminService;
+use PeanutAdmin\Kernel\Membership\Application\MemberAdminService;
 
 interface WorkItemRuntimeProvider
 {

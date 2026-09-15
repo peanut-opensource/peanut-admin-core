@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use PeanutAdmin\App\controller\api\platform\v1\PlatformSettingsController;
 use PeanutAdmin\App\controller\api\v1\SettingsController;
 use PeanutAdmin\App\module\RuntimeModuleRegistry;
-use PeanutAdmin\App\Modules\Peanut\Settings\ModuleProvider;
+use PeanutAdmin\App\modules\peanut\settings\ModuleProvider;
 use PeanutAdmin\App\setting\SettingsHttpService;
 use PeanutAdmin\Kernel\Api\OpenApiHandlerContract;
 use PeanutAdmin\Settings\Application\EffectiveSetting;
@@ -274,7 +274,7 @@ final class SettingsApiTest extends TestCase
 
     public function testSettingsModuleDeclaresOnlyFunctionalPermissionsAndNoParallelDataResource(): void
     {
-        $root = dirname(__DIR__, 3) . '/backend/app/Modules/Peanut/Settings/Resources';
+        $root = dirname(__DIR__, 3) . '/backend/app/modules/peanut/settings/resources';
         $permissions = json_decode(
             (string) file_get_contents($root . '/permissions.json'),
             true,

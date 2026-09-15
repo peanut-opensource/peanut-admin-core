@@ -31,10 +31,10 @@ final class FileMediaApiTest extends TestCase
 
     public function testManifestAndResourcesExposeOnlyTheBoundedCapability(): void
     {
-        $root = dirname(__DIR__, 3) . '/backend/app/Modules/Peanut/FileMedia';
+        $root = dirname(__DIR__, 3) . '/backend/app/modules/peanut/file_media';
         $manifest = json_decode(file_get_contents($root . '/module.json') ?: '', true, 32, JSON_THROW_ON_ERROR);
-        $permissions = json_decode(file_get_contents($root . '/Resources/permissions.json') ?: '', true, 32, JSON_THROW_ON_ERROR);
-        $menus = json_decode(file_get_contents($root . '/Resources/menus.json') ?: '', true, 32, JSON_THROW_ON_ERROR);
+        $permissions = json_decode(file_get_contents($root . '/resources/permissions.json') ?: '', true, 32, JSON_THROW_ON_ERROR);
+        $menus = json_decode(file_get_contents($root . '/resources/menus.json') ?: '', true, 32, JSON_THROW_ON_ERROR);
 
         self::assertSame('peanut.file-media', $manifest['key']);
         self::assertSame([

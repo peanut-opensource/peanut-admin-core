@@ -464,7 +464,7 @@ SQL);
         ]], JSON_THROW_ON_ERROR));
 
         $host = (new ManifestLoader())->load(
-            dirname(__DIR__, 3) . '/backend/app/Modules/Peanut/ReferenceCodes',
+            dirname(__DIR__, 3) . '/backend/app/modules/peanut/reference_codes',
         );
         $hostPresent = false;
         $modules = array_map(function (ManifestDocument $module) use ($host, &$hostPresent): ManifestDocument {

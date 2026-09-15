@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PeanutAdmin\Tests\Recovery;
 
 use PDO;
-use PeanutAdmin\App\Modules\Example\Target\Infrastructure\Authorization\ThinkPhpTargetResolver;
+use PeanutAdmin\App\modules\example\target\infrastructure\authorization\ThinkPhpTargetResolver;
 use PeanutAdmin\App\Tests\Support\ThinkPhpTestConnection;
 use PeanutAdmin\Kernel\Auth\Persistence\ThinkPhpTenantAuthRepository;
 use PeanutAdmin\Kernel\Auth\SystemClock;

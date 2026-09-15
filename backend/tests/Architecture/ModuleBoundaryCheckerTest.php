@@ -39,7 +39,7 @@ final class ModuleBoundaryCheckerTest extends TestCase
     {
         file_put_contents($this->root . '/Bad.php', <<<'PHP'
 <?php
-use PeanutAdmin\App\Modules\Example\Other\Infrastructure\OtherRepository;
+use PeanutAdmin\App\modules\example\other\infrastructure\OtherRepository;
 $sql = 'SELECT * FROM pa_example_other';
 PHP);
         $manifest = ManifestDocument::fromArray($this->root, ['key' => 'example.owner']);
@@ -62,7 +62,7 @@ PHP);
         $otherRoot = $this->moduleRoot('other');
         file_put_contents($ownerRoot . '/Good.php', <<<'PHP'
 <?php
-use PeanutAdmin\App\Modules\Example\Other\Contracts\OtherQuery;
+use PeanutAdmin\App\modules\example\other\contracts\OtherQuery;
 $sql = 'SELECT * FROM pa_example_owner';
 PHP);
         $owner = ManifestDocument::fromArray($ownerRoot, [
@@ -74,7 +74,7 @@ PHP);
             'key' => 'example.other',
             'dependencies' => [],
             'contracts' => ['exports' => [
-                'PeanutAdmin\\App\\Modules\\Example\\Other\\Contracts\\OtherQuery',
+                'PeanutAdmin\\App\\modules\\example\\other\\contracts\\OtherQuery',
             ]],
         ]);
         $registry = new CompiledModuleRegistry(
@@ -91,7 +91,7 @@ PHP);
     public function testContractImportRequiresDeclaredDependency(): void
     {
         [$owner, $other] = $this->contractFixture([], [
-            'PeanutAdmin\\App\\Modules\\Example\\Other\\Contracts\\OtherQuery',
+            'PeanutAdmin\\App\\modules\\example\\other\\contracts\\OtherQuery',
         ]);
 
         $this->expectModuleCode('MODULE_DEPENDENCY_MISSING', function () use ($other, $owner): void {
@@ -110,8 +110,8 @@ PHP);
 
     public function testNowdocCrossTableQueryIsRejectedButExplicitDatabaseForeignKeyIsAllowed(): void
     {
-        mkdir($this->root . '/Database');
-        file_put_contents($this->root . '/Database/Schema.php', <<<'PHP'
+        mkdir($this->root . '/database');
+        file_put_contents($this->root . '/database/Schema.php', <<<'PHP'
 <?php
 $sql = <<<'SQL'
 CREATE TABLE `pa_example_owner` (
@@ -165,7 +165,7 @@ PHP);
     {
         file_put_contents($this->root . '/Bad.php', <<<'PHP'
 <?php
-use PeanutAdmin\App\Modules\Unregistered\Infrastructure\Repository;
+use PeanutAdmin\App\modules\unregistered\infrastructure\Repository;
 PHP);
         $manifest = ManifestDocument::fromArray($this->root, ['key' => 'example.owner']);
         $registry = new CompiledModuleRegistry([$manifest], [], [], [], 'revision');
@@ -186,7 +186,7 @@ PHP);
         $otherRoot = $this->moduleRoot('contract-other-' . count($exports));
         file_put_contents($ownerRoot . '/Consumer.php', <<<'PHP'
 <?php
-use PeanutAdmin\App\Modules\Example\Other\Contracts\OtherQuery;
+use PeanutAdmin\App\modules\example\other\contracts\OtherQuery;
 PHP);
 
         return [
@@ -219,8 +219,8 @@ PHP);
         return new ModuleBoundaryChecker(
             $registry,
             new ModuleHostLayout(
-                'backend/app/Modules',
-                'PeanutAdmin\\App\\Modules',
+                'backend/app/modules',
+                'PeanutAdmin\\App\\modules',
                 'frontend/src/modules',
             ),
             ['pa_'],

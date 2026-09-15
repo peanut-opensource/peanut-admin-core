@@ -41,8 +41,17 @@ deptrac:
           value: '#^(OSS\\OssClient|Qcloud\\Cos\\Client|Qiniu\\Auth)$#'
     - name: Kernel
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\Kernel\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\Kernel\\(?:Audit\\(?:AuditService|Model\\.+)|Auth\\(?:Persistence\\.+|PlatformAuthService|TenantAuthService)|Authorization\\(?:Application\\RoleAdminService|Model\\.+|Persistence\\.+|RevisionPermissionCache|ThinkPhpTenantAuthorizationRepository)|Context\\Persistence\\ThinkPhpSystemTenantResolver|Host\\ExternalOperationHost|Idempotency\\(?:IdempotencyService|Model\\.+)|Identity\\SelfService\\AccountSelfService|Membership\\Application\\MemberAdminService|Menu\\ThinkPhpMenuCatalogRepository|Module\\(?:Model\\.+|ModuleAvailabilityService|Persistence\\.+|TenantModuleConfigurationService)|Organization\\Application\\DepartmentAdminService|Persistence\\.+|Platform\\(?:Application\\.+|Authorization\\ThinkPhpPlatformAuthorizationRepository|Bootstrap\\BootstrapService)|Tenancy\\(?:Application\\TenantWorkspaceQueryService|ThinkPhpTenantLockStore))$#'
+    - name: KernelThinkPhpRuntime
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\Kernel\\#'
+          value: '#^PeanutAdmin\\Kernel\\(?:Audit\\(?:AuditService|Model\\.+)|Auth\\(?:Persistence\\.+|PlatformAuthService|TenantAuthService)|Authorization\\(?:Application\\RoleAdminService|Model\\.+|Persistence\\.+|RevisionPermissionCache|ThinkPhpTenantAuthorizationRepository)|Context\\Persistence\\ThinkPhpSystemTenantResolver|Host\\ExternalOperationHost|Idempotency\\(?:IdempotencyService|Model\\.+)|Identity\\SelfService\\AccountSelfService|Membership\\Application\\MemberAdminService|Menu\\ThinkPhpMenuCatalogRepository|Module\\(?:Model\\.+|ModuleAvailabilityService|Persistence\\.+|TenantModuleConfigurationService)|Organization\\Application\\DepartmentAdminService|Persistence\\.+|Platform\\(?:Application\\.+|Authorization\\ThinkPhpPlatformAuthorizationRepository|Bootstrap\\BootstrapService)|Tenancy\\(?:Application\\TenantWorkspaceQueryService|ThinkPhpTenantLockStore))$#'
     - name: ArtifactRevision
       collectors:
         - type: bool
@@ -51,11 +60,11 @@ deptrac:
               value: '#^PeanutAdmin\\ArtifactRevision\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\ArtifactRevision\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\ArtifactRevision\\(?:Application\\ArtifactRevisionService|Persistence\\.+)$#'
     - name: ArtifactRevisionThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\ArtifactRevision\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\ArtifactRevision\\(?:Application\\ArtifactRevisionService|Persistence\\.+)$#'
     - name: EntitlementQuota
       collectors:
         - type: bool
@@ -64,11 +73,11 @@ deptrac:
               value: '#^PeanutAdmin\\EntitlementQuota\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\EntitlementQuota\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\EntitlementQuota\\(?:Application\\EntitlementQuotaService|Persistence\\.+)$#'
     - name: EntitlementQuotaThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\EntitlementQuota\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\EntitlementQuota\\(?:Application\\EntitlementQuotaService|Persistence\\.+)$#'
     - name: DataPermission
       collectors:
         - type: bool
@@ -77,11 +86,11 @@ deptrac:
               value: '#^PeanutAdmin\\DataPermission\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\DataPermission\\(?:Application\\DataPolicyAdminService|(?:Catalog|Policy)\\.+Store|Provider\\ThinkPhp.+Provider|Runtime\\DataPermissionModuleProvider)$#'
+              value: '#^PeanutAdmin\\DataPermission\\(?:Application\\(?:DataPolicyAdminService|EffectiveAccessPreviewService)|Catalog\\ThinkPhpResourceOperationCatalog|Constraint\\ThinkPhpQueryConstraintApplier|Model\\.+|Policy\\(?:PolicyCache|ThinkPhpPolicyRepository)|Provider\\ThinkPhp.+Provider|Runtime\\DataPermissionModuleProvider)$#'
     - name: DataPermissionThinkPhpBoundary
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\DataPermission\\(?:Application\\DataPolicyAdminService|(?:Catalog|Policy)\\.+Store|Provider\\ThinkPhp.+Provider|Runtime\\DataPermissionModuleProvider)$#'
+          value: '#^PeanutAdmin\\DataPermission\\(?:Application\\(?:DataPolicyAdminService|EffectiveAccessPreviewService)|Catalog\\ThinkPhpResourceOperationCatalog|Constraint\\ThinkPhpQueryConstraintApplier|Model\\.+|Policy\\(?:PolicyCache|ThinkPhpPolicyRepository)|Provider\\ThinkPhp.+Provider|Runtime\\DataPermissionModuleProvider)$#'
     - name: Settings
       collectors:
         - type: bool
@@ -90,11 +99,11 @@ deptrac:
               value: '#^PeanutAdmin\\Settings\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\Settings\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\Settings\\(?:Application\\(?:SettingAdminService|SettingResolver)|Cache\\ThinkPhpRevisionedSettingCache|Definition\\SettingDefinitionSynchronizer|Model\\.+|Persistence\\.+Store)$#'
     - name: SettingsThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\Settings\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\Settings\\(?:Application\\(?:SettingAdminService|SettingResolver)|Cache\\ThinkPhpRevisionedSettingCache|Definition\\SettingDefinitionSynchronizer|Model\\.+|Persistence\\.+Store)$#'
     - name: ReferenceCodes
       collectors:
         - type: bool
@@ -103,11 +112,11 @@ deptrac:
               value: '#^PeanutAdmin\\ReferenceCodes\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\ReferenceCodes\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\ReferenceCodes\\Persistence\\.+$#'
     - name: ReferenceCodesThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\ReferenceCodes\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\ReferenceCodes\\Persistence\\.+$#'
     - name: FileMedia
       collectors:
         - type: bool
@@ -116,11 +125,11 @@ deptrac:
               value: '#^PeanutAdmin\\FileMedia\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\FileMedia\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\FileMedia\\(?:Application\\FileService|Model\\.+|Persistence\\.+Store)$#'
     - name: FileMediaThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\FileMedia\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\FileMedia\\(?:Application\\FileService|Model\\.+|Persistence\\.+Store)$#'
     - name: Testing
       collectors:
         - type: bool
@@ -129,11 +138,11 @@ deptrac:
               value: '#^PeanutAdmin\\Testing\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\Testing\\Authorization\\.+Fixture$#'
+              value: '#^PeanutAdmin\\Testing\\(?:Authorization\\.+|Workflow\\WorkflowAtomicityContractHarness)$#'
     - name: TestingThinkPhpSupport
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\Testing\\Authorization\\.+Fixture$#'
+          value: '#^PeanutAdmin\\Testing\\(?:Authorization\\.+|Workflow\\WorkflowAtomicityContractHarness)$#'
     - name: TaskJob
       collectors:
         - type: bool
@@ -142,11 +151,11 @@ deptrac:
               value: '#^PeanutAdmin\\TaskJob\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\TaskJob\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\TaskJob\\(?:Application\\TaskJobService|Execution\\LocalWorker|Persistence\\.+|Submission\\TrustedJobPublisher)$#'
     - name: TaskJobThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\TaskJob\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\TaskJob\\(?:Application\\TaskJobService|Execution\\LocalWorker|Persistence\\.+|Submission\\TrustedJobPublisher)$#'
     - name: NotificationSms
       collectors:
         - type: bool
@@ -155,11 +164,11 @@ deptrac:
               value: '#^PeanutAdmin\\NotificationSms\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\NotificationSms\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\NotificationSms\\(?:Application\\NotificationService|Persistence\\.+|Task\\(?:InboxTaskHandler|NotificationOutboxDispatcher|SmsTaskHandler))$#'
     - name: NotificationSmsThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\NotificationSms\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\NotificationSms\\(?:Application\\NotificationService|Persistence\\.+|Task\\(?:InboxTaskHandler|NotificationOutboxDispatcher|SmsTaskHandler))$#'
     - name: ImportExport
       collectors:
         - type: bool
@@ -168,19 +177,28 @@ deptrac:
               value: '#^PeanutAdmin\\ImportExport\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\ImportExport\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\ImportExport\\(?:Application\\ImportExportService|Execution\\CsvOperationRunner|Persistence\\.+)$#'
     - name: ImportExportThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\ImportExport\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\ImportExport\\(?:Application\\ImportExportService|Execution\\CsvOperationRunner|Persistence\\.+)$#'
     - name: OpsConsole
       collectors:
         - type: classNameRegex
           value: '#^PeanutAdmin\\OpsConsole\\#'
     - name: IntegrationSecurity
       collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\IntegrationSecurity\\#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\IntegrationSecurity\\(?:Persistence\\.+|Webhook\\TrustedWebhookPublisher)$#'
+    - name: IntegrationSecurityThinkPhpPersistence
+      collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\IntegrationSecurity\\#'
+          value: '#^PeanutAdmin\\IntegrationSecurity\\(?:Persistence\\.+|Webhook\\TrustedWebhookPublisher)$#'
     - name: Workflow
       collectors:
         - type: bool
@@ -189,15 +207,15 @@ deptrac:
               value: '#^PeanutAdmin\\Workflow\\#'
           must_not:
             - type: classNameRegex
-              value: '#^PeanutAdmin\\Workflow\\Persistence\\.+Store$#'
+              value: '#^PeanutAdmin\\Workflow\\(?:Application\\WorkflowRuntime|Persistence\\.+)$#'
     - name: WorkflowThinkPhpPersistence
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\Workflow\\Persistence\\.+Store$#'
+          value: '#^PeanutAdmin\\Workflow\\(?:Application\\WorkflowRuntime|Persistence\\.+)$#'
     - name: Backend
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\App\\(?!Modules\\|module\\TenantWideModuleProvider$)#'
+          value: '#^PeanutAdmin\\App\\(?!modules\\|module\\TenantWideModuleProvider$)#'
     - name: ModuleProviderSupport
       collectors:
         - type: classNameRegex
@@ -205,111 +223,180 @@ deptrac:
     - name: ModuleContracts
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\App\\Modules\\.+\\Contracts\\#'
-    - name: ModuleInternals
+          value: '#^PeanutAdmin\\App\\modules\\.+\\contracts\\#'
+    - name: ModuleBootstrap
       collectors:
         - type: classNameRegex
-          value: '#^PeanutAdmin\\App\\Modules\\(?!.*\\Contracts\\)#'
+          value: '#^PeanutAdmin\\App\\modules\\.+\\ModuleProvider$#'
+    - name: ModuleThinkPhpRuntime
+      collectors:
+        - type: classNameRegex
+          value: '#^PeanutAdmin\\App\\modules\\.+\\(?:infrastructure|model|services)\\#'
+    - name: ModuleInternals
+      collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\App\\modules\\(?!.*\\contracts\\)#'
+          must_not:
+            - type: classNameRegex
+              value: '#^PeanutAdmin\\App\\modules\\.+\\(?:ModuleProvider$|(?:infrastructure|model|services)\\)#'
   ruleset:
     Kernel:
+      - KernelThinkPhpRuntime
+    KernelThinkPhpRuntime:
+      - Framework
       - ThinkPhpDatabase
+      - Kernel
     ArtifactRevision:
       - Kernel
+      - KernelThinkPhpRuntime
       - Workflow
     ArtifactRevisionThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - ArtifactRevision
       - Kernel
+      - KernelThinkPhpRuntime
       - Workflow
     EntitlementQuota:
       - Kernel
+      - KernelThinkPhpRuntime
     EntitlementQuotaThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - EntitlementQuota
       - Kernel
+      - KernelThinkPhpRuntime
     DataPermission:
       - Kernel
+      - KernelThinkPhpRuntime
+      - DataPermissionThinkPhpBoundary
     DataPermissionThinkPhpBoundary:
+      - Framework
       - ThinkPhpDatabase
       - DataPermission
       - Kernel
+      - KernelThinkPhpRuntime
     Settings:
       - RuntimeLibraries
       - Kernel
+      - KernelThinkPhpRuntime
       - SettingsThinkPhpPersistence
     SettingsThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - RuntimeLibraries
       - Settings
       - Kernel
+      - KernelThinkPhpRuntime
     ReferenceCodes:
       - RuntimeLibraries
       - Kernel
+      - KernelThinkPhpRuntime
       - ReferenceCodesThinkPhpPersistence
     ReferenceCodesThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - RuntimeLibraries
       - ReferenceCodes
       - Kernel
+      - KernelThinkPhpRuntime
     FileMedia:
       - Kernel
+      - KernelThinkPhpRuntime
       - StorageProviderSdks
       - FileMediaThinkPhpPersistence
     FileMediaThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - FileMedia
       - Kernel
+      - KernelThinkPhpRuntime
     Testing:
       - Kernel
+      - KernelThinkPhpRuntime
       - DataPermission
     TestingThinkPhpSupport:
+      - Framework
       - ThinkPhpDatabase
       - Testing
       - Kernel
+      - KernelThinkPhpRuntime
       - DataPermission
       - DataPermissionThinkPhpBoundary
     TaskJob:
       - Kernel
+      - KernelThinkPhpRuntime
       - TaskJobThinkPhpPersistence
     TaskJobThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - TaskJob
       - Kernel
+      - KernelThinkPhpRuntime
     NotificationSms:
       - Kernel
+      - KernelThinkPhpRuntime
       - TaskJob
+      - TaskJobThinkPhpPersistence
     NotificationSmsThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - NotificationSms
       - Kernel
+      - KernelThinkPhpRuntime
       - TaskJob
+      - TaskJobThinkPhpPersistence
     ImportExport:
       - Kernel
+      - KernelThinkPhpRuntime
       - FileMedia
+      - FileMediaThinkPhpPersistence
       - TaskJob
+      - TaskJobThinkPhpPersistence
       - ImportExportThinkPhpPersistence
     ImportExportThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - ImportExport
       - Kernel
+      - KernelThinkPhpRuntime
       - FileMedia
+      - FileMediaThinkPhpPersistence
       - TaskJob
+      - TaskJobThinkPhpPersistence
     OpsConsole:
       - Kernel
+      - KernelThinkPhpRuntime
       - TaskJob
+      - TaskJobThinkPhpPersistence
     IntegrationSecurity:
       - Kernel
+      - KernelThinkPhpRuntime
+      - IntegrationSecurityThinkPhpPersistence
+    IntegrationSecurityThinkPhpPersistence:
+      - Framework
+      - ThinkPhpDatabase
+      - IntegrationSecurity
+      - Kernel
+      - KernelThinkPhpRuntime
     Workflow:
       - Kernel
+      - KernelThinkPhpRuntime
+      - WorkflowThinkPhpPersistence
     WorkflowThinkPhpPersistence:
+      - Framework
       - ThinkPhpDatabase
       - Workflow
       - Kernel
+      - KernelThinkPhpRuntime
     Backend:
       - Framework
       - ThinkPhpDatabase
       - RuntimeLibraries
       - Kernel
+      - KernelThinkPhpRuntime
       - DataPermission
       - DataPermissionThinkPhpBoundary
       - ReferenceCodes
@@ -327,18 +414,35 @@ deptrac:
       - ImportExportThinkPhpPersistence
       - OpsConsole
       - IntegrationSecurity
+      - IntegrationSecurityThinkPhpPersistence
+      - ModuleBootstrap
     ModuleProviderSupport:
-      - ThinkPhpDatabase
       - Kernel
       - DataPermission
       - DataPermissionThinkPhpBoundary
     ModuleContracts:
       - Kernel
+      - KernelThinkPhpRuntime
       - DataPermission
-    ModuleInternals:
+    ModuleBootstrap:
+      - Kernel
+      - KernelThinkPhpRuntime
+      - DataPermission
+      - DataPermissionThinkPhpBoundary
+      - ModuleContracts
+      - ModuleThinkPhpRuntime
+      - ModuleProviderSupport
+    ModuleThinkPhpRuntime:
       - Framework
       - ThinkPhpDatabase
       - Kernel
+      - KernelThinkPhpRuntime
+      - DataPermission
+      - DataPermissionThinkPhpBoundary
+      - ModuleContracts
+    ModuleInternals:
+      - Kernel
+      - KernelThinkPhpRuntime
       - DataPermission
       - DataPermissionThinkPhpBoundary
       - ReferenceCodes
