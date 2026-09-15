@@ -1111,9 +1111,9 @@ PHP;
             throw new ProjectGeneratorException('PROJECT_TEMPLATE_INVALID', 'Tenant Client fixture needs two distinct Clients.');
         }
         $legacyExpected = "['operations-web', 'reporting-web']";
-        if (substr_count($contents, $legacyExpected) !== 1
-            || substr_count($contents, "'operations-web'") < 2
-            || substr_count($contents, "'reporting-web'") < 2) {
+        if (substr_count($contents, $legacyExpected) !== 2
+            || substr_count($contents, "'operations-web'") !== 3
+            || substr_count($contents, "'reporting-web'") !== 3) {
             throw new ProjectGeneratorException('PROJECT_TEMPLATE_INVALID', 'Tenant Client fixture contract drifted.');
         }
         $contents = str_replace($legacyExpected, '__GENERATED_SESSION_CLIENT_KEYS__', $contents);
