@@ -27,6 +27,8 @@ This repository owns reusable, product-neutral contracts and packages; work only
 - Application, Core PHP, Core Web, and both Editions share the Application-owned
   product version. Module and Instance versions are independent. A Core tag or
   package publication is not an Application release, deployment, or adoption.
+  Defer Application/Core version and lock alignment until all development work
+  is complete and release preparation begins.
 - Do not add product-specific business logic, names, tables, pages, workflows,
   or examples; copy legacy code or history; or install a dependency without its
   accepted decision record.
@@ -48,8 +50,11 @@ This repository owns reusable, product-neutral contracts and packages; work only
   adoption.
 - If a contracted check fails, repair the findings once and rerun only that
   group once; a second failure blocks its dependent delivery.
-- Ordinary completed Core work integrates directly into `dev` and pushes once.
-  Use a PR only for `dev` to `main`, a formal release, or explicit review.
+- After each completed and minimally checked change, fast-forward `dev` and then
+  `main` to the same commit. If either protected branch has independent history,
+  first merge that history into the validated integration commit without
+  rewriting shared history. Formal release and explicit review retain their
+  applicable Gates.
 - Preserve protected Git history; release, tag, or publication needs its
   accepted decision and qualification binding.
 - Do not replace manifests, KernelSchema, OpenAPI, dependency decisions,
