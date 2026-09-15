@@ -1,6 +1,7 @@
 .DS_Store
 .idea/
-.vscode/
+/.vscode/*
+!/.vscode/settings.json
 *.swp
 *.swo
 
@@ -14,6 +15,9 @@ node_modules/
 coverage/
 dist/
 .cache/
+.phpunit.cache/
+.phpunit.result.cache
+*.tsbuildinfo
 /.local/
 /backend/runtime/
 *.log

@@ -1,6 +1,7 @@
 .env
-backend/vendor/
-frontend/dist/
+.env.*
+!.env.example
 node_modules/
-packages/web/*/node_modules/
+.pnpm-store/
+.DS_Store
 *.log
