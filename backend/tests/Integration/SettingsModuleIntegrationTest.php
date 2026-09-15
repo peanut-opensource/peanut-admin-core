@@ -9,13 +9,11 @@ use PDO;
 use PDOException;
 use PeanutAdmin\App\command\InstallProductProfile;
 use PeanutAdmin\App\command\InstallWorkflow;
-use PeanutAdmin\App\controller\api\platform\v1\PlatformSettingsController;
-use PeanutAdmin\App\controller\api\v1\SettingsController;
 use PeanutAdmin\App\setting\SettingDefinitionCatalog;
-use PeanutAdmin\Kernel\Auth\TenantContext;
-use PeanutAdmin\Kernel\Auth\ValidatedPlatformSession;
-use PeanutAdmin\Kernel\Auth\ValidatedTenantSession;
-use PeanutAdmin\Kernel\Context\PlatformContext;
+use PeanutAdmin\Kernel\Auth\PlatformAuthentication;
+use PeanutAdmin\Kernel\Auth\PlatformAuthService;
+use PeanutAdmin\Kernel\Auth\TenantAuthentication;
+use PeanutAdmin\Kernel\Auth\TenantAuthService;
 use PHPUnit\Framework\TestCase;
 use PeanutAdmin\Settings\Definition\SettingDefinitionSynchronizer;
 use think\App;
@@ -25,6 +23,8 @@ use think\Response;
 final class SettingsModuleIntegrationTest extends TestCase
 {
     private const DATABASE = 'peanut_admin_p1_b03_host_test';
+    private const EMAIL = 'settings-owner@example.test';
+    private const PASSWORD = 'Settings-Host-P1-2026!';
 
     private PDO $admin;
     private PDO $pdo;
@@ -34,6 +34,8 @@ final class SettingsModuleIntegrationTest extends TestCase
     private int $accountId;
     private int $operatorId;
     private int $platformAccountId;
+    private string $tenantAccessToken;
+    private string $platformAccessToken;
 
     /** @var array<string, string|false> */
     private array $originalEnvironment = [];
@@ -99,8 +101,8 @@ final class SettingsModuleIntegrationTest extends TestCase
                 $root . '/profiles/reference-admin.json',
                 $root . '/schemas/product-profile.schema.json',
             ),
-            'settings-owner@example.test',
-            'Settings-Host-P1-2026!',
+            self::EMAIL,
+            self::PASSWORD,
             'Settings Owner',
             [
                 'code' => 'settings-host',
@@ -122,23 +124,51 @@ SQL, [$this->tenantId, $this->memberId]);
         );
         $this->grantTenantPermissions();
         $this->grantPlatformPermissions();
+        $tenantAuthentication = $this->app->make(TenantAuthService::class)->login(
+            self::EMAIL,
+            self::PASSWORD,
+            'settings-host',
+            '127.0.0.1',
+            'Settings Host integration',
+            'req_settings_tenant_login_0001',
+        );
+        self::assertInstanceOf(TenantAuthentication::class, $tenantAuthentication);
+        $this->tenantAccessToken = $tenantAuthentication->tokens->access->expose();
+        $platformAuthentication = $this->app->make(PlatformAuthService::class)->login(
+            self::EMAIL,
+            self::PASSWORD,
+            '127.0.0.1',
+            'Settings Host integration',
+            'req_settings_platform_login_0001',
+        );
+        self::assertInstanceOf(PlatformAuthentication::class, $platformAuthentication);
+        $this->platformAccessToken = $platformAuthentication->tokens->access->expose();
     }
 
     protected function tearDown(): void
     {
-        if (isset($this->admin)) {
-            $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
-        }
-        foreach ($this->originalEnvironment as $name => $value) {
-            $value === false ? putenv($name) : putenv("{$name}={$value}");
+        try {
+            if (isset($this->app)) {
+                $this->app->cache->clear();
+            }
+            if (isset($this->admin)) {
+                $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
+            }
+            foreach ($this->originalEnvironment as $name => $value) {
+                $value === false ? putenv($name) : putenv("{$name}={$value}");
+            }
+        } finally {
+            if (isset($this->app)) {
+                restore_error_handler();
+                restore_exception_handler();
+            }
         }
     }
 
     public function testTenantReplaceCommitsValueAuditAndIdempotencyTogether(): void
     {
         $requestId = 'req_settings_tenant_replace_0001';
-        $response = ($this->app->make(SettingsController::class))->replaceTenantSetting(
-            $this->request(
+        $response = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 $requestId,
@@ -147,10 +177,7 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-tenant-replace-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
 
         self::assertSame(200, $response->getCode());
         self::assertSame('"rev-1"', $response->getHeader('ETag'));
@@ -185,8 +212,7 @@ SQL, [$this->tenantId, $this->memberId]);
 
     public function testTenantListAndUnsetReturnStrongEtagsAndRedactedParserRecords(): void
     {
-        $created = ($this->app->make(SettingsController::class))->replaceTenantSetting(
-            $this->request(
+        $created = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_tenant_seed_0001',
@@ -195,13 +221,10 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-tenant-seed-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $created->getCode());
 
-        $list = ($this->app->make(SettingsController::class))->listTenantSettings($this->request(
+        $list = $this->http($this->request(
             'GET',
             '/api/v1/settings',
             'req_settings_tenant_list_0001',
@@ -220,8 +243,7 @@ SQL, [$this->tenantId, $this->memberId]);
         self::assertArrayNotHasKey('value', $items[1]);
         self::assertFalse($items[1]['configured']);
 
-        $unset = ($this->app->make(SettingsController::class))->unsetTenantSetting(
-            $this->request(
+        $unset = $this->http($this->request(
                 'DELETE',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_tenant_unset_0001',
@@ -230,10 +252,7 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-match' => '"rev-1"',
                     'idempotency-key' => 'settings-tenant-unset-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $unset->getCode());
         self::assertSame('"rev-2"', $unset->getHeader('ETag'));
         self::assertFalse($unset->getData()['data']['configured']);
@@ -243,7 +262,7 @@ SQL, [$this->tenantId, $this->memberId]);
             ['unsetTenantSetting'],
         ));
 
-        $afterUnset = ($this->app->make(SettingsController::class))->listTenantSettings($this->request(
+        $afterUnset = $this->http($this->request(
             'GET',
             '/api/v1/settings',
             'req_settings_tenant_after_unset_0001',
@@ -253,8 +272,7 @@ SQL, [$this->tenantId, $this->memberId]);
         self::assertSame('2', $afterUnset->getData()['data']['items'][0]['revision']);
         self::assertSame('"rev-2"', $afterUnset->getData()['data']['items'][0]['etag']);
 
-        $replaced = ($this->app->make(SettingsController::class))->replaceTenantSetting(
-            $this->request(
+        $replaced = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_tenant_after_unset_replace_0001',
@@ -263,19 +281,14 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-match' => '"rev-2"',
                     'idempotency-key' => 'settings-after-unset-replace-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $replaced->getCode());
         self::assertSame('"rev-3"', $replaced->getHeader('ETag'));
     }
 
     public function testPlatformReplaceUnsetAndReplayUseTheAtomicPlatformChain(): void
     {
-        $controller = $this->app->make(PlatformSettingsController::class);
-        $create = $controller->replaceDeploymentSetting(
-            $this->platformRequest(
+        $create = $this->http($this->platformRequest(
                 'PUT',
                 '/api/platform/v1/settings/example.target/display-density',
                 'req_settings_platform_replace_0001',
@@ -284,16 +297,12 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-platform-replace-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $create->getCode());
         self::assertSame('deployment', $create->getData()['data']['source_scope']);
         self::assertSame('"rev-1"', $create->getHeader('ETag'));
 
-        $replay = $controller->replaceDeploymentSetting(
-            $this->platformRequest(
+        $replay = $this->http($this->platformRequest(
                 'PUT',
                 '/api/platform/v1/settings/example.target/display-density',
                 'req_settings_platform_replay_0001',
@@ -302,18 +311,14 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-platform-replace-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $replay->getCode());
         self::assertSame(1, (int) $this->scalar('SELECT revision FROM pa_setting_deployment_value'));
         self::assertSame(1, (int) $this->scalar(
             "SELECT COUNT(*) FROM pa_platform_audit_event WHERE event_type = 'setting.deployment.replaced'",
         ));
 
-        $conflict = $controller->replaceDeploymentSetting(
-            $this->platformRequest(
+        $conflict = $this->http($this->platformRequest(
                 'PUT',
                 '/api/platform/v1/settings/example.target/display-density',
                 'req_settings_platform_conflict_0001',
@@ -322,15 +327,11 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-match' => '"rev-1"',
                     'idempotency-key' => 'settings-platform-replace-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(409, $conflict->getCode());
         self::assertSame('IDEMPOTENCY_KEY_REUSED', $conflict->getData()['code']);
 
-        $unset = $controller->unsetDeploymentSetting(
-            $this->platformRequest(
+        $unset = $this->http($this->platformRequest(
                 'DELETE',
                 '/api/platform/v1/settings/example.target/display-density',
                 'req_settings_platform_unset_0001',
@@ -339,10 +340,7 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-match' => '"rev-1"',
                     'idempotency-key' => 'settings-platform-unset-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $unset->getCode());
         self::assertFalse($unset->getData()['data']['configured']);
         self::assertSame('"rev-2"', $unset->getHeader('ETag'));
@@ -354,7 +352,7 @@ SQL, [$this->tenantId, $this->memberId]);
 
     public function testDeploymentListUsesThePackageReadApiAndStrongCollectionEtag(): void
     {
-        $response = ($this->app->make(PlatformSettingsController::class))->listDeploymentSettings($this->platformRequest(
+        $response = $this->http($this->platformRequest(
             'GET',
             '/api/platform/v1/settings',
             'req_settings_platform_list_0001',
@@ -386,9 +384,7 @@ SQL, [$this->tenantId, $this->memberId]);
 
     public function testExactReplayRechecksTheCurrentDefinitionOwnerAvailability(): void
     {
-        $controller = $this->app->make(SettingsController::class);
-        $create = $controller->replaceTenantSetting(
-            $this->request(
+        $create = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_owner_replay_create_0001',
@@ -397,10 +393,7 @@ SQL, [$this->tenantId, $this->memberId]);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-owner-replay-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $create->getCode());
 
         $statement = $this->pdo->prepare(<<<'SQL'
@@ -409,8 +402,7 @@ WHERE tenant_id = :tenant_id AND module_key = 'example.target'
 SQL);
         $statement->execute(['tenant_id' => $this->tenantId]);
 
-        $replay = $controller->replaceTenantSetting(
-            $this->request(
+        $replay = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_owner_replay_retry_0001',
@@ -419,10 +411,7 @@ SQL);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-owner-replay-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
 
         self::assertSame(404, $replay->getCode());
         self::assertSame('SETTING_NOT_FOUND', $replay->getData()['code']);
@@ -434,9 +423,7 @@ SQL);
 
     public function testExactReplayRechecksTheSettingsHostModuleAvailability(): void
     {
-        $controller = $this->app->make(SettingsController::class);
-        $create = $controller->replaceTenantSetting(
-            $this->request(
+        $create = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_host_replay_create_0001',
@@ -445,10 +432,7 @@ SQL);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-host-replay-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $create->getCode());
 
         $statement = $this->pdo->prepare(<<<'SQL'
@@ -457,8 +441,7 @@ WHERE tenant_id = :tenant_id AND module_key = 'peanut.settings'
 SQL);
         $statement->execute(['tenant_id' => $this->tenantId]);
 
-        $replay = $controller->replaceTenantSetting(
-            $this->request(
+        $replay = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_host_replay_retry_0001',
@@ -467,10 +450,7 @@ SQL);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-host-replay-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
 
         self::assertSame(404, $replay->getCode());
         self::assertSame('MODULE_UNAVAILABLE', $replay->getData()['code']);
@@ -534,8 +514,7 @@ SQL);
     public function testRealSettingsReplayHoldsGuardLocksThroughReplayDecision(): void
     {
         $idempotencyKey = 'settings-guard-replay-0001';
-        $created = ($this->app->make(SettingsController::class))->replaceTenantSetting(
-            $this->request(
+        $created = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_guard_replay_seed_0001',
@@ -544,10 +523,7 @@ SQL);
                     'if-none-match' => '*',
                     'idempotency-key' => $idempotencyKey,
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(200, $created->getCode());
 
         $blocker = $this->additionalConnection();
@@ -607,8 +583,7 @@ JOIN pa_permission permission ON permission.id = role_permission.permission_id
 WHERE role_permission.tenant_id = {$this->tenantId}
   AND permission.`key` = 'peanut.settings.manage'
 SQL);
-        $denied = ($this->app->make(SettingsController::class))->replaceTenantSetting(
-            $this->request(
+        $denied = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_permission_denied_0001',
@@ -617,10 +592,7 @@ SQL);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-permission-denied-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(403, $denied->getCode());
         self::assertSame('AUTHZ_PERMISSION_DENIED', $denied->getData()['code']);
         self::assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM pa_setting_tenant_value'));
@@ -632,8 +604,7 @@ UPDATE pa_tenant_module SET status = 'disabled', updated_at = UTC_TIMESTAMP(3)
 WHERE tenant_id = :tenant_id AND module_key = 'example.target'
 SQL);
         $statement->execute(['tenant_id' => $this->tenantId]);
-        $ownerUnavailable = ($this->app->make(SettingsController::class))->replaceTenantSetting(
-            $this->request(
+        $ownerUnavailable = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_owner_disabled_0001',
@@ -642,16 +613,13 @@ SQL);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-owner-disabled-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
         self::assertSame(404, $ownerUnavailable->getCode());
         self::assertSame('SETTING_NOT_FOUND', $ownerUnavailable->getData()['code']);
         self::assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM pa_setting_tenant_value'));
         self::assertSame(0, (int) $this->scalar('SELECT COUNT(*) FROM pa_tenant_idempotency_record'));
 
-        $list = ($this->app->make(SettingsController::class))->listTenantSettings($this->request(
+        $list = $this->http($this->request(
             'GET',
             '/api/v1/settings',
             'req_settings_owner_disabled_list_0001',
@@ -664,8 +632,7 @@ SQL);
     {
         $secret = 'host-secret-must-never-leak';
         $requestId = 'req_settings_secret_replace_0001';
-        $response = ($this->app->make(SettingsController::class))->replaceTenantSetting(
-            $this->request(
+        $response = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/fixture-secret',
                 $requestId,
@@ -674,10 +641,7 @@ SQL);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-secret-replace-0001',
                 ],
-            ),
-            'example.target',
-            'fixture-secret',
-        );
+            ));
 
         self::assertSame(200, $response->getCode());
         self::assertTrue($response->getData()['data']['configured']);
@@ -707,8 +671,7 @@ BEGIN
     END IF;
 END
 SQL);
-        $response = ($this->app->make(SettingsController::class))->replaceTenantSetting(
-            $this->request(
+        $response = $this->http($this->request(
                 'PUT',
                 '/api/v1/settings/example.target/display-density',
                 'req_settings_completion_failure_0001',
@@ -717,10 +680,7 @@ SQL);
                     'if-none-match' => '*',
                     'idempotency-key' => 'settings-completion-failure-0001',
                 ],
-            ),
-            'example.target',
-            'display-density',
-        );
+            ));
 
         self::assertSame(500, $response->getCode());
         self::assertSame('INTERNAL_ERROR', $response->getData()['code']);
@@ -758,6 +718,7 @@ SQL);
             ])
             ->withHeader([
                 'accept' => 'application/json',
+                'authorization' => 'Bearer ' . $this->tenantAccessToken,
                 'content-type' => 'application/json',
                 'x-request-id' => $requestId,
                 ...$headers,
@@ -765,19 +726,7 @@ SQL);
             ->withPost($body)
             ->withInput(json_encode($body, JSON_THROW_ON_ERROR));
 
-        return $request->withRoute(['tenant_context' => TenantContext::fromValidatedSession(
-            new ValidatedTenantSession(
-                1,
-                'settings-session',
-                $this->tenantId,
-                $this->accountId,
-                $this->memberId,
-                'admin-web',
-                new DateTimeImmutable('2026-07-19T00:00:00Z'),
-                1,
-            ),
-            $requestId,
-        )]);
+        return $request;
     }
 
     /**
@@ -802,6 +751,7 @@ SQL);
             ])
             ->withHeader([
                 'accept' => 'application/json',
+                'authorization' => 'Bearer ' . $this->platformAccessToken,
                 'content-type' => 'application/json',
                 'x-request-id' => $requestId,
                 ...$headers,
@@ -809,17 +759,26 @@ SQL);
             ->withPost($body)
             ->withInput(json_encode($body, JSON_THROW_ON_ERROR));
 
-        return $request->withRoute(['platform_context' => PlatformContext::fromValidatedSession(
-            new ValidatedPlatformSession(
-                1,
-                'settings-platform-session',
-                $this->platformAccountId,
-                $this->operatorId,
-                'platform-web',
-                new DateTimeImmutable('2026-07-19T00:00:00Z'),
-            ),
-            $requestId,
-        )]);
+        return $request;
+    }
+
+    private function http(Request $request): Response
+    {
+        $outputLevel = ob_get_level();
+        $app = new App(dirname(__DIR__, 3) . '/backend');
+        $http = $app->http;
+        try {
+            $response = $http->run($request);
+            $http->end($response);
+
+            return $response;
+        } finally {
+            while (ob_get_level() > $outputLevel) {
+                ob_end_clean();
+            }
+            restore_error_handler();
+            restore_exception_handler();
+        }
     }
 
     /** @return array{process: resource, stdout: resource, stderr: resource} */
@@ -830,9 +789,7 @@ SQL);
         $environment['PEANUT_SETTINGS_WORKER_ROOT'] = $root;
         $environment['PEANUT_SETTINGS_WORKER_REQUEST_ID'] = $requestId;
         $environment['PEANUT_SETTINGS_WORKER_IDEMPOTENCY_KEY'] = $idempotencyKey;
-        $environment['PEANUT_SETTINGS_WORKER_TENANT_ID'] = (string) $this->tenantId;
-        $environment['PEANUT_SETTINGS_WORKER_ACCOUNT_ID'] = (string) $this->accountId;
-        $environment['PEANUT_SETTINGS_WORKER_MEMBER_ID'] = (string) $this->memberId;
+        $environment['PEANUT_SETTINGS_WORKER_ACCESS_TOKEN'] = $this->tenantAccessToken;
 
         $pipes = [];
         $process = proc_open(
@@ -949,6 +906,7 @@ $request = (new \think\Request())
     ])
     ->withHeader([
         'accept' => 'application/json',
+        'authorization' => 'Bearer ' . $required('PEANUT_SETTINGS_WORKER_ACCESS_TOKEN'),
         'content-type' => 'application/json',
         'x-request-id' => $requestId,
         'if-none-match' => '*',
@@ -956,28 +914,10 @@ $request = (new \think\Request())
     ])
     ->withPost(['value' => 'compact'])
     ->withInput(json_encode(['value' => 'compact'], JSON_THROW_ON_ERROR));
-$request = $request->withRoute([
-    'tenant_context' => \PeanutAdmin\Kernel\Auth\TenantContext::fromValidatedSession(
-        new \PeanutAdmin\Kernel\Auth\ValidatedTenantSession(
-            1,
-            'settings-worker-session',
-            (int) $required('PEANUT_SETTINGS_WORKER_TENANT_ID'),
-            (int) $required('PEANUT_SETTINGS_WORKER_ACCOUNT_ID'),
-            (int) $required('PEANUT_SETTINGS_WORKER_MEMBER_ID'),
-            'admin-web',
-            new \DateTimeImmutable('2026-07-19T00:00:00Z'),
-            1,
-        ),
-        $requestId,
-    ),
-]);
 $app = new \think\App($root . '/backend');
-$app->initialize();
-$response = $app->make(\PeanutAdmin\App\controller\api\v1\SettingsController::class)->replaceTenantSetting(
-    $request,
-    'example.target',
-    'display-density',
-);
+$http = $app->http;
+$response = $http->run($request);
+$http->end($response);
 echo json_encode([
     'status' => $response->getCode(),
     'body' => $response->getData(),
