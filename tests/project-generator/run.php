@@ -335,8 +335,8 @@ try {
     $collisionResult = runGenerator($root, $collisionArguments);
     assertTrue($collisionResult['code'] === 0, 'Legacy Client key collision generation failed.');
     $collisionFixture = (string) file_get_contents($collisionTarget . '/backend/tests/auth-clients.php');
-    assertTrue(str_contains($collisionFixture, "create('reporting-web')"), 'Admin legacy Client key collided.');
-    assertTrue(str_contains($collisionFixture, "create('operations-web')"), 'Secondary legacy Client key collided.');
+    assertTrue(str_contains($collisionFixture, '$service(\'reporting-web\')'), 'Admin legacy Client key collided.');
+    assertTrue(str_contains($collisionFixture, '$service(\'operations-web\')'), 'Secondary legacy Client key collided.');
 
     $metadata = json_decode((string) file_get_contents($first . '/peanut-project.json'), true, 512, JSON_THROW_ON_ERROR);
     assertTrue(($metadata['schema_version'] ?? null) === 1, 'Generator schema is missing.');
@@ -379,9 +379,9 @@ try {
     );
     assertTrue(($fileMenus[0]['client_keys'] ?? null) === ['field-console'], 'Selected Module menu did not use the admin Client.');
     $authFixture = (string) file_get_contents($first . '/backend/tests/auth-clients.php');
-    assertTrue(str_contains($authFixture, "create('field-console')"), 'Primary auth fixture Client was not adapted.');
-    assertTrue(str_contains($authFixture, "create('audit-console')"), 'Secondary auth fixture Client was not adapted.');
-    assertTrue(!str_contains($authFixture, "create('operations-web')") && !str_contains($authFixture, "create('reporting-web')"), 'Legacy auth fixture Client leaked.');
+    assertTrue(str_contains($authFixture, '$service(\'field-console\')'), 'Primary auth fixture Client was not adapted.');
+    assertTrue(str_contains($authFixture, '$service(\'audit-console\')'), 'Secondary auth fixture Client was not adapted.');
+    assertTrue(!str_contains($authFixture, '$service(\'operations-web\')') && !str_contains($authFixture, '$service(\'reporting-web\')'), 'Legacy auth fixture Client leaked.');
 
     $environment = (string) file_get_contents($first . '/.env.example');
     foreach (['PASSWORD', 'SECRET', 'TOKEN', 'KEY'] as $needle) {
