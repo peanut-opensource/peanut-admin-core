@@ -424,6 +424,32 @@
         ]
       },
       {
+        "stable_resource_id": "peanut-admin-core-mysql84-311-settings-json-development",
+        "purpose": "isolated MySQL service for the Core 3.1.1 Settings canonical JSON Model contract focused validation",
+        "environments": [
+          "development"
+        ],
+        "owner": "Peanut Admin Core 3.1.1 Settings JSON Model recovery owner",
+        "host": "127.0.0.1",
+        "port": 33439,
+        "database": "fresh Settings integration and generated Starter synthetic databases",
+        "schema": "current Core Kernel and Settings migrations plus generated Starter Settings fixtures",
+        "namespace": "Docker Compose project peanut-admin-core-311-settings-json-dev, service mysql",
+        "service_type": "MySQL",
+        "version": "8.4.10",
+        "credential_ref": "compose.yaml synthetic development fixture environment; values are not repeated in this registry",
+        "data_source": "the active Core development tree and freshly created Settings fixtures only",
+        "freshness_requirement": "the Compose project, MySQL volume, listener and every script-owned Settings database are absent before the focused run",
+        "health_check": "Docker reports the peanut-admin-core-311-settings-json-dev mysql service healthy and a PDO connection to 127.0.0.1:33439 reports MySQL 8.4.10; the existing Settings integration group and fresh generated Starter backend/tests/settings.php exit 0",
+        "fallback": "none",
+        "lifecycle": "one Development-mode Settings canonical JSON Model contract validation",
+        "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-settings-json-dev with volumes and orphans, then proves its container, volume, network, listener and generated Settings databases are absent",
+        "consumers": [
+          "packages/php/settings/tests",
+          "starter/backend/tests/settings.php"
+        ]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-mysql84-311-transaction-development",
         "purpose": "isolated MySQL service for the Core 3.1.1 transaction ownership recovery",
         "environments": [
