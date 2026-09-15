@@ -117,6 +117,9 @@ single-candidate lock, activation idempotency lookup and dual-audience audit.
 Platform operator and role administration now uses the owning identity,
 operator/RBAC, permission and session Models while retaining the serialized
 control-plane lock, final-control-admin invariant, revision CAS and audit.
+Fresh-install Bootstrap now uses the same native Platform/Tenant role and
+assignment Models throughout; its ThinkPHP transaction and the single
+driver-specific MySQL advisory lock remain explicit bootstrap primitives.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

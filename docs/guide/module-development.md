@@ -186,6 +186,9 @@ uniqueness, activation revision and idempotency/audit rules.
 Platform operator and platform role administration remain Kernel control-plane
 capabilities backed by native Models. Modules must not mutate their assignments,
 permissions, sessions or final-control-admin invariant directly.
+Fresh-install Bootstrap also owns initial Platform/Tenant roles and assignments
+through native Models. Modules must not call or reproduce this one-time owner
+bootstrap path.
 
 ## 7. Compose An Atomic Command
 

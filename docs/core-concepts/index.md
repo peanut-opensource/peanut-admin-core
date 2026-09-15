@@ -90,6 +90,9 @@ locked activation revisions and idempotency evidence lookup.
 Platform access administration uses the existing identity, operator/RBAC,
 permission and session Models while retaining serialized control-plane changes,
 final-control-admin protection, revision checks and audit atomicity.
+Fresh-install Bootstrap uses the same Platform/Tenant role and assignment
+Models while retaining its native transactions, owner activation sequence and
+one explicit MySQL advisory lock for the first Platform owner.
 
 ## Tenant And Business Targets
 

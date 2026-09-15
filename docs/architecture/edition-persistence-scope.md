@@ -92,6 +92,9 @@ provisioning locks, revision checks and the activation idempotency lookup.
 Platform operator lifecycle, role assignment and platform role/permission
 administration use native Models for both Editions while preserving the global
 control-plane lock, final-control-admin invariant and session revocation.
+Fresh-install Platform owner and initial Tenant owner Bootstrap also use native
+role/assignment Models in both layouts; their transaction ordering and single
+MySQL advisory bootstrap lock remain unchanged.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
