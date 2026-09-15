@@ -149,6 +149,9 @@ native ThinkPHP Model implementations; Modules continue to consume their
 business repositories and must not query Kernel RBAC tables directly.
 Menu synchronization and active-Module projection similarly go through the
 shared Menu Catalog contract; Modules must not write Kernel menu tables.
+Deployment installation and Tenant enable/disable go through the Module Runtime
+contracts, whose native Model implementation preserves locking and revision
+increments; Modules must not write lifecycle tables directly.
 
 ## 7. Compose An Atomic Command
 

@@ -51,6 +51,9 @@ database and both-Edition qualification are still pending.
 The shared Menu Catalog also uses native Menu, Permission and Module Models for
 both deployment and Tenant projections; its explicit Tenant condition and
 cross-Host business contract remain intact.
+Module Runtime mutation likewise retains explicit Tenant ownership and
+database-atomic revision increments while using the native Tenant and Module
+Models for both physical Edition layouts.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and

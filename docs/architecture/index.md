@@ -75,6 +75,9 @@ both-Edition qualification.
 The Kernel Menu Catalog likewise keeps its Host/Workspace/Upgrade business
 contract while synchronization, retirement and active Module projection now
 use the existing Menu, Permission and Module Models instead of the Db facade.
+Module Runtime availability and Tenant enable/disable use the same native
+Tenant and Module Models while preserving row locks, atomic revision increments
+and the separate deployment/Tenant mutation contracts.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

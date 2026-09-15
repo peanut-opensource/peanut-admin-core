@@ -51,6 +51,9 @@ isolation and both-Edition qualification have not been rerun for those changes.
 The Menu Catalog follows the same boundary: Host, Workspace and Upgrade callers
 retain one business contract, and its implementation uses the existing Menu,
 Permission and Module Models without a Db facade.
+Module Runtime availability and Tenant mutation now use those same native
+Tenant and Module Models; deployment status, Tenant enablement, row locks and
+revision increments remain separate fail-closed authorities.
 
 ## Tenant And Business Targets
 
