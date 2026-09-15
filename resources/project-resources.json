@@ -682,6 +682,27 @@
         "consumers": ["packages/php/workflow/tests/Integration/Application/WorkflowCapabilityCompositionTest.php"]
       },
       {
+        "stable_resource_id": "peanut-admin-core-mysql84-311-workflow-provider-temporal-development",
+        "purpose": "isolated MySQL service for the Core 3.1.1 Workflow provider temporal mapping recovery",
+        "environments": ["development"],
+        "owner": "Peanut Admin Core 3.1.1 Workflow provider temporal mapping recovery owner",
+        "host": "127.0.0.1",
+        "port": 33451,
+        "database": "peanut_admin_p1_workflow_capability_test",
+        "schema": "current Core Workflow capability composition integration fixtures",
+        "namespace": "Docker Compose project peanut-admin-core-311-workflow-provider-temporal-dev, service mysql",
+        "service_type": "MySQL",
+        "version": "8.4.10",
+        "credential_ref": "compose.yaml synthetic development fixture environment; values are not repeated in this registry",
+        "data_source": "the active Core feature tree and WorkflowCapabilityCompositionTest",
+        "freshness_requirement": "the Compose project, MySQL volume, listener, output path and peanut_admin_p1_workflow_capability_test database are absent before the run",
+        "health_check": "Docker reports the peanut-admin-core-311-workflow-provider-temporal-dev mysql service healthy and a credential-backed PDO connection to 127.0.0.1:33451 reports MySQL 8.4.10",
+        "fallback": "none",
+        "lifecycle": "one approved Development-mode focused validation",
+        "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-workflow-provider-temporal-dev with its volume and orphans, port 33451 listener, output path and synthetic database, then proves they are absent",
+        "consumers": ["packages/php/workflow/tests/Integration/Application/WorkflowCapabilityCompositionTest.php"]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-mysql84-alpha12-qualification",
         "purpose": "exclusive MySQL service for the fixed Alpha.12 repository qualification",
         "environments": [
@@ -1247,6 +1268,27 @@
         "consumers": ["Workflow capability composition focused validation"]
       },
       {
+        "stable_resource_id": "peanut-admin-core-compose-311-workflow-provider-temporal-development",
+        "purpose": "isolated container namespace for the Core 3.1.1 Workflow provider temporal mapping recovery",
+        "environments": ["development"],
+        "owner": "Peanut Admin Core 3.1.1 Workflow provider temporal mapping recovery owner",
+        "host": "macbookpro-arm64 Docker Desktop Linux VM",
+        "port": null,
+        "database": "peanut_admin_p1_workflow_capability_test",
+        "schema": "current Core Workflow capability composition integration fixtures",
+        "namespace": "Docker Compose project peanut-admin-core-311-workflow-provider-temporal-dev",
+        "service_type": "Docker Compose",
+        "version": "compose.yaml service mysql:8.4.10",
+        "credential_ref": "compose.yaml synthetic development fixture environment; no secret value is stored in the registry",
+        "data_source": "the active Core feature tree and compose.yaml mysql service",
+        "freshness_requirement": "the Compose project, MySQL volume, listener, output path and peanut_admin_p1_workflow_capability_test database are absent before the run",
+        "health_check": "Docker reports the peanut-admin-core-311-workflow-provider-temporal-dev mysql service healthy and a credential-backed PDO connection to 127.0.0.1:33451 reports MySQL 8.4.10",
+        "fallback": "none",
+        "lifecycle": "one approved Development-mode focused validation",
+        "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-workflow-provider-temporal-dev with its volume and orphans, port 33451 listener, output path and synthetic database, then proves they are absent",
+        "consumers": ["Workflow capability composition focused validation"]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-compose-alpha12-qualification",
         "purpose": "exclusive container namespace for fixed Alpha.12 MySQL and Valkey qualification services",
         "environments": [
@@ -1642,6 +1684,27 @@
         "consumers": ["Workflow capability composition focused validation"]
       },
       {
+        "stable_resource_id": "peanut-admin-core-311-workflow-provider-temporal-development-output",
+        "purpose": "temporary receipt for the Core 3.1.1 Workflow provider temporal mapping recovery",
+        "environments": ["development"],
+        "owner": "Peanut Admin Core 3.1.1 Workflow provider temporal mapping recovery owner",
+        "host": "macbookpro-arm64",
+        "port": null,
+        "database": "peanut_admin_p1_workflow_capability_test",
+        "schema": "current Core Workflow capability composition integration fixtures",
+        "namespace": "/private/tmp/peanut-admin-core-311-workflow-provider-temporal-dev",
+        "service_type": "local temporary filesystem",
+        "version": "one focused Development run",
+        "credential_ref": "compose.yaml synthetic development fixture environment; no secret value is stored in the registry",
+        "data_source": "the Workflow provider temporal mapping failure and active recovery",
+        "freshness_requirement": "the exact path is absent before the focused run and contains no prior evidence",
+        "health_check": "the recovery owner verifies the path is writable after claim and absent after evidence reduction",
+        "fallback": "none",
+        "lifecycle": "one approved Development-mode focused validation",
+        "cleanup_responsibility": "the recovery owner removes only /private/tmp/peanut-admin-core-311-workflow-provider-temporal-dev after preserving the focused receipt",
+        "consumers": ["Workflow capability composition focused validation"]
+      },
+      {
         "stable_resource_id": "peanut-admin-core-alpha12-qualification-output",
         "purpose": "exclusive temporary files and evidence scratch space for one fixed Alpha.12 qualification run",
         "environments": [
@@ -1955,6 +2018,29 @@
         "fallback": "none",
         "lifecycle": "one approved Development-mode focused validation",
         "cleanup_responsibility": "the recovery owner proves port 33448 is unbound after Compose cleanup",
+        "consumers": ["Workflow capability composition focused validation"]
+      },
+      {
+        "stable_resource_id": "peanut-admin-core-311-workflow-provider-temporal-development-mysql-port",
+        "purpose": "loopback MySQL listener for the Core 3.1.1 Workflow provider temporal mapping recovery",
+        "environments": ["development"],
+        "owner": "Peanut Admin Core 3.1.1 Workflow provider temporal mapping recovery owner",
+        "host": "127.0.0.1",
+        "bind_address": "127.0.0.1",
+        "access_address": "127.0.0.1",
+        "port": 33451,
+        "database": "peanut_admin_p1_workflow_capability_test",
+        "schema": "current Core Workflow capability composition integration fixtures",
+        "namespace": "peanut-admin-core-311-workflow-provider-temporal-dev/mysql",
+        "service_type": "MySQL 8.4.10 listener",
+        "version": "8.4.10",
+        "credential_ref": "compose.yaml synthetic development fixture environment; no secret value is stored in the registry",
+        "data_source": "peanut-admin-core-compose-311-workflow-provider-temporal-development",
+        "freshness_requirement": "the listener is unbound before the lease owner starts the Compose mysql service",
+        "health_check": "a credential-backed PDO query reports MySQL 8.4.10 through 127.0.0.1:33451",
+        "fallback": "none",
+        "lifecycle": "one approved Development-mode focused validation",
+        "cleanup_responsibility": "the recovery owner proves port 33451 is unbound after Compose cleanup",
         "consumers": ["Workflow capability composition focused validation"]
       },
       {
