@@ -559,6 +559,7 @@ SQL);
         if (!is_dir($path)) {
             throw new ModuleException('MODULE_MANIFEST_INVALID', "Migration directory is missing for {$moduleKey}.");
         }
+        $this->loadModuleMigrationSupport($module, $path);
 
         $files = glob($path . '/*.php');
         if ($files === false) {
@@ -592,6 +593,46 @@ SQL);
         }
 
         return ['module_key' => $moduleKey, 'module_version' => $moduleVersion, 'migrations' => $migrations];
+    }
+
+    private function loadModuleMigrationSupport(ManifestDocument $module, string $migrationPath): void
+    {
+        $supportPath = dirname($migrationPath) . '/Schema.php';
+        if (!file_exists($supportPath) && !is_link($supportPath)) {
+            return;
+        }
+
+        $moduleRoot = realpath($module->root);
+        $databaseRoot = realpath(dirname($migrationPath));
+        $supportFile = realpath($supportPath);
+        if ($moduleRoot === false
+            || $databaseRoot === false
+            || $supportFile === false
+            || is_link(dirname($migrationPath))
+            || is_link($supportPath)
+            || !is_file($supportFile)
+            || !is_readable($supportFile)
+            || !str_starts_with($databaseRoot . DIRECTORY_SEPARATOR, $moduleRoot . DIRECTORY_SEPARATOR)
+            || dirname($supportFile) !== $databaseRoot) {
+            throw new ModuleException(
+                'MODULE_MIGRATION_SUPPORT_UNSAFE',
+                "Migration support source is unsafe for {$module->root}.",
+            );
+        }
+
+        set_error_handler(static function (int $severity, string $message, string $file, int $line): never {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
+        try {
+            require_once $supportFile;
+        } catch (Throwable) {
+            throw new ModuleException(
+                'MODULE_MIGRATION_SUPPORT_UNSAFE',
+                "Migration support source could not be loaded for {$module->root}.",
+            );
+        } finally {
+            restore_error_handler();
+        }
     }
 
     /**

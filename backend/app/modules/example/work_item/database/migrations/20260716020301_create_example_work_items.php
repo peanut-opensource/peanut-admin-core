@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use PeanutAdmin\App\modules\example\work_item\database\Schema;
+use PeanutAdmin\App\Modules\Example\WorkItem\Database\Schema;
 use PeanutAdmin\Kernel\Migration\OwnedMigration;
 use think\migration\Migrator;
 
