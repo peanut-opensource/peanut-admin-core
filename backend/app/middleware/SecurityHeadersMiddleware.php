@@ -21,6 +21,13 @@ final readonly class SecurityHeadersMiddleware
             throw new \RuntimeException('SECURITY_HEADERS_UNAVAILABLE: restrictive response headers are required.');
         }
 
-        return $next($request)->header($headers);
+        $response = $next($request);
+        $cacheControl = $response->getHeader('Cache-Control');
+        if (is_string($cacheControl)
+            && preg_match('/(?:^|,)\s*no-store\s*(?:,|$)/iD', $cacheControl) === 1) {
+            unset($headers['Cache-Control']);
+        }
+
+        return $response->header($headers);
     }
 }

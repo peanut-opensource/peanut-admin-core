@@ -25,6 +25,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
 
     private PDO $admin;
     private PDO $pdo;
+    private App $app;
     private int $tenantId;
     private int $memberId;
     private string $storageRoot;
@@ -78,7 +79,7 @@ final class FileMediaModuleIntegrationTest extends TestCase
         putenv('DB_DATABASE=' . self::DATABASE);
         putenv('DB_USERNAME=root');
         putenv("DB_PASSWORD={$password}");
-        putenv('AUTH_IDENTIFIER_HMAC_KEY=file-media-host-integration-key');
+        putenv('AUTH_IDENTIFIER_HMAC_KEY=file-media-host-integration-hmac-key');
         $this->storageRoot = sys_get_temp_dir() . '/peanut-file-media-host-' . bin2hex(random_bytes(8));
         putenv('FILE_MEDIA_STORAGE_ROOT=' . $this->storageRoot);
         putenv('FILE_MEDIA_DELIVERY_BASE_URL=https://peanut-admin.test');
@@ -87,6 +88,8 @@ final class FileMediaModuleIntegrationTest extends TestCase
         $root = dirname(__DIR__, 3);
         $app = new App($root . '/backend');
         $app->initialize();
+        $app->cache->clear();
+        $this->app = $app;
         $installation = (new InstallWorkflow(
             $root,
         ))->run(
@@ -124,13 +127,23 @@ final class FileMediaModuleIntegrationTest extends TestCase
 
     protected function tearDown(): void
     {
-        @unlink($this->uploadPath ?? '');
-        $this->removeTree($this->storageRoot ?? '');
-        if (isset($this->admin)) {
-            $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
-        }
-        foreach ($this->originalEnvironment as $name => $value) {
-            $value === false ? putenv($name) : putenv("{$name}={$value}");
+        try {
+            if (isset($this->app)) {
+                $this->app->cache->clear();
+            }
+            @unlink($this->uploadPath ?? '');
+            $this->removeTree($this->storageRoot ?? '');
+            if (isset($this->admin)) {
+                $this->admin->exec('DROP DATABASE IF EXISTS `' . self::DATABASE . '`');
+            }
+            foreach ($this->originalEnvironment as $name => $value) {
+                $value === false ? putenv($name) : putenv("{$name}={$value}");
+            }
+        } finally {
+            if (isset($this->app)) {
+                restore_error_handler();
+                restore_exception_handler();
+            }
         }
     }
 
@@ -212,6 +225,10 @@ JOIN pa_permission permission ON permission.id = role_permission.permission_id
 WHERE role_permission.tenant_id = {$this->tenantId}
   AND permission.`key` = 'peanut.file-media.read'
 SQL);
+        self::assertSame(1, $this->pdo->exec(<<<SQL
+UPDATE pa_role SET authorization_revision = authorization_revision + 1, updated_at = UTC_TIMESTAMP(3)
+WHERE tenant_id = {$this->tenantId} AND `key` = 'core.tenant-owner'
+SQL));
         $denied = $this->http($this->request('GET', '/api/v1/files', 'req_file_permission_denied_0001'));
         self::assertSame(403, $denied->getCode());
         self::assertSame('AUTHZ_PERMISSION_DENIED', $denied->getData()['code'] ?? null);
@@ -388,6 +405,10 @@ JOIN pa_permission permission ON permission.`key` IN (
 WHERE role.tenant_id = {$this->tenantId} AND role.`key` = 'core.tenant-owner'
 ON DUPLICATE KEY UPDATE granted_at = VALUES(granted_at)
 SQL);
+        self::assertSame(1, $this->pdo->exec(<<<SQL
+UPDATE pa_role SET authorization_revision = authorization_revision + 1, updated_at = UTC_TIMESTAMP(3)
+WHERE tenant_id = {$this->tenantId} AND `key` = 'core.tenant-owner'
+SQL));
     }
 
     /** @return array{file: array{name: string, type: string, tmp_name: string, error: int, size: int}} */
