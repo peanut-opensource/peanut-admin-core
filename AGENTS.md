@@ -50,11 +50,22 @@ This repository owns reusable, product-neutral contracts and packages; work only
   adoption.
 - If a contracted check fails, repair the findings once and rerun only that
   group once; a second failure blocks its dependent delivery.
-- After each completed and minimally checked change, fast-forward `dev` and then
-  `main` to the same commit. If either protected branch has independent history,
-  first merge that history into the validated integration commit without
-  rewriting shared history. Formal release and explicit review retain their
-  applicable Gates.
+- Git delivery follows Application execution rules §5.1, as reaffirmed by the
+  user's 2026-09-15 decision: use local `feat/<description>` branches, merge
+  completed and minimally checked work into local `dev`, then push only `dev`.
+  Push a feature branch only for explicitly needed remote collaboration, backup
+  or review; do not use `git push --all` or `git push --mirror`.
+- Ordinary development does not authorize advancing `main`, tagging, publishing
+  or deployment. At an explicit release milestone, freeze the intended commit,
+  complete applicable qualification and human approval, then merge `dev` into
+  `main` through a PR and tag the final release commit for authorized publication.
+  Require PRs for `main` and prohibit direct pushes, force pushes and deletion.
+  This supersedes the earlier same-day instruction to advance both branches
+  after every change. Preserve existing history; do not roll back `main`.
+- Before a new development batch, read the latest delivery rules. Preserve
+  other tasks' pinned policy, control state and immutable evidence for their
+  owner's normal handoff. Clean only merged task branches/worktrees with no
+  active owner; do not remove unfinished work or retained qualification inputs.
 - Preserve protected Git history; release, tag, or publication needs its
   accepted decision and qualification binding.
 - Do not replace manifests, KernelSchema, OpenAPI, dependency decisions,

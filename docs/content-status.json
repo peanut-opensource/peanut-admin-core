@@ -192,7 +192,7 @@
       },
       "status": "active",
       "effective_at": {
-        "value": "2026-09-13",
+        "value": "2026-09-15",
         "precision": "date"
       },
       "supersedes": [],
@@ -200,12 +200,12 @@
         "kind": "git-file",
         "uri": "repo://peanut-admin",
         "locator": "AGENT_EXECUTION_RULES.md",
-        "revision": "a1dc089be9b4150af5871354006fa44fe731874e",
-        "sha256": "2b31207ffaa83cba6a0befda11adcb1bfad0a7c701dc2f163c86494c00ac3be9"
+        "revision": "19af5ff1981aff8ee8a8458db099193cf51bf3ce",
+        "sha256": "d8c4eedd77677a46773e9cff2aac1eeb64d82dd1ee56a51ca43b417f0ad634bd"
       },
       "source_span": {
         "start_line": 88,
-        "end_line": 93,
+        "end_line": 95,
         "heading": "5.1 本地批处理、资源租约与远程推送门禁"
       },
       "owner": "core-maintainers",
