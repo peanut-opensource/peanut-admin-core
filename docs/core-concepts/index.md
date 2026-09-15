@@ -63,6 +63,9 @@ revision increments remain separate fail-closed authorities.
 System/default Tenant resolution and entry-host binding now share the native
 Tenant/Binding Model boundary while preserving strict active-state and unique
 binding checks.
+Tenant and Platform Workspace projections use those same native Models plus
+the dedicated principal, role, permission, Module and audit Models, and still
+normalize identifiers and revisions at the API boundary.
 
 ## Tenant And Business Targets
 

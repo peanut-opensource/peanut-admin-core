@@ -87,6 +87,10 @@ and the separate deployment/Tenant mutation contracts.
 System and Standalone-default Tenant resolution also use the native Tenant
 Model; entry-host binding already uses its dedicated Model and retains strict
 cardinality and fail-closed validation.
+Tenant and Platform Workspace query projections now read Tenant, credential,
+role, permission, Module and audit state through native Models and return the
+same normalized array DTOs; a dedicated PlatformRole Model completes that read
+boundary.
 Other domain PDO repositories and direct
 `PdoTransactionManager` consumers remain migration work, so this is neither
 completed Runtime convergence nor a qualified/published package identity.

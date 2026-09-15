@@ -160,6 +160,9 @@ increments; Modules must not write lifecycle tables directly.
 System/default Tenant selection and entry-host binding are Kernel resolution
 boundaries backed by native Models; Modules must consume the resolved trusted
 context rather than query Tenant tables.
+Workspace controllers consume Kernel query services whose native Model
+projections normalize public identifiers; Modules must expose their own query
+contracts rather than join private Workspace tables.
 
 ## 7. Compose An Atomic Command
 

@@ -64,6 +64,9 @@ Models for both physical Edition layouts.
 System/default Tenant resolution uses the same native Tenant Model in both
 layouts, while entry-host binding preserves its explicit Tenant identity and
 fail-closed cardinality checks.
+Tenant and Platform Workspace projections also use native Models for their
+paginated principal, role, permission, Module and audit reads while keeping the
+same explicit Tenant filters and normalized API values.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and
