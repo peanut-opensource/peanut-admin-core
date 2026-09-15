@@ -1,6 +1,6 @@
 # Architecture
 
-Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. Most Core domains still expose PDO-backed persistence contracts; the transaction foundation plus ReferenceCodes, Settings, ArtifactRevision, EntitlementQuota and Workflow development source have begun the accepted ThinkPHP Model/Query/Db/Transaction convergence recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. Published 3.1.0 artifacts remain immutable and do not include these development changes.
+Peanut Admin Core is a modular monolith in one public monorepo. Its reference backend uses PHP 8.3 and ThinkPHP 8; Admin Web uses Vue 3 and TypeScript, persistence uses MySQL 8, and cache uses a replaceable adapter. Current development source routes ordinary production business-table persistence through owning ThinkPHP Models/Queries and explicit transaction boundaries as recorded in `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`. Remaining PDO-named production references are ThinkPHP database exceptions or the three governed driver-level advisory locks, not PDO repositories. Published 3.1.0 artifacts remain immutable and do not include these development changes.
 
 ## Repository Layers
 
@@ -25,8 +25,8 @@ The Application and Core supported PHP runtime is ThinkPHP 8. There is no
 supported non-ThinkPHP production consumer, and Core is not pursuing
 framework-neutral persistence. The canonical cross-repository decision is
 `repo://peanut-admin/docs/architecture/core-thinkphp-runtime-direction-adr.md`.
-This section is Core's current projection of that decision; it does not claim
-that the repository-wide migration is complete. Development commit `61287a9` adds the
+This section is Core's current projection of that decision; source convergence
+does not claim dynamic, both-Edition or release qualification. Development commit `61287a9` adds the
 first native `ThinkPhpTransactionManager` implementation and the publishable
 package's explicit ThinkORM dependency. Application commit `14ce7b1b` adopts
 that boundary in its main composition root; Application commit `e67acd72`
@@ -153,9 +153,9 @@ than an owner of Kernel catalog tables.
 The remaining Kernel Db facade uses are native transaction entrypoints,
 driver-level advisory locks, and `information_schema` Edition-shape validation;
 none is ordinary business-table persistence.
-Other domain PDO repositories and direct
-`PdoTransactionManager` consumers remain migration work, so this is neither
-completed Runtime convergence nor a qualified/published package identity.
+Across non-testing Core production source, all other Db facade uses are native
+transaction entrypoints. This source boundary is still not a qualified or
+published package identity.
 
 The source audit is fixed to Application
 `ea9bc3a1dfaa844a8481b01d0341aa1ad749faa9` and Core

@@ -26,8 +26,10 @@ Development commit `61287a9` provides the native Core transaction implementation
 adopted by Application commit `14ce7b1b`.
 Application commit `e67acd72` verifies the development-only local package
 link, full startup, shared connection state, nested handling and failure
-rollback against the registered development database. Remaining domain PDO
-callers still await their atomic migration. Core development commits `e0102fc`
+rollback against the registered development database. Ordinary production
+business-table persistence now uses owning Models/Queries; remaining Db facade
+uses are explicit transactions, three advisory-lock connections and Edition
+schema validation. Core development commits `e0102fc`
 and `cab7415` use that boundary for atomic operations and ReferenceCodes, but
 the ReferenceCodes MySQL/Edition gate is still pending and none of this evidence
 by itself qualifies or publishes a new Core package. ReferenceCodes now routes

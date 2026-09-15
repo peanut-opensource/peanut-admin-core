@@ -143,7 +143,8 @@ does not read mutable Host configuration from business services; the single
 ThinkPHP composition root supplies configuration, provider selection, SDK
 instances and execution context. The [accepted Runtime direction](../architecture/index.md#accepted-thinkphp-8-runtime-direction)
 projects the canonical cross-repository decision. The remaining PDO-backed
-Runtime contracts below have not yet migrated.
+references below are transaction-native handles, ThinkPHP database exceptions
+or governed driver-level locks, not alternate business repositories.
 The shared Tenant and Platform authorization evaluators are already on their
 native ThinkPHP Model implementations; Modules continue to consume their
 business repositories and must not query Kernel RBAC tables directly.
