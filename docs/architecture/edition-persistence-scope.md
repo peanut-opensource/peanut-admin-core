@@ -24,7 +24,9 @@ an Edition with a scope bypass or keep a second persistence implementation.
 
 ReferenceCodes development commit `cab7415` is the first domain migration on
 that boundary: its three owned tables retain their explicit Tenant identity and
-the old PDO repository is removed in favor of one injected ThinkPHP connection.
+the old PDO repository is removed. Set, entry and immutable entry-version
+access now uses the domain's owning ThinkPHP Models; the injected transaction
+boundary, row locks and optimistic revisions preserve the same atomic contract.
 This source result does not qualify either Edition; the registered MySQL
 isolation/concurrency run and the fixed Standalone/Multi-tenant candidate remain
 required before delivery.
@@ -41,7 +43,8 @@ contracts while replacing the old PDO repositories with injected ThinkPHP
 stores. Workflow notification/task intents stay cross-domain business
 contracts; PDO identity is no longer part of those adapter APIs. Dynamic
 compensation, concurrency, rollback and both-Edition qualification remain
-required.
+required. Its Model updates use native Raw expressions and no longer require
+the Db facade.
 
 Kernel Tenant and Platform Authorization also keep their cross-capability
 repository contracts while their production implementations read principals,

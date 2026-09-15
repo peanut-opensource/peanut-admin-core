@@ -46,10 +46,12 @@ skipped violations.
 
 Core commits `e0102fc` and `cab7415` then inject the transaction boundary into
 atomic operations and migrate ReferenceCodes plus its HTTP/install/upgrade
-composition to the shared ThinkPHP connection. The former
+composition to ThinkPHP. The former
 `PdoReferenceCodeRepository` source path is gone, while the domain's MySQL
 isolation/concurrency gate and both-Edition qualification remain pending a
-registered ReferenceCodes resource. Settings now follows the same shared
+registered ReferenceCodes resource. ReferenceCode set, entry and immutable
+entry-version persistence now routes through the domain's owning Models while
+retaining the transaction, locking and optimistic-revision rules. Settings now follows the same shared
 connection and constructor-injection boundary, with `SettingStore` replacing
 the old PDO repository and Runtime-created connections. ArtifactRevision now
 uses the injected ThinkPHP `ArtifactRevisionStore`; its service receives the
@@ -68,6 +70,8 @@ ArtifactRevision and EntitlementQuota atomic increments now use native Raw
 expressions without a Db facade. FileMedia and Settings keep their ThinkPHP
 transactions but likewise use native Raw expressions for database time and
 revision updates.
+Workflow's owning Models likewise use native Raw expressions for atomic
+revision changes; its repository no longer depends on the Db facade.
 DataPermission policy reads now normalize Model results to arrays, use native
 Raw predicates, and resolve department hierarchies through the Kernel-owned
 Department Model.

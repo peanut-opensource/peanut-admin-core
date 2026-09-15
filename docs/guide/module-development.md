@@ -209,8 +209,9 @@ can supply the native ThinkPHP transaction boundary while unmigrated domains
 retain their current manager. Every write in one command must still use the
 same underlying connection to preserve atomicity.
 
-The following diagram is the accepted ThinkPHP target. ReferenceCodes
-development commit `cab7415` now uses it, but the other domains and the fixed
+The following diagram is the accepted ThinkPHP target. ReferenceCodes now
+routes its set, entry and immutable entry-version tables through owning Models,
+but other domains and the fixed
 qualification matrix have not completed. It is not an API implemented by
 renumbering the package, and no second PDO abstraction is permitted.
 
@@ -225,9 +226,9 @@ ThinkPHP bootstrap
 
 The atomicity invariant remains: idempotency acquisition, domain writes,
 audit, outbox and terminal completion share one transaction and one execution
-context. ReferenceCodes uses the injected ThinkPHP `PDOConnection` and
-`ThinkPhpTransactionManager`; the handler PDO is the same connection's native
-handle for the still-shared Kernel guards, idempotency and audit contracts.
+context. ReferenceCodes uses owning Models and the injected
+`ThinkPhpTransactionManager`; the handler PDO is the transaction connection's
+native handle for the still-shared Kernel guards, idempotency and audit contracts.
 Creating a second connection inside a handler breaks the guarantee.
 
 The host must store only a safe, redacted terminal response. It must not store

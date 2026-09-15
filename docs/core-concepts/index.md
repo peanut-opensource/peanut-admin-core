@@ -30,7 +30,9 @@ rollback against the registered development database. Remaining domain PDO
 callers still await their atomic migration. Core development commits `e0102fc`
 and `cab7415` use that boundary for atomic operations and ReferenceCodes, but
 the ReferenceCodes MySQL/Edition gate is still pending and none of this evidence
-by itself qualifies or publishes a new Core package. Settings and
+by itself qualifies or publishes a new Core package. ReferenceCodes now routes
+set, entry and immutable entry-version access through its owning Models while
+preserving transaction, locking and revision semantics. Settings and
 ArtifactRevision now also use injected ThinkPHP stores in development source.
 ArtifactRevision keeps its cross-module repository and Workflow resolver
 semantics, but removes the repository's PDO accessor and internal service
@@ -40,7 +42,8 @@ their business repositories remain, their one implementations are ThinkPHP
 stores, Runtime dependencies are constructor-injected, and Workflow adapters
 carry business values rather than PDO identity. Their compensation, concurrency
 and cross-domain transaction evidence is still pending the registered database
-Gate.
+Gate. Workflow revision updates use native Raw expressions without the Db
+facade.
 Kernel Tenant and Platform Authorization likewise retain their business
 repositories because authorization evaluation is consumed across Kernel,
 DataPermission and Host composition, while their production implementations
