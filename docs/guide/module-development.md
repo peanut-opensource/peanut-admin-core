@@ -231,6 +231,12 @@ context. ReferenceCodes uses owning Models and the injected
 native handle for the still-shared Kernel guards, idempotency and audit contracts.
 Creating a second connection inside a handler breaks the guarantee.
 
+TaskJob and ImportExport follow the same rule: use their owning Tenant Models
+for package tables, preserve the registered Standalone/Multi-tenant column
+shape through `TenantColumnScope`, and keep lease, idempotency, row-lock and
+database-time expressions inside the shared transaction. A generic table-name
+Db query is not a substitute for the owning Model.
+
 The host must store only a safe, redacted terminal response. It must not store
 credentials, secrets, SQL, stack traces, raw authorization input, or hidden
 target existence. An expected denial may record a redacted `denied` audit and

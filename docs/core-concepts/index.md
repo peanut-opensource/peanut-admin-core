@@ -44,6 +44,10 @@ carry business values rather than PDO identity. Their compensation, concurrency
 and cross-domain transaction evidence is still pending the registered database
 Gate. Workflow revision updates use native Raw expressions without the Db
 facade.
+TaskJob and ImportExport own explicit Tenant Models for their job, attempt,
+event, operation and row-error tables. The stores retain Edition-aware physical
+shape checks, explicit logical Tenant validation, locking, leases, idempotency
+and database-time expressions; dynamic and both-Edition evidence is pending.
 Kernel Tenant and Platform Authorization likewise retain their business
 repositories because authorization evaluation is consumed across Kernel,
 DataPermission and Host composition, while their production implementations

@@ -75,6 +75,11 @@ revision changes; its repository no longer depends on the Db facade.
 DataPermission policy reads now normalize Model results to arrays, use native
 Raw predicates, and resolve department hierarchies through the Kernel-owned
 Department Model.
+TaskJob and ImportExport now route their owned job, attempt, event, operation
+and row-error tables through explicit Tenant Models. Their Edition-aware
+physical schemas, Tenant predicates, row locks, lease/idempotency rules and
+database-time expressions remain unchanged; single-row Model results are
+normalized before domain mapping.
 Their MySQL rollback, compensation, concurrency and cross-domain suites still
 require the registered exclusive database resource and are not qualified by
 the non-database checks.
@@ -188,6 +193,11 @@ Migration order is fixed and must not be reordered by an implementation task:
 10. FileMedia, retaining and qualifying Storage Drivers.
 11. DataPermission.
 12. Kernel Identity / Tenant / RBAC.
+
+The numbered sequence records the governing migration order, not the current
+completion status. TaskJob and ImportExport source have now reached the Model
+boundary described above; their dynamic database and both-Edition Gates remain
+pending.
 
 Each domain batch replaces its implementation, actual callers, public contract
 and composition atomically, then deletes that domain's old PDO path. It must not
