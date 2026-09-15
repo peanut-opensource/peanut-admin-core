@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+/vendor/
+/runtime/
+/.cache/
+/.phpunit.cache/
+/.phpunit.result.cache
+/coverage/
+*.log
+.DS_Store
