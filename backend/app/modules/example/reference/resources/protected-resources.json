@@ -4,7 +4,7 @@
     "name": "Reference Item",
     "ownership": "shared_master",
     "provider": "PeanutAdmin\\App\\modules\\example\\reference\\infrastructure\\authorization\\ReferencePolicyProvider",
-    "scope_provider": "PeanutAdmin\\App\\modules\\example\\reference\\infrastructure\\authorization\\PdoReferenceScopeProvider",
+    "scope_provider": "PeanutAdmin\\App\\modules\\example\\reference\\infrastructure\\authorization\\ThinkPhpReferenceScopeProvider",
     "operations": [
       {"key": "list", "access_mode": "rule_filtered", "target_cardinality": "many_readable", "permission_match": "all", "audit_level": "deny", "permissions": ["example.reference.read"], "target_types": [
         {"target_resource_key": "example.project", "target_role": "primary", "input_mode": "explicit", "policy_selection_permission": "example.target.manage"},
