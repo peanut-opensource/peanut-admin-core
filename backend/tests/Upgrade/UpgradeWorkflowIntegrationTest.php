@@ -17,12 +17,12 @@ use PeanutAdmin\App\upgrade\UpgradePreflight;
 use PeanutAdmin\Kernel\Menu\ThinkPhpMenuCatalogRepository;
 use PeanutAdmin\Kernel\Module\ModuleException;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
-use PHPUnit\Framework\Attributes\RunClassInSeparateProcess;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 #[PreserveGlobalState(false)]
-#[RunClassInSeparateProcess]
+#[RunTestsInSeparateProcesses]
 final class UpgradeWorkflowIntegrationTest extends TestCase
 {
     private const DATABASE = 'peanut_admin_ops_upgrade_test';
