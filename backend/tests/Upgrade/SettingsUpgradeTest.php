@@ -654,7 +654,7 @@ if ($mode === 'install') {
         $oldRoot . '/profiles/reference-admin.json',
         $oldRoot . '/schemas/product-profile.schema.json',
     );
-    $result = (new InstallWorkflow($oldRoot))->run(
+    $result = (new InstallWorkflow($oldRoot, $pdo))->run(
         $profile,
         requiredEnvironment('OLD_LOCK_FIXTURE_EMAIL'),
         requiredEnvironment('OLD_LOCK_FIXTURE_PASSWORD'),

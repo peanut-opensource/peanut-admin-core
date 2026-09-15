@@ -253,7 +253,7 @@ final class UpgradeLifecycleTest extends TestCase
         self::assertTrue($plan->getConstructor()?->isPrivate());
 
         $workflow = new ReflectionClass(\PeanutAdmin\App\command\UpgradeWorkflow::class);
-        self::assertCount(2, $workflow->getConstructor()?->getParameters() ?? []);
+        self::assertCount(1, $workflow->getConstructor()?->getParameters() ?? []);
     }
 
     public function testReleaseInspectionRejectsAPackageWithoutGitMetadata(): void
