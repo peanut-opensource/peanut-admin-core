@@ -33,9 +33,9 @@ use think\migration\NullOutput;
 $root = dirname(__DIR__, 2);
 $required = [
     'backend/config/modules.php',
-    'backend/src/Modules/Example/Greeting/Resources/setting-definitions.json',
-    'backend/src/Modules/Peanut/Settings/module.json',
-    'backend/src/Modules/Peanut/Settings/ModuleProvider.php',
+    'backend/src/modules/example/greeting/resources/setting-definitions.json',
+    'backend/src/modules/peanut/settings/module.json',
+    'backend/src/modules/peanut/settings/ModuleProvider.php',
 ];
 foreach ($required as $path) {
     if (!is_file($root . '/' . $path)) {
@@ -134,10 +134,10 @@ try {
         throw new RuntimeException('Settings must resolve through the installed core package root.');
     }
 
-    $settingsModuleRoot = $root . '/backend/src/Modules/Peanut/Settings';
+    $settingsModuleRoot = $root . '/backend/src/modules/peanut/settings';
     $migrate($kernelRoot . '/database/migrations', 'pa_kernel_migration');
-    $migrate($settingsModuleRoot . '/Database/Migrations', 'pa_settings_migration');
-    $migrate($settingsModuleRoot . '/Database/Migrations', 'pa_settings_migration');
+    $migrate($settingsModuleRoot . '/database/migrations', 'pa_settings_migration');
+    $migrate($settingsModuleRoot . '/database/migrations', 'pa_settings_migration');
 
     $manager = new \think\DbManager();
     $manager->setConfig([
@@ -175,8 +175,8 @@ SQL);
 
     $moduleConfig = require $root . '/backend/config/modules.php';
     $layout = new ModuleHostLayout(
-        'backend/src/Modules',
-        'ExampleHost\\App\\Modules',
+        'backend/src/modules',
+        'ExampleHost\\App\\modules',
         'frontend/src/modules',
     );
     $manifestLoader = new ManifestLoader();

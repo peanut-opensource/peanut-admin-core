@@ -20,8 +20,8 @@ $required = [
     'backend/src/Module/ModuleRegistryFactory.php',
     'backend/src/FileMedia/FileMediaStorageFactory.php',
     'backend/src/FileMedia/LocalPrivateStorageProvider.php',
-    'backend/src/Modules/Example/Greeting/ExampleGreetingModuleProvider.php',
-    'backend/src/Modules/Example/Greeting/module.json',
+    'backend/src/modules/example/greeting/ExampleGreetingModuleProvider.php',
+    'backend/src/modules/example/greeting/module.json',
     'backend/src/StarterExceptionHandler.php',
     'backend/tests/auth-clients.php',
     'backend/tests/file-media.php',
@@ -40,14 +40,14 @@ $required = [
     'packages/php/kernel/database/migrations/20260718010101_generalize_pa_tenant_clients.php',
     'packages/php/kernel/resources/schemas/module-manifest.schema.json',
     'packages/web/package.json',
-    'backend/src/Modules/Peanut/TaskJob/module.json',
-    'backend/src/Modules/Peanut/NotificationSms/module.json',
+    'backend/src/modules/peanut/task_job/module.json',
+    'backend/src/modules/peanut/notification_sms/module.json',
     'frontend/src/modules/peanut-task-job.ts',
     'frontend/src/modules/peanut-notification-sms.ts',
     'frontend/tests/task-job.spec.ts',
     'frontend/tests/notification-sms.spec.ts',
-    'backend/src/Modules/Peanut/ImportExport/module.json',
-    'backend/src/Modules/Peanut/IntegrationSecurity/module.json',
+    'backend/src/modules/peanut/import_export/module.json',
+    'backend/src/modules/peanut/integration_security/module.json',
     'frontend/src/modules/peanut-import-export.ts',
     'frontend/src/modules/peanut-integration-security.ts',
     'frontend/src/modules/peanut-ops-console.ts',
@@ -150,25 +150,25 @@ foreach ($hostRoots as $hostRoot) {
 }
 
 $manifest = json_decode(
-    (string) file_get_contents($root . '/backend/src/Modules/Example/Greeting/module.json'),
+    (string) file_get_contents($root . '/backend/src/modules/example/greeting/module.json'),
     true,
     512,
     JSON_THROW_ON_ERROR,
 );
 if (($manifest['backend']['provider'] ?? null)
-    !== 'ExampleHost\\App\\Modules\\Example\\Greeting\\ExampleGreetingModuleProvider') {
+    !== 'ExampleHost\\App\\modules\\example\\greeting\\ExampleGreetingModuleProvider') {
     fwrite(STDERR, "ERROR: starter manifest does not use its external host namespace\n");
     exit(1);
 }
 
 $fileMediaManifest = json_decode(
-    (string) file_get_contents($root . '/backend/src/Modules/Peanut/FileMedia/module.json'),
+    (string) file_get_contents($root . '/backend/src/modules/peanut/file_media/module.json'),
     true,
     512,
     JSON_THROW_ON_ERROR,
 );
 if (($fileMediaManifest['backend']['provider'] ?? null)
-    !== 'ExampleHost\\App\\Modules\\Peanut\\FileMedia\\ModuleProvider') {
+    !== 'ExampleHost\\App\\modules\\peanut\\file_media\\ModuleProvider') {
     fwrite(STDERR, "ERROR: starter File/Media manifest does not use its external host namespace\n");
     exit(1);
 }

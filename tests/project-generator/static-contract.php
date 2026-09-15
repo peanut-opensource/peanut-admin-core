@@ -144,9 +144,17 @@ try {
         || ($metadata['project']['admin_client_key'] ?? null) !== 'field-console') {
         throw new RuntimeException('Generated Tenant Client is invalid.');
     }
-    foreach (['Settings', 'ReferenceCodes', 'FileMedia', 'TaskJob', 'NotificationSms', 'ImportExport', 'IntegrationSecurity'] as $module) {
+    foreach ([
+        'settings' => 'Settings',
+        'reference_codes' => 'ReferenceCodes',
+        'file_media' => 'FileMedia',
+        'task_job' => 'TaskJob',
+        'notification_sms' => 'NotificationSms',
+        'import_export' => 'ImportExport',
+        'integration_security' => 'IntegrationSecurity',
+    ] as $moduleDirectory => $module) {
         $menus = json_decode(
-            (string) file_get_contents($target . "/backend/src/Modules/Peanut/{$module}/Resources/menus.json"),
+            (string) file_get_contents($target . "/backend/src/modules/peanut/{$moduleDirectory}/resources/menus.json"),
             true,
             512,
             JSON_THROW_ON_ERROR,

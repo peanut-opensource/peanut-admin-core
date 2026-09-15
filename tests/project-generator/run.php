@@ -369,10 +369,10 @@ try {
     assertTrue(!str_contains((string) file_get_contents($first . '/backend/config/modules.php'), 'peanut.reference-codes'), 'Unselected Module was enabled.');
     assertTrue(str_contains((string) file_get_contents($first . '/backend/config/modules.php'), 'peanut.ops-console.page'), 'Always-on Ops Console was removed.');
     assertTrue(is_file($first . '/frontend/src/modules/peanut-ops-console.ts'), 'Always-on Ops Console Host is absent.');
-    assertTrue(!is_dir($first . '/backend/src/Modules/Peanut/IntegrationSecurity'), 'Unselected Integration Security Module was retained.');
+    assertTrue(!is_dir($first . '/backend/src/modules/peanut/integration_security'), 'Unselected Integration Security Module was retained.');
     assertTrue(!is_file($first . '/frontend/src/modules/peanut-integration-security.ts'), 'Unselected Integration Security Host was retained.');
     $fileMenus = json_decode(
-        (string) file_get_contents($first . '/backend/src/Modules/Peanut/FileMedia/Resources/menus.json'),
+        (string) file_get_contents($first . '/backend/src/modules/peanut/file_media/resources/menus.json'),
         true,
         512,
         JSON_THROW_ON_ERROR,

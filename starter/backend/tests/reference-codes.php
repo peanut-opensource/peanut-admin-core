@@ -18,8 +18,8 @@ use PeanutAdmin\ReferenceCodes\Package as ReferenceCodesPackage;
 use PeanutAdmin\ReferenceCodes\Persistence\ReferenceCodeStore;
 use Phinx\Config\Config;
 use Phinx\Migration\Manager;
-use think\DbManager;
 use think\console\Input;
+use think\DbManager;
 use think\migration\NullOutput;
 
 $ports = [];
@@ -128,7 +128,7 @@ try {
         throw new RuntimeException('Starter reference-code Module was not compiled.');
     }
     $committedResource = $root
-        . '/backend/src/Modules/Peanut/ReferenceCodes/Resources/reference-code-sets.json';
+        . '/backend/src/modules/peanut/reference_codes/resources/reference-code-sets.json';
     if ((string) file_get_contents($committedResource) !== "[]\n") {
         throw new RuntimeException('Starter committed a reference-code set or value.');
     }
