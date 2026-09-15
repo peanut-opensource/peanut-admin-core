@@ -778,13 +778,13 @@
         "service_type": "MySQL",
         "version": "8.4.10",
         "credential_ref": "compose.yaml synthetic development fixture environment; values are not repeated in this registry",
-        "data_source": "the active Core feature tree and Tenant owner activation replay method",
+        "data_source": "the Tenant owner activation replay pass receipt, active Core feature tree and last-active-owner concurrency recovery",
         "freshness_requirement": "the Compose project, MySQL volume, listener, output path and peanut_admin_kernel_test database are absent before the run",
         "health_check": "Docker reports the peanut-admin-core-311-membership-dev mysql service healthy and a credential-backed PDO connection to 127.0.0.1:33453 reports MySQL 8.4.10",
         "fallback": "none",
-        "lifecycle": "one approved Development-mode focused validation",
+        "lifecycle": "two approved Development-mode focused validations: owner activation replay, then last-active-owner concurrency",
         "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-membership-dev with its volume and orphans, port 33453 listener, output path and synthetic database, then proves they are absent",
-        "consumers": ["packages/php/kernel/tests/Integration/Membership/AdminAccessServiceTest.php::testPlatformOwnerCandidateIsSeparateLockedAndIdempotentlyActivated"]
+        "consumers": ["packages/php/kernel/tests/Integration/Membership/AdminAccessServiceTest.php::testPlatformOwnerCandidateIsSeparateLockedAndIdempotentlyActivated", "packages/php/kernel/tests/Integration/Membership/AdminAccessServiceTest.php::testConcurrentOwnerRoleRemovalPreservesOneActiveOwner"]
       },
       {
         "stable_resource_id": "peanut-admin-core-mysql84-alpha12-qualification",
@@ -1448,13 +1448,13 @@
         "service_type": "Docker Compose",
         "version": "compose.yaml service mysql:8.4.10",
         "credential_ref": "compose.yaml synthetic development fixture environment; no secret value is stored in the registry",
-        "data_source": "the active Core feature tree and compose.yaml mysql service",
+        "data_source": "the Tenant owner activation replay pass receipt, active Core feature tree and compose.yaml mysql service",
         "freshness_requirement": "the Compose project, MySQL volume, listener, output path and peanut_admin_kernel_test database are absent before the run",
         "health_check": "Docker reports the peanut-admin-core-311-membership-dev mysql service healthy and a credential-backed PDO connection to 127.0.0.1:33453 reports MySQL 8.4.10",
         "fallback": "none",
-        "lifecycle": "one approved Development-mode focused validation",
+        "lifecycle": "two approved Development-mode focused validations: owner activation replay, then last-active-owner concurrency",
         "cleanup_responsibility": "the recovery owner removes only project peanut-admin-core-311-membership-dev with its volume and orphans, port 33453 listener, output path and synthetic database, then proves they are absent",
-        "consumers": ["Tenant owner activation replay focused validation"]
+        "consumers": ["Tenant owner activation replay and last-active-owner concurrency focused validations"]
       },
       {
         "stable_resource_id": "peanut-admin-core-compose-alpha12-qualification",
@@ -1948,13 +1948,13 @@
         "service_type": "local temporary filesystem",
         "version": "one focused Development run",
         "credential_ref": "compose.yaml synthetic development fixture environment; no secret value is stored in the registry",
-        "data_source": "the Tenant owner activation replay failure and active recovery",
+        "data_source": "the Tenant owner activation replay pass receipt and active last-owner concurrency recovery",
         "freshness_requirement": "the exact path is absent before the focused run and contains no prior evidence",
         "health_check": "the recovery owner verifies the path is writable after claim and absent after evidence reduction",
         "fallback": "none",
-        "lifecycle": "one approved Development-mode focused validation",
+        "lifecycle": "two approved Development-mode focused validations: owner activation replay, then last-active-owner concurrency",
         "cleanup_responsibility": "the recovery owner removes only /private/tmp/peanut-admin-core-311-membership-dev after preserving the focused receipt",
-        "consumers": ["Tenant owner activation replay focused validation"]
+        "consumers": ["Tenant owner activation replay and last-active-owner concurrency focused validations"]
       },
       {
         "stable_resource_id": "peanut-admin-core-alpha12-qualification-output",
@@ -2379,13 +2379,13 @@
         "service_type": "MySQL 8.4.10 listener",
         "version": "8.4.10",
         "credential_ref": "compose.yaml synthetic development fixture environment; no secret value is stored in the registry",
-        "data_source": "peanut-admin-core-compose-311-membership-development",
+        "data_source": "peanut-admin-core-compose-311-membership-development and the owner activation replay pass receipt",
         "freshness_requirement": "the listener is unbound before the lease owner starts the Compose mysql service",
         "health_check": "a credential-backed PDO query reports MySQL 8.4.10 through 127.0.0.1:33453",
         "fallback": "none",
-        "lifecycle": "one approved Development-mode focused validation",
+        "lifecycle": "two approved Development-mode focused validations: owner activation replay, then last-active-owner concurrency",
         "cleanup_responsibility": "the recovery owner proves port 33453 is unbound after Compose cleanup",
-        "consumers": ["Tenant owner activation replay focused validation"]
+        "consumers": ["Tenant owner activation replay and last-active-owner concurrency focused validations"]
       },
       {
         "stable_resource_id": "peanut-admin-core-alpha13-compose-backend-port",
