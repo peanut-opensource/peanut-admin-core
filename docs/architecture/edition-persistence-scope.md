@@ -99,6 +99,10 @@ Kernel owns the shared authorization catalog Models; DataPermission consumes
 those Models for policy evaluation rather than owning duplicate catalog table
 representations. Edition-shape validation intentionally retains its
 `information_schema` Query/Raw check, which has no business Model equivalent.
+ArtifactRevision, EntitlementQuota, FileMedia and Settings use native Raw
+expressions for atomic revisions/database time in both layouts, with their
+existing ThinkPHP transactions unchanged. DataPermission policy and department
+hierarchy reads use normalized Model queries with explicit Tenant predicates.
 
 The executable contracts and exact write sets are recorded in
 [`P1-ED01`](../status/p1-ed01-edition-persistence-scope-contract.md) for Idempotency, Task/Job and

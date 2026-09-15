@@ -64,6 +64,13 @@ transaction, idempotency and audit collaborators. Workflow's assignment,
 authorization, subject, attachment and side-effect business adapters no longer
 expose or receive PDO; notification and task intents remain genuine
 cross-domain contracts and execute inside the injected command transaction.
+ArtifactRevision and EntitlementQuota atomic increments now use native Raw
+expressions without a Db facade. FileMedia and Settings keep their ThinkPHP
+transactions but likewise use native Raw expressions for database time and
+revision updates.
+DataPermission policy reads now normalize Model results to arrays, use native
+Raw predicates, and resolve department hierarchies through the Kernel-owned
+Department Model.
 Their MySQL rollback, compensation, concurrency and cross-domain suites still
 require the registered exclusive database resource and are not qualified by
 the non-database checks.

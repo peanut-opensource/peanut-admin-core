@@ -13,19 +13,17 @@
 
 An account may join several tenants through separate `TenantMember` records. Login first authenticates the account, then resolves the selected active tenant and active membership. Switching tenants creates a new trusted tenant session; a client-supplied `tenant_id` never establishes authority.
 
-`MemberAdminService::createAdministrator()` and `updateAdministrator()` currently own one PDO transaction
+`MemberAdminService::createAdministrator()` and `updateAdministrator()` own one native ThinkPHP transaction
 for an administrator form: account and credential creation where applicable, member profile and
 department, role assignment, status transition, revision increments and success audits commit
 together. The host supplies the authorized tenant actor; Core enforces tenant activity, scoped
 relations, the expected member revision and the final active owner guard. Any exception rolls
-back the complete command. These commands require a connection without an ambient transaction;
-they do not join or commit a caller's transaction. Existing member lifecycle commands remain
-independently transactional. Disabled creation stays pending, and editing never changes account
-credentials. Consumers must lock a Core version containing these commands before adopting them;
-source implementation alone is not package or downstream qualification. The
-PDO transaction is a migration-before fact; the accepted supported runtime is
-ThinkPHP 8. Development commit `61287a9` now provides the native Core
-transaction implementation adopted by Application commit `14ce7b1b`.
+back the complete command. Existing member lifecycle commands remain independently transactional.
+Disabled creation stays pending, and editing never changes account credentials.
+Consumers must lock a Core version containing these commands before adopting them;
+source implementation alone is not package or downstream qualification.
+Development commit `61287a9` provides the native Core transaction implementation
+adopted by Application commit `14ce7b1b`.
 Application commit `e67acd72` verifies the development-only local package
 link, full startup, shared connection state, nested handling and failure
 rollback against the registered development database. Remaining domain PDO
@@ -98,6 +96,9 @@ to Kernel Authorization. DataPermission consumes them alongside its own
 Tenant-owned policy Models, so package direction matches table ownership.
 Native transactions, MySQL advisory locks and Edition `information_schema`
 validation are the intentional non-Model framework boundaries that remain.
+ArtifactRevision, EntitlementQuota, FileMedia and Settings use native Raw
+expressions for atomic updates and database time. DataPermission policy reads
+normalize Model rows and use the Kernel Department Model for hierarchy closure.
 
 ## Tenant And Business Targets
 

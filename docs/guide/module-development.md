@@ -192,6 +192,10 @@ bootstrap path.
 Kernel Authorization owns the shared permission/resource/operation/target and
 condition catalog Models. DataPermission and external Modules consume catalog
 capabilities; they must not define another Model owner for those Kernel tables.
+ArtifactRevision, EntitlementQuota, FileMedia and Settings use native query
+expressions inside their existing transaction boundaries. DataPermission uses
+Kernel catalog/Department Models and its own Tenant policy Models; Modules must
+consume those capabilities rather than issue parallel table queries.
 
 ## 7. Compose An Atomic Command
 
