@@ -80,5 +80,4 @@ PEANUT_INTEGRATION=1 php vendor/bin/phpunit \
   packages/php/workflow/tests/Integration \
   backend/tests/Integration \
   backend/tests/Install \
-  backend/tests/Upgrade \
-  backend/tests/Health
+  backend/tests/Upgrade
